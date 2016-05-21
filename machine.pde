@@ -238,8 +238,8 @@ class Machine
             cset=new Petscii(fontfile,remapfile,setfile);
             cset.initrender(charx,chary);
             current=cset.remap[curidx];
-            cset.shift=shift; // Need to do this properly later
         }
+        cset.shift=shift; // Need to do this properly later
         
         message("Loaded "+name+", size "+str(loadx)+"x"+str(loady)+" chars");
         return true;

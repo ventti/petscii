@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   21.5.2016: Shifting stick chars after loading an image crashed the whole thing. Not anymore.
    7.5.2016: Let's do things right: on Mac consider the Command key Ctrl and avoid many problems
    6.5.2016: Mac-specific kludge needed - ctrl-shift-mousebutton for free selection
    6.5.2016: There wasn't really any need for pressing o, since the selection is always auto-optimized
