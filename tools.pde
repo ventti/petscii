@@ -109,7 +109,7 @@ void dither()
             // Find best matching colors
             for(int i=0;i<cset.ysize;i++)
             {
-                for(int j=0;j<cset.ysize;j++)
+                for(int j=0;j<cset.xsize;j++)
                 {
                     // Sample one pixel from the reference image. A bit tricky?
                     int index=(y*reference.height/Y)*reference.width
@@ -539,6 +539,7 @@ boolean loadreference(String name)
         // Don't scale 1:1 pics
         if(reference.width!=X*cset.xsize || reference.height!=Y*cset.ysize)
             reference.resize(X*machine.charx,Y*machine.chary);
+        
         ref=0;
     }
     else
