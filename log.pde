@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   27.5.2016: Fixed a crashing bug when pressing both mouse buttons while selecting
    21.5.2016: Fixed a rare crashing bug in the bitmap converter
    21.5.2016: Shifting stick chars after loading an image crashed the whole thing. Not anymore.
    7.5.2016: Let's do things right: on Mac consider the Command key Ctrl and avoid many problems

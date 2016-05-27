@@ -411,7 +411,7 @@ void draw()
             {
                 if(mouseButton==LEFT) // Mark an area
                 {
-                    if(firstsel)
+                    if(firstsel || selectmode==2)
                     {
                         firstsel=false;
                         selx=blox;
@@ -436,7 +436,7 @@ void draw()
                 }
                 else // Pick individual characters
                 {
-                    if(firstsel)
+                    if(firstsel || selectmode==1)
                     {
                         firstsel=false;
                         
