@@ -7,6 +7,10 @@ class C64 extends Machine
     final int c64_rgb[]={#000000,#FFFFFF,#68372B,#70A4B2,#6F3D86,#588D43,#352879,#B8C76F,
                          #6F4F25,#433900,#9A6759,#444444,#6C6C6C,#9AD284,#6C5EB5,#959595};
 
+    // Pepto's new C64 palette, "Colodore": http://www.colodore.com/
+//    final int c64_rgb[]={#000000,#FFFFFF,#813338,#75cec8,#8e3c97,#56ac4d,#2e2c9b,#edf171,
+//                         #8e5029,#553800,#c46c71,#4a4a4a,#7b7b7b,#a9ff9f,#706deb,#b2b2b2};
+
     final int c64_shift[][]={{111,82,70,64,67,68,69,119},
                              {101,84,71,66,93,72,89,103},
                              {116,84,71,66,93,72,89,106}};
