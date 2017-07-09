@@ -550,9 +550,12 @@ void draw()
     }
     else
     {
-        firstsel=true;
-        firstclick=true;
-        oldcontrol=false;
+        if(!control) // Let's not lose the selection
+        {
+            firstsel=true;
+            firstclick=true;
+            oldcontrol=false;
+        }
     }
     
     // Color selector
