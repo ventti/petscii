@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   10.7.2017: Well, that "fix" broke the by-character selection, which should work again
    9.7.2017: A half-assed fix to the slightly annoying behavior where you'd lose the selection when leaving the char area
    27.5.2016: Fixed a crashing bug when pressing both mouse buttons while selecting
    21.5.2016: Fixed a rare crashing bug in the bitmap converter

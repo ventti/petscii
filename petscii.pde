@@ -550,7 +550,7 @@ void draw()
     }
     else
     {
-        if(!control) // Let's not lose the selection
+        if(!control || selectmode==2) // Let's not lose the selection
         {
             firstsel=true;
             firstclick=true;
