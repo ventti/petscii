@@ -423,8 +423,11 @@ void draw()
                         selw=0;
                     if(selh<0)
                         selh=0;
+                    
+                    if(selx==-1 || sely==-1) // Dunno when exactly this happens, but it does
+                        selw=selh=0;
                      
-                    // Copy automatically   
+                    // Copy automatically
                     for(int i=0,k=0;i<selh;i++)
                         for(int j=0;j<selw;j++,k++)
                         {
