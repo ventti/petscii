@@ -18,11 +18,13 @@ void user_key()
 {    
     if(key=='w')
     {
-        PrintWriter f=createWriter(ANAME+"_c.c");
+        PrintWriter f=createWriter(ext(filename,"_decl.c"));
         
         f.println("// C declarations");
         f.println();
         
+        f.println("extern char delta[];");
+        f.println();
         for(int i=0;i<framecount;i++)
             f.println("extern void "+ANAME+hex(i,4)+"(void);");
         f.println();
@@ -41,7 +43,7 @@ void user_key()
         f.flush();
         f.close();
         
-        f=createWriter(ANAME+".s");
+        f=createWriter(ext(filename,"_delta.s"));
         
         f.println("\t.global _"+ANAME);
         for(int i=0;i<framecount;i++)
@@ -117,7 +119,7 @@ void user_key()
         f.flush();
         f.close();
         
-        message("Wrote "+ANAME+".s and "+ANAME+"_c.c");
+        message("Wrote "+ext(filename,"_decl.c")+" and "+ext(filename,"_delta.s"));
     }
     
     if(key=='B')
