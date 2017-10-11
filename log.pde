@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   11.10.2017: Refpath now set to path if there's such thing in the preferences
    10.10.2017: Improved c/asm delta animation export (not officially supported) for the C-64
    12.7.2017: My 5yo son(!) discovered a long-standing selection bug which could crash the whole program. Should be ok now.
    10.7.2017: Well, that "fix" broke the by-character selection, which should work again

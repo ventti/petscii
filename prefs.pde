@@ -104,7 +104,7 @@ class Preferences
                 }
                 if(s[0].equals("PATH") && s.length>1)
                 {
-                    path=s[1];
+                    path=refpath=s[1];
                     message("Default path: "+path);
                 }
                 if(s[0].equals("OFFSET"))
