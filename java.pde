@@ -113,10 +113,7 @@ String fileselector(String dir,int mode)
     if(returnVal==JFileChooser.APPROVE_OPTION)
     {
         // Save cwd for next time
-        if(mode==LOADPIX)
-            prefs.refpath=fc.getCurrentDirectory().getPath();
-        else
-            prefs.path=fc.getCurrentDirectory().getPath();
+        prefs.path=fc.getCurrentDirectory().getPath();
         
         File file = fc.getSelectedFile();
         return file.getPath();

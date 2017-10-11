@@ -61,7 +61,6 @@ class Preferences
                  PREFSFILE="prefs.txt";
     
     String    path="", // Default paths for files
-              refpath="",
               convertcommand="";
     
     Preferences()
