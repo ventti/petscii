@@ -229,7 +229,7 @@ void draw()
     }
     if(refselect) // Fileselect "event" for Reference image
     {
-        String s=fileselector(prefs.path,LOADPIX);
+        String s=fileselector(prefs.refpath,LOADPIX);
         if(s!=null)
         {
             if(loadreference(s))
