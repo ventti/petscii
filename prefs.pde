@@ -24,7 +24,7 @@ final int PAL=0,
 class Preferences
 {
     int       machine=-1,
-              zoom=2,
+              zoom=1,
               framerate=60,
               aspect=PAL;
     

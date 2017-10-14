@@ -11,7 +11,21 @@ void genericjavatheme()
 {
     try
     {
-        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+        if(platform==LINUX)
+        {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+        }
+        else
+        {
+            if(platform==WINDOWS)
+            {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            }
+            else
+            {
+                UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+            }
+        }
     }
     catch (Exception e) {};
 }
