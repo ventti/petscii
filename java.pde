@@ -7,9 +7,9 @@ import java.awt.GridLayout;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-void genericjavatheme()
+void javatheme()
 {
-    try
+    try // Let's try to set a native look
     {
         if(platform==LINUX)
         {
@@ -21,9 +21,9 @@ void genericjavatheme()
             {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             }
-            else
+            else // Others or Mac, better go with something generic (too bad)
             {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());//"javax.swing.plaf.metal.MetalLookAndFeel");
+                UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             }
         }
     }

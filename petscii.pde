@@ -73,7 +73,7 @@ Button load_b,merge_b,save_b,saveas_b,ref_b,
 
 void setup()
 {
-    genericjavatheme();
+    javatheme();
     
     prefs=new Preferences();
     prefs.readprefs(prefs.PREFSFILE);
