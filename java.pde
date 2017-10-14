@@ -23,7 +23,7 @@ void genericjavatheme()
             }
             else
             {
-                UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());//"javax.swing.plaf.metal.MetalLookAndFeel");
             }
         }
     }
