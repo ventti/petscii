@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   15.10.2017: Flicker color C viewer export
    15.10.2017: Flicker colors making their appearance
    14.10.2017: An attempt at using native look for dialogs on Win/Lin (can't do that on Macs, I'm afraid)
    11.10.2017: Refpath now set to path if there's such thing in the preferences

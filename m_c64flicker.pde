@@ -101,24 +101,36 @@ class C64flicker extends Machine
     final String C64_CHEADER=
     "// Compile with cc65: cl65 export.c -o export.prg\n"+
     "\n"+
-    "#include <string.h>\n";
+    "#include <string.h>\n"+
+    "#define waitline(x) while(*(unsigned char *)0xd012!=x);\n";
     
     final String C64_CFOOTER1=
     "\n"+
     "void main(void)\n"+
     "{\n"+
-    "  *(char *)0xd011=8+3;\n"+
-    "  *(char *)0xd020=img[0];\n"+
-    "  *(char *)0xd021=img[1];\n";
+    "  *(char *)0xd011=8+3;\n";
     
     final String C64_CFOOTER2=
     "\n"+
-    "  memcpy((void *)0x400,&img[2],1000);\n"+
-    "  memcpy((void *)0xd800,&img[2+1000],1000);\n"+
+    "  memcpy((void *)0x400,&img[4],1000);\n"+
     "\n"+
+    "  *(char *)0xd020=img[0];\n"+
+    "  *(char *)0xd021=img[1];\n"+
     "  *(char *)0xd011=16+8+3;\n"+
+    "  __asm__(\"sei\");\n"+
     "\n"+
-    "  while(1);\n"+
+    "  while(1){\n"+
+    "    waitline(254);\n"+
+    "    waitline(255);\n"+
+    "    if(img[0]!=img[2]) *(char *)0xd020=img[0];\n"+
+    "    if(img[1]!=img[3]) *(char *)0xd021=img[1];\n"+
+    "    memcpy((void *)0xd800,&img[4+1000],1000);\n"+ 
+    "    waitline(254);\n"+
+    "    waitline(255);\n"+
+    "    if(img[0]!=img[2]) *(char *)0xd020=img[2];\n"+
+    "    if(img[1]!=img[3]) *(char *)0xd021=img[3];\n"+
+    "    memcpy((void *)0xd800,&img[4+2000],1000);\n"+ 
+    "  }\n"+
     "}";
     
     void save_c_viewer(String name)
@@ -127,8 +139,9 @@ class C64flicker extends Machine
     
         f.println(C64_CHEADER);
        
-        f.println("unsigned char img[]={ // border,bg,chars,colors");
-        f.println(str(cf.border)+","+str(cf.bg)+",");
+        f.println("unsigned char img[]={ // (border, bg) x2,chars,colors x2");
+        f.println(str(flicker_pairs[cf.border*2])+","+str(flicker_pairs[cf.bg*2])+",");
+        f.println(str(flicker_pairs[cf.border*2+1])+","+str(flicker_pairs[cf.bg*2+1])+",");
         
         for(int y=0;y<Y;y++)
         {
@@ -140,7 +153,18 @@ class C64flicker extends Machine
         {
             for(int x=0;x<X;x++)
             {
-                f.print(str(cf.getcolor(x,y)));
+                f.print(str(flicker_pairs[cf.getcolor(x,y)*2]));
+                if(y!=Y-1 || x!=X-1)
+                    f.print(",");
+            }
+            f.println();
+        }
+        f.println(",");
+        for(int y=0;y<Y;y++)
+        {
+            for(int x=0;x<X;x++)
+            {
+                f.print(str(flicker_pairs[cf.getcolor(x,y)*2+1]));
                 if(y!=Y-1 || x!=X-1)
                     f.print(",");
             }
