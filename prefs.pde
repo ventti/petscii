@@ -3,13 +3,15 @@
 
 // Machine numbers and their corresponding names
 final int C64=0,
-          VIC20=1, 
-          PET=2,
-          PETHI=3,
-          PLUS4=4;
+          C64FLICKER=1,
+          VIC20=2, 
+          PET=3,
+          PETHI=4,
+          PLUS4=5;
 
 final String machinenames[]={
           "C64",
+          "C64FLICKER",
           "VIC20",
           "PET",
           "PETHI",

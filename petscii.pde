@@ -80,12 +80,13 @@ void setup()
     filename=prefs.FILENAME;
     
     if(prefs.machine==-1)
-        prefs.machine=selector("Select a Platform","C-64,VIC-20,PET 40x25,PET 80x25,Plus/4");
+        prefs.machine=selector("Select a Platform","C-64,C-64 flicker,VIC-20,PET 40x25,PET 80x25,Plus/4");
     delay(200); // Superstition? 
     
     switch(prefs.machine)
     {
         case C64:   machine=new C64(); break;
+        case C64FLICKER: machine=new C64flicker(); break;
         case VIC20: machine=new Vic20(); break;
         case PET:   machine=new Pet(); break;
         case PETHI: machine=new Pethi(); break;

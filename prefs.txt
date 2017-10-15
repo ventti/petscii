@@ -11,7 +11,7 @@ PATH=
 # Show character position memory offsets (0=no, 1=yes).
 OFFSET=
 # Canvas x and y size, leave empty for defaults.
-XSIZE=
-YSIZE=
+XSIZE=46
+YSIZE=25
 # Commandline for making animated gifs. Leave empty if none.
 CONVERTER=

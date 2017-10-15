@@ -390,7 +390,10 @@ void showinfo()
     if(machine.palettemode) // Color numbers
     {
         s="pen:"+str(pen)+"  bg:"+str(cf.bg)+"  border:"+str(cf.border);
-        text(s,col2_start,colorsel_start+machine.rgb.length/16*machine.csheight+18);
+        if(machine.rgb.length%16==0)
+            text(s,col2_start,colorsel_start+machine.rgb.length/16*machine.csheight+18);
+        else
+            text(s,col2_start,colorsel_start+(machine.rgb.length/16+1)*machine.csheight+18);
     }
     
     if(cset.findset(current,false)!=-1) // Set if any
