@@ -185,28 +185,28 @@ class C64flicker extends Machine
     
     void save_prg(String name)
     {
-        if(X*Y!=1000)
+        if(X*Y!=1000 || lowercase)
         {
-            message("Unsupported image size for this exporter");
+            message("Unsupported image size/type for this exporter");
             return;
         }
         
         // Read template
-        byte b[]=loadBytes("template-c64.prg");
+        byte b[]=loadBytes("template-c64flicker.prg");
           
         // Replace some bytes
-        if(lowercase)
-            b[20]=23;
-        else
-            b[20]=20;
-        b[25]=(byte)cf.border;
-        b[30]=(byte)cf.bg;
+        b[739]=(byte)flicker_pairs[cf.border*2];
+        b[740]=(byte)flicker_pairs[cf.bg*2];
+        b[741]=(byte)flicker_pairs[cf.border*2+1];
+        b[742]=(byte)flicker_pairs[cf.bg*2+1];
         
-        int offset=98;
+        int offset=743;
         for(int i=0;i<X*Y;i++)
             b[offset++]=(byte)cf.getchar(i);
         for(int i=0;i<X*Y;i++)
-            b[offset++]=(byte)cf.getcolor(i);
+            b[offset++]=(byte)flicker_pairs[cf.getcolor(i)*2];
+        for(int i=0;i<X*Y;i++)
+            b[offset++]=(byte)flicker_pairs[cf.getcolor(i)*2+1];
         
         saveBytes(name,b);
         
