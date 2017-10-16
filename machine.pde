@@ -140,6 +140,7 @@ class Machine
                     switch(i)
                     {
                         case C64:   sourcemachine=new C64(); break;
+                        case C64FLICKER: sourcemachine=new C64flicker(); break;
                         case VIC20: sourcemachine=new Vic20(); break;
                         case PET:   sourcemachine=new Pet(); break;
                         case PETHI: sourcemachine=new Pethi(); break;

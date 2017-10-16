@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   16.10.2017: Fixed C-64 Flicker import on other machines
    15.10.2017: Flicker color prg export
    15.10.2017: Flicker color C viewer export
    15.10.2017: Flicker colors making their appearance
