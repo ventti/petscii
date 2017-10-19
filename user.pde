@@ -18,6 +18,12 @@ void user_key()
 {    
     if(key=='w')
     {
+        if(prefs.machine!=C64 && prefs.machine!=PLUS4)
+        {
+            message("Not implemented on this platform");
+            return;
+        }
+        
         PrintWriter f=createWriter(ext(filename,"_decl.c"));
         
         f.println("// C declarations");
@@ -69,14 +75,21 @@ void user_key()
                 {
                     if(preva!=f2.getchar(j))
                         f.println("\tlda\t#"+str(f2.getchar(j)));
-                    f.println("\tsta\t"+str(0x400+j));
+                    
+                    if(prefs.machine==C64)
+                        f.println("\tsta\t"+str(0x400+j));
+                    else
+                        f.println("\tsta\t"+str(0xc00+j));
                     preva=f2.getchar(j);
                 }
                 if(f1.getcolor(j)!=f2.getcolor(j))
                 {
                     if(preva!=f2.getcolor(j))
                         f.println("\tlda\t#"+str(f2.getcolor(j)));
-                    f.println("\tsta\t"+str(0xd800+j));
+                    if(prefs.machine==C64)
+                        f.println("\tsta\t"+str(0xd800+j));
+                    else
+                        f.println("\tsta\t"+str(0x800+j));
                     preva=f2.getcolor(j);
                 }
             }
@@ -124,6 +137,12 @@ void user_key()
     
     if(key=='B')
     {
+        if(prefs.machine!=C64)
+        {
+            message("Only implemented for the C-64 for now");
+            return;
+        }
+        
         PrintWriter f=createWriter(ANAME+".bas");
 
         f.println("10 rem petcat -text -w3 -o delta.prg delta.bas");
