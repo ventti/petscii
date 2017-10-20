@@ -26,7 +26,7 @@ final int PAL=0,
 class Preferences
 {
     int       machine=-1,
-              zoom=1,
+              zoom=2,
               framerate=60,
               aspect=PAL;
     
@@ -75,58 +75,67 @@ class Preferences
     {
         String row[]=loadStrings(namn);
         
-        if(row==null)
-            return;
-            
-        for(int i=0;i<row.length;i++) // Parse each line
-        {
-            if(row[i].length()>1)
+        if(row!=null)
+        {            
+            for(int i=0;i<row.length;i++) // Parse each line
             {
-                String s[]=split(row[i],"=");
-                
-                if(s[0].equals("ZOOM"))
+                if(row[i].length()>1)
                 {
-                    zoom=int(s[1]);
-                    if(zoom<1)
-                        zoom=2;
-                }
-                if(s[0].equals("FRAMERATE"))
-                    framerate=int(s[1]);
-                if(s[0].equals("MACHINE") && s.length>1)
-                {
-                    for(int j=0;j<machinenames.length;j++)
-                        if(s[1].equals(machinenames[j]))
-                            machine=j;
-                }
-                if(s[0].equals("ASPECT") && s.length>1)
-                {
-                    if(s[1].equals("PAL")) aspect=PAL;
-                    if(s[1].equals("NTSC")) aspect=NTSC;
-                    if(s[1].equals("SQUARE")) aspect=SQUARE;
-                }
-                if(s[0].equals("PATH") && s.length>1)
-                {
-                    path=refpath=s[1];
-                    message("Default path: "+path);
-                }
-                if(s[0].equals("OFFSET"))
-                { 
-                    if(s[1].equals("1"))
-                        showoff=true;
-                    else
-                        showoff=false;
-                }
-                if(s[0].equals("XSIZE") && s.length>1)
-                    X=int(s[1]);
-                if(s[0].equals("YSIZE") && s.length>1)
-                    Y=int(s[1]);
-                if(s[0].equals("CONVERTER") && s.length>1)
-                {
-                    convertcommand=s[1];
-                    if(!convertcommand.equals(""))
-                        message("Converter command: "+convertcommand);   
+                    String s[]=split(row[i],"=");
+                    
+                    if(s[0].equals("ZOOM"))
+                    {
+                        zoom=int(s[1]);
+                        if(zoom<1)
+                            zoom=2;
+                    }
+                    if(s[0].equals("FRAMERATE"))
+                        framerate=int(s[1]);
+                    if(s[0].equals("MACHINE") && s.length>1)
+                    {
+                        for(int j=0;j<machinenames.length;j++)
+                            if(s[1].equals(machinenames[j]))
+                                machine=j;
+                    }
+                    if(s[0].equals("ASPECT") && s.length>1)
+                    {
+                        if(s[1].equals("PAL")) aspect=PAL;
+                        if(s[1].equals("NTSC")) aspect=NTSC;
+                        if(s[1].equals("SQUARE")) aspect=SQUARE;
+                    }
+                    if(s[0].equals("PATH") && s.length>1)
+                    {
+                        path=refpath=s[1];
+                        message("Default path: "+path);
+                    }
+                    if(s[0].equals("OFFSET"))
+                    { 
+                        if(s[1].equals("1"))
+                            showoff=true;
+                        else
+                            showoff=false;
+                    }
+                    if(s[0].equals("XSIZE") && s.length>1)
+                        X=int(s[1]);
+                    if(s[0].equals("YSIZE") && s.length>1)
+                        Y=int(s[1]);
+                    if(s[0].equals("CONVERTER") && s.length>1)
+                    {
+                        convertcommand=s[1];
+                        if(!convertcommand.equals(""))
+                            message("Converter command: "+convertcommand);   
+                    }
                 }
             }
+        }
+        
+        // Parse the command line
+        for(int i=0;i<args.length;i++)
+        {
+            // Set the machine from the command line
+            for(int j=0;j<machinenames.length;j++)
+                if(args[i].equalsIgnoreCase("-"+machinenames[j]))
+                    machine=j;
         }
     }
 }
