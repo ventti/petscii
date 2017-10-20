@@ -70,11 +70,11 @@ class C64flicker extends Machine
         
         defaultborder=0;
         defaultbg=0;
-        erasecolor=14;
+        erasecolor=45;
         maxpen=flicker_rgb.length-1;
         maxborder=flicker_rgb.length-1;
         maxbg=flicker_rgb.length-1;
-        green=5;
+        green=40;
         
         rgb=flicker_rgb;
         shift=c64_shift;
