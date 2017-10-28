@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   28.10.2017: SEQ export possibly fixed, thanks to Tero
    20.10.2017: Default zoom=2 again, accept machine name from the command line (-c64, -vic20 and so on)
    20.10.2017: Minor fixes to flicker mode color defaults
    19.10.2017: (Hidden) Animation export works for the Plus/4. Check the platform for these exporters too.

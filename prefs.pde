@@ -132,7 +132,7 @@ class Preferences
         // Parse the command line
         for(int i=0;i<args.length;i++)
         {
-            // Set the machine from the command line
+            // Set the machine
             for(int j=0;j<machinenames.length;j++)
                 if(args[i].equalsIgnoreCase("-"+machinenames[j]))
                     machine=j;

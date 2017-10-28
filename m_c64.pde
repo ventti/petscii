@@ -377,7 +377,7 @@ class C64 extends Machine
                 if(currev) // Change rev
                 {
                     currev=false;
-                    b[i]=(byte)0x90;
+                    b[i]=(byte)0x92;
                     i++;
                 }
             }
