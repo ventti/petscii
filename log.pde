@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   29.10.2017: Zoom can be set on the command line like this: -zoom 3
    29.10.2017: 32 undo steps by default, also a new pref for them ("UNDODEPTH")
    28.10.2017: SEQ export possibly fixed, thanks to Tero
    20.10.2017: Default zoom=2 again, accept machine name from the command line (-c64, -vic20 and so on)

@@ -85,7 +85,7 @@ class Preferences
                     if(s[0].equals("ZOOM"))
                     {
                         zoom=int(s[1]);
-                        if(zoom<1)
+                        if(zoom<1 && zoom<=10)
                             zoom=2;
                     }
                     if(s[0].equals("FRAMERATE"))
@@ -143,6 +143,17 @@ class Preferences
             for(int j=0;j<machinenames.length;j++)
                 if(args[i].equalsIgnoreCase("-"+machinenames[j]))
                     machine=j;
+
+            if(args[i].equalsIgnoreCase("-zoom")) // Zoom
+            {
+                if(args.length>i+1)
+                {
+                    int z=int(args[i+1]);
+                    
+                    if(z>0 && z<=10)
+                        zoom=z;
+                }
+            }
         }
     }
 }
