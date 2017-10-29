@@ -40,12 +40,12 @@ class Frame
         thumb=new PImage(X,Y,RGB);
         
         // Undo related
-        undochars=new int[prefs.UNDODEPTH][X*Y];
+        undochars=new int[prefs.undodepth][X*Y];
         if(machine.palettemode)
-            undocolors=new int[prefs.UNDODEPTH][X*Y];
+            undocolors=new int[prefs.undodepth][X*Y];
     
-        undobg=new int[prefs.UNDODEPTH];
-        undoborder=new int[prefs.UNDODEPTH];
+        undobg=new int[prefs.undodepth];
+        undoborder=new int[prefs.undodepth];
         head=tail=maxhead=0;
     }
     
@@ -83,7 +83,7 @@ class Frame
     {
         int tmphead=head-1;
         if(tmphead<0)
-            tmphead=prefs.UNDODEPTH-1;
+            tmphead=prefs.undodepth-1;
         
         if(head==tail)
             return false;
@@ -162,9 +162,9 @@ class Frame
         if(machine.palettemode)
             arrayCopy(colors,undocolors[head]);
             
-        head=(head+1)%prefs.UNDODEPTH;
+        head=(head+1)%prefs.undodepth;
         if(head==tail)
-            tail=(tail+1)%prefs.UNDODEPTH;
+            tail=(tail+1)%prefs.undodepth;
             
         maxhead=head;
     }
@@ -189,7 +189,7 @@ class Frame
             
             head--;
             if(head<0)
-                head=prefs.UNDODEPTH-1;
+                head=prefs.undodepth-1;
             
             arrayCopy(undochars[head],chars);
             if(machine.palettemode)
@@ -207,11 +207,11 @@ class Frame
             
         head--;
         if(head<0)
-            head=prefs.UNDODEPTH-1;
+            head=prefs.undodepth-1;
     
         maxhead--;
         if(maxhead<0)
-            maxhead=prefs.UNDODEPTH-1;
+            maxhead=prefs.undodepth-1;
     }
     
     void redo()
@@ -221,7 +221,7 @@ class Frame
         
         if(head!=maxhead)
         {
-            head=(head+1)%prefs.UNDODEPTH;
+            head=(head+1)%prefs.undodepth;
             
             arrayCopy(undochars[head],chars);
             if(machine.palettemode)
@@ -275,13 +275,13 @@ void setframe(int frame)
 void copyframe(Frame s,Frame d)
 {
     arrayCopy(s.chars,d.chars);
-    for(int i=0;i<prefs.UNDODEPTH;i++)
+    for(int i=0;i<prefs.undodepth;i++)
         arrayCopy(s.undochars[i],d.undochars[i]);
     
     arrayCopy(s.colors,d.colors);
     if(machine.palettemode)
     {
-        for(int i=0;i<prefs.UNDODEPTH;i++)
+        for(int i=0;i<prefs.undodepth;i++)
             arrayCopy(s.undocolors[i],d.undocolors[i]);
         arrayCopy(s.undobg,d.undobg);
         arrayCopy(s.undoborder,d.undoborder);

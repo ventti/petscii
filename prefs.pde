@@ -28,7 +28,8 @@ class Preferences
     int       machine=-1,
               zoom=2,
               framerate=60,
-              aspect=PAL;
+              aspect=PAL,
+              undodepth=33; // Needs to be one bigger than the actual undo steps
     
     final int BWIDTH=20,     // Border width
               UIWIDTH=15*16, // Approx total width for the UI buttons
@@ -37,8 +38,6 @@ class Preferences
     
               ERASEBUTTON=RIGHT, // Feel free to swap these
               PICKERBUTTON=CENTER,
-    
-              UNDODEPTH=16, // Increase as you will
     
               BACKUP=60*2, // How many seconds until automatic backup
               MESSAGEDURATION=60*3, // How many frames messages last
@@ -124,6 +123,14 @@ class Preferences
                         convertcommand=s[1];
                         if(!convertcommand.equals(""))
                             message("Converter command: "+convertcommand);   
+                    }
+                    if(s[0].equals("UNDODEPTH") && s.length>1)
+                    {
+                        int u=int(s[1]);
+                        if(u>0 && u<1000)
+                            undodepth=u+1; // Needs +1 because the current frame is part of the buffer
+                        else
+                            message("Impossible undo depth");
                     }
                 }
             }
