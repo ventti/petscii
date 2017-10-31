@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   31.10.2017: Let's not crash if we can't open a file for writing ie. catch the exception
    29.10.2017: Zoom can be set on the command line like this: -zoom 3
    29.10.2017: 32 undo steps by default, also a new pref for them ("UNDODEPTH")
    28.10.2017: SEQ export possibly fixed, thanks to Tero
