@@ -223,7 +223,15 @@ void draw()
                     s+=".c";
             }
             filename=s;
-            machine.save_c(filename,false);
+            
+            int i=0;
+            File f=new File(filename);
+            if(f.exists())
+            {
+                i=selector("Overwrite?","Yes,No");
+            }
+            if(i==0)
+                machine.save_c(filename,false);
         }
         saveselect=false;
         repaint=true;

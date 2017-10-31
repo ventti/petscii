@@ -70,7 +70,7 @@ class Selector extends JPanel implements ActionListener
 int selector(String title,String opt)
 {
     JFrame frame=new JFrame(title);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.setLocationRelativeTo(null);
     
     Selector s=new Selector(opt);
