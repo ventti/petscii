@@ -1,7 +1,7 @@
 /*
    Changelog:
    
-   2.11.2017: New prefs UNDODEPTH and BACKUPFILE, backup file and path can be changed
+   2.11.2017: New pref BACKUPFILE, backup file and path can be changed
    31.10.2017: Nag dialog if the user tries to "save as" over an existing file. Dialogs can't be closed anymore.
    31.10.2017: Let's not crash if we can't open a file for writing ie. catch the exception
    29.10.2017: Zoom can be set on the command line like this: -zoom 3
