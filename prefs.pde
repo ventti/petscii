@@ -127,14 +127,20 @@ class Preferences
                     }
                     if(s[0].equals("UNDODEPTH") && s.length>1)
                     {
-                        int u=int(s[1]);
-                        if(u>0 && u<1000)
-                            undodepth=u+1; // Needs +1 because the current frame is part of the buffer
-                        else
-                            message("Impossible undo depth");
+                        if(s[1].length()>0)
+                        {
+                            int u=int(s[1]);
+                            if(u>0 && u<1000)
+                                undodepth=u+1; // Needs +1 because the current frame is part of the buffer
+                            else
+                                message("Impossible undo depth");
+                        }
                     }
                     if(s[0].equals("BACKUPFILE") && s.length>1)
-                        backupfile=s[1];
+                    {
+                        if(s[1].length()>1)
+                            backupfile=s[1];
+                    }
                 }
             }
         }

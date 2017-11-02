@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   2.11.2017: Some fixes in preferences handling
    2.11.2017: New pref BACKUPFILE, backup file and path can be changed
    31.10.2017: Nag dialog if the user tries to "save as" over an existing file. Dialogs can't be closed anymore.
    31.10.2017: Let's not crash if we can't open a file for writing ie. catch the exception
