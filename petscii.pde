@@ -176,7 +176,7 @@ void draw()
     if((millis()-backupcounter)/1000 >= prefs.BACKUP)
     {
         backupcounter=millis();
-        machine.save_c("_backup_.c",false);
+        machine.save_c(prefs.backupfile,false);
     }
         
     // Better do this at times or we might run out of memory

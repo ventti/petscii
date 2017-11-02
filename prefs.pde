@@ -63,6 +63,7 @@ class Preferences
     
     String    path="", // Default paths for files
               refpath="",
+              backupfile="_backup_.c",
               convertcommand="";
     
     Preferences()
@@ -132,6 +133,8 @@ class Preferences
                         else
                             message("Impossible undo depth");
                     }
+                    if(s[0].equals("BACKUPFILE") && s.length>1)
+                        backupfile=s[1];
                 }
             }
         }

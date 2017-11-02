@@ -309,7 +309,7 @@ class Machine
             return;
         }
 
-        if(!name.equals("_backup_.c"))
+        if(!name.equals(prefs.backupfile))
             frame.setTitle(name+" ("+str(X)+"x"+str(Y)+")");
     
         for(int i=0;i<framecount;i++) // Save each frame
