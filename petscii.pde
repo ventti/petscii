@@ -80,7 +80,7 @@ void setup()
     filename=prefs.FILENAME;
     
     if(prefs.machine==-1)
-        prefs.machine=selector("Select a Platform","C-64,C-64 flicker,VIC-20,PET 40x25,PET 80x25,Plus/4");
+        prefs.machine=selector("Select a platform","C-64,C-64 flicker,VIC-20,PET 40x25,PET 80x25,Plus/4");
     delay(200); // Superstition? 
     
     switch(prefs.machine)

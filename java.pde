@@ -6,6 +6,7 @@ import java.awt.event.*;
 import java.awt.GridLayout;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 
 void javatheme()
 {
@@ -35,14 +36,16 @@ class Selector extends JPanel implements ActionListener
     int selection;
     protected JButton b[];
     
-    Selector(String s) // Split string into options
+    Selector(String title,String s) // Split string into options
     {
         Box box=Box.createVerticalBox();
         
         String splitz[]=splitTokens(s,",");
         b=new JButton[splitz.length];
         
-        setLayout(new GridLayout(splitz.length,1,1,1));
+        setLayout(new GridLayout(splitz.length+1,1,1,1));
+        
+        add(new JLabel(title,SwingConstants.CENTER));
         
         for(int i=0;i<splitz.length;i++)
         {
@@ -69,11 +72,11 @@ class Selector extends JPanel implements ActionListener
 // Select from a list
 int selector(String title,String opt)
 {
-    JFrame frame=new JFrame(title);
+    JFrame frame=new JFrame("");
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.setLocationRelativeTo(null);
     
-    Selector s=new Selector(opt);
+    Selector s=new Selector(title,opt);
     s.setOpaque(true);
     frame.setContentPane(s);
  
