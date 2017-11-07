@@ -16,6 +16,7 @@ void miniwin_init()
         secondframe.setVisible(true);
         
     frame.toFront();
+    frame.repaint(); // Might help
     delay(200); // A kludge to give it some time to init (I hope)
 }
 
