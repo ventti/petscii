@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   7.11.2017: Canvas size command line parameter -size x y
    7.11.2017: Much more robust text file writing, safeWriter() wraps createWriter() and the sketch won't crash
    2.11.2017: Some fixes in preferences handling
    2.11.2017: New pref BACKUPFILE, backup file and path can be changed

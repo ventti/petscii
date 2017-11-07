@@ -163,6 +163,21 @@ class Preferences
                         zoom=z;
                 }
             }
+            
+            if(args[i].equalsIgnoreCase("-size")) // Canvas size in chars
+            {
+                if(args.length>i+2)
+                {
+                    int x=int(args[i+1]),
+                        y=int(args[i+2]);
+                    
+                    if(x>0 && y>0)
+                    {
+                        X=x;
+                        Y=y;
+                    }
+                }
+            }
         }
     }
 }
