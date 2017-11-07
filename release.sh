@@ -7,6 +7,13 @@ mv application.linux64 linux64
 mv application.windows32 windows32
 mv application.windows64 windows64
 mv application.macosx mac
+
+cp prefs.txt linux32
+cp prefs.txt linux64
+cp prefs-msdos.txt windows32/prefs.txt
+cp prefs-msdos.txt windows64/prefs.txt
+cp prefs.txt mac
+
 cd ..
 rm petscii.zip
 
@@ -21,6 +28,8 @@ cp petscii/*.txt petscii_release
 cp -r petscii/examples petscii_release
 cp -r petscii/linux32 petscii/linux64 petscii/mac petscii/windows32 \
  petscii/windows64 petscii_release
+
+rm petscii_release/prefs*
 
 echo "Version date:" >>petscii_release/README.txt
 date >>petscii_release/README.txt
