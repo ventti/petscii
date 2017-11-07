@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   7.11.2017: Much more robust text file writing, safeWriter() wraps createWriter() and the sketch won't crash
    2.11.2017: Some fixes in preferences handling
    2.11.2017: New pref BACKUPFILE, backup file and path can be changed
    31.10.2017: Nag dialog if the user tries to "save as" over an existing file. Dialogs can't be closed anymore.

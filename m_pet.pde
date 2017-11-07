@@ -82,7 +82,9 @@ class Pet extends Machine
     
     void save_c_viewer(String name)
     {
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         f.println(PET_CHEADER);
        
@@ -117,7 +119,9 @@ class Pet extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         f.println("10 rem petcat -text -w4 -l 401 -o export.prg export.bas");
         f.println("20 print chr$(147)");

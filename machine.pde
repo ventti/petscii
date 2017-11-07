@@ -296,18 +296,9 @@ class Machine
             return;
         }
         
-        PrintWriter f=null;
-        try // Need to catch the possible exception or the program will crash
-        {
-            f=createWriter(name);
-        }
-        catch(Exception e) {}
-  
+        PrintWriter f=safeWriter(name);
         if(f==null)
-        {
-            message("File error writing "+name);
             return;
-        }
 
         if(!name.equals(prefs.backupfile))
             frame.setTitle(name+" ("+str(X)+"x"+str(Y)+")");

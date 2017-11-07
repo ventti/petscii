@@ -130,7 +130,9 @@ class Plus4 extends Machine
     
     void save_c_viewer(String name)
     {
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
     
         f.println(PLUS4_CHEADER);
        
@@ -174,7 +176,9 @@ class Plus4 extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         f.println("10 rem petcat -text -w3 -o export.prg export.bas");
         f.println("20 print chr$(147)");
@@ -254,7 +258,9 @@ class Plus4 extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
     
         if(selfcontained)
             f.println(PLUS4_HEADER);

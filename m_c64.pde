@@ -104,7 +104,9 @@ class C64 extends Machine
     
     void save_c_viewer(String name)
     {
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
     
         f.println(C64_CHEADER);
        
@@ -148,7 +150,9 @@ class C64 extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         f.println("10 rem petcat -text -w2 -o export.prg export.bas");
         f.println("20 print chr$(147)");
@@ -233,7 +237,9 @@ class C64 extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
     
         if(selfcontained)
         {

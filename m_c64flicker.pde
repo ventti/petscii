@@ -135,7 +135,9 @@ class C64flicker extends Machine
     
     void save_c_viewer(String name)
     {
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
     
         f.println(C64_CHEADER);
        

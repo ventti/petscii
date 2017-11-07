@@ -24,7 +24,9 @@ void user_key()
             return;
         }
         
-        PrintWriter f=createWriter(ext(filename,"_decl.c"));
+        PrintWriter f=safeWriter(ext(filename,"_decl.c"));
+        if(f==null)
+            return;
         
         f.println("// C declarations");
         f.println();
@@ -49,7 +51,9 @@ void user_key()
         f.flush();
         f.close();
         
-        f=createWriter(ext(filename,"_delta.s"));
+        f=safeWriter(ext(filename,"_delta.s"));
+        if(f==null)
+            return;
         
         f.println("\t.global _"+ANAME);
         for(int i=0;i<framecount;i++)
@@ -143,7 +147,9 @@ void user_key()
             return;
         }
         
-        PrintWriter f=createWriter(ANAME+".bas");
+        PrintWriter f=safeWriter(ANAME+".bas");
+        if(f==null)
+            return;
 
         f.println("10 rem petcat -text -w3 -o delta.prg delta.bas");
         f.println("20 poke 65305,"+str(cf.border));

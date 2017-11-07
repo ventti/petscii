@@ -108,7 +108,9 @@ class Vic20 extends Machine
     
     void save_c_viewer(String name)
     {
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         f.println(VIC_CHEADER);
        
@@ -149,7 +151,9 @@ class Vic20 extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         f.println("10 rem petcat -text -w2 -l 1001 -o export.prg export.bas");
         f.println("20 print chr$(147)");
@@ -217,7 +221,9 @@ class Vic20 extends Machine
             return;
         }
         
-        PrintWriter f=createWriter(name);
+        PrintWriter f=safeWriter(name);
+        if(f==null)
+            return;
         
         if(selfcontained) // Not yet
             f.println(VIC_HEADER);

@@ -637,3 +637,21 @@ int canvasy(int y)
 {
     return canvas_start+y*machine.chary;
 }
+
+// Open a file for writing without dying if it can't be opened
+PrintWriter safeWriter(String name)
+{
+    PrintWriter f;
+    
+    try
+    {
+        f=createWriter(name);
+    }
+    catch(Exception e)
+    {
+        message("Error writing "+name);
+        return null;
+    }
+    
+    return f;
+}
