@@ -575,7 +575,7 @@ void draw()
         machine.colorselclicks();
     
     // Char selector
-    if(mousePressed && incharsel() && mouseButton==LEFT && !control)
+    if(mousePressed && incharsel() && (mouseButton==LEFT || mouseButton==prefs.PICKERBUTTON) && !control)
     {
         curidx=(mouseX-col2_start)/machine.charx+(mouseY-charsel_start)/machine.chary*16;
         current=cset.remap[curidx];

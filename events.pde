@@ -626,7 +626,7 @@ void mousePressed()
         machine.colorselclicks();
     
     // Catch quick presses on the char selector
-    if(incharsel() && mouseButton==LEFT && !control)
+    if(incharsel() && (mouseButton==LEFT || mouseButton==prefs.PICKERBUTTON) && !control)
     {
         curidx=(mouseX-col2_start)/machine.charx+(mouseY-charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
