@@ -210,7 +210,7 @@ void keyPressed()//java.awt.event.KeyEvent ke) // Keyboard commands
         }  
         if(key=='v')
         {
-            if(selw>0 && selh>0) // Horizontal flip for selection
+            if(selw>0 && selh>0) // Vertical flip for selection
                 vflip();
             else
             {
@@ -270,12 +270,26 @@ void keyPressed()//java.awt.event.KeyEvent ke) // Keyboard commands
 
         if(key==TAB) // Walk through sets if any
         {
-            if(cset.findset(current,true)!=-1)
+            if(selw>0 && selh>0)
             {
-                current=cset.findset(current,true);
-                for(int i=0;i<cset.charactercount;i++)
-                    if(cset.remap[i]==current)
-                        curidx=i;
+                for(int i=0;i<selw*selh;i++)
+                    if(clip_chars[i]!=-1 && cset.findset(clip_chars[i],true)!=-1) // Remap all the chars from a selection
+                    {
+                        int tmp=cset.findset(clip_chars[i],true);
+                        for(int j=0;j<cset.charactercount;j++)
+                            if(cset.remap[j]==tmp)
+                                clip_chars[i]=tmp;
+                    }
+            }
+            else // Current char
+            {
+                if(cset.findset(current,true)!=-1)
+                {
+                    current=cset.findset(current,true);
+                    for(int i=0;i<cset.charactercount;i++)
+                        if(cset.remap[i]==current)
+                            curidx=i;
+                }
             }
         }
 

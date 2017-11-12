@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   12.11.2017: Sets work on selection
    11.11.2017: Picker button (middle by default) works in the char selector too
    7.11.2017: Let's not put the dialog text on the window title, as it may be partially hidden
    7.11.2017: Repaint preview frame after lifting it
