@@ -628,7 +628,7 @@ void mouseClicked()
     }
     
     // Check if frame clicked
-    anim_clicks(col1_start+75,col2_start-prefs.BWIDTH-180);
+    anim_clicks(canvas_start+3*16,col2_start-prefs.BWIDTH-180);
 
     repaint=true;
 }
