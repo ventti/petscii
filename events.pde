@@ -18,7 +18,7 @@ void keyPressed(java.awt.event.KeyEvent ke)
     nativeKeyEvent(ke);
 }
 
-void keyPressed()//java.awt.event.KeyEvent ke) // Keyboard commands
+void keyPressed() // Keyboard commands
 {
     // Some typical special characters for the typing mode
     final int keytopetscii[]={'[',0x1b, ']',0x1d, '@',0};
