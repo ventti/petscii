@@ -406,27 +406,34 @@ class C64 extends Machine
                     } 
                     else 
                     {
-                        if (c == 0x95)
+                        if(c == 0x5f)
                         {
-                            c = 0xdf;
-                        } 
+                            c=127;
+                        }
                         else
                         {
-                            if ((c >= 0x60) && (c <= 0x7f))
+                            if (c == 0x95)
                             {
-                                c = c + 0x80;
-                            }
+                                c = 0xdf;
+                            } 
                             else
                             {
-                                if ((c >= 0x80) && (c <= 0xbf))
+                                if ((c >= 0x60) && (c <= 0x7f))
                                 {
-                                    c = c - 0x80;
+                                    c = c + 0x80;
                                 }
                                 else
                                 {
-                                    if ((c >= 0xc0) && (c <= 0xff))
+                                    if ((c >= 0x80) && (c <= 0xbf))
                                     {
-                                        c = c -0x40;
+                                        c = c - 0x80;
+                                    }
+                                    else
+                                    {
+                                        if ((c >= 0xc0) && (c <= 0xff))
+                                        {
+                                            c = c -0x40;
+                                        }
                                     }
                                 }
                             }

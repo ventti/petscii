@@ -26,7 +26,7 @@ void keyPressed() // Keyboard commands
     int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
         bloy=(mouseY-canvas_start)/machine.chary;
 
-// THhe old simpler version
+// The old simpler version
 //    if(keyCode==SHIFT)
 //        shift=1;
     if(platform==MACOSX)

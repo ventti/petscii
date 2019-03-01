@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   1.3.2019: One more kludge fix to the SEQ output
    5.11.2018: Fixed a long-standing bug with nonstandard x/y size and frame selection
    12.11.2017: Sets work on selection
    11.11.2017: Picker button (middle by default) works in the char selector too
