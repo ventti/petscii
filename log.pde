@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   5.11.2019: Undo not done if mouse button down, as it messed up something
    1.3.2019: One more kludge fix to the SEQ output
    5.11.2018: Fixed a long-standing bug with nonstandard x/y size and frame selection
    12.11.2017: Sets work on selection

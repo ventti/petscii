@@ -263,7 +263,7 @@ void keyPressed() // Keyboard commands
             }
         }
 
-        if(key=='u')
+        if(key=='u' && !mousePressed)
             cf.undo();
         if(key=='U')
             cf.redo();
