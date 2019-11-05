@@ -27,7 +27,21 @@ void keyPressed() // Keyboard commands
         bloy=(mouseY-canvas_start)/machine.chary;
 
 // The old simpler version
-//    if(keyCode==SHIFT)
+    if(keyCode==SHIFT)
+    {
+        if(control)
+        {
+          machine.setcase(!machine.lowercase);
+          
+          cset=new Petscii(machine.fontfile,machine.remapfile,machine.setfile);
+          cset.initrender(machine.charx,machine.chary);
+          current=cset.remap[curidx];
+          cset.shift=machine.shift; // Need to do this properly later
+          
+          System.gc();
+          message("Use ctrl/cmd-shift to toggle case");
+        }
+    }
 //        shift=1;
     if(platform==MACOSX)
     {
@@ -612,6 +626,7 @@ void mouseClicked()
         cset.shift=machine.shift; // Need to do this properly later
         
         System.gc();
+        message("Right click charsel to toggle case");
     }
 
     // Remap characters on ctrl-click on the selector
