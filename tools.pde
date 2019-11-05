@@ -436,7 +436,7 @@ void showinfo()
     {
         //messagecounter--;
         textAlign(CENTER);
-        text(curmessage,width/2,height-4);
+        text(curmessage,width/2,height-5);
         textAlign(LEFT);
     }
     
@@ -487,7 +487,7 @@ class Button
     {
         x=px;
         y=py;
-        w=(int)textWidth(txt)+5;
+        w=(int)textWidth(txt)+9;
         h=20;
         prevstate=false;
 
@@ -505,7 +505,7 @@ class Button
         fill(220);
         rect(x,y,w,h,3,3,3,3);
         fill(40);
-        text(text,x+3,y+16);
+        text(text,x+5,y+16);
         noStroke();
     }
     

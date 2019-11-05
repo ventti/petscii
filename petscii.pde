@@ -48,7 +48,7 @@ boolean control=false,
         fileselect=false, // "Event" flags for file operations
         mergeselect=false,
         saveselect=false,
-        refselect=false;       
+        refselect=false;
         
 float   avgms=0; // For profiling
 int     blink=0;
@@ -69,7 +69,8 @@ int    col1_start,col1_end, // x
 // UI buttons
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        clear_b,preview_b,
-       dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b;
+       dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
+       undo_b,redo_b,grid_b,crosshair_b;
 
 void setup()
 {
@@ -121,8 +122,8 @@ void setup()
     // y
     canvas_start=max(prefs.BWIDTH+Y, prefs.UIROW+prefs.BWIDTH); // Anim frame + border or buttons + border
     canvas_end=canvas_start+Y*machine.chary;
-    colorsel_start=canvas_start+2*prefs.UIROW;
-    charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW;
+    colorsel_start=canvas_start+3*prefs.UIROW+5;
+    charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
     charsel_end=charsel_start+cset.charactercount/16*machine.chary;
     
     size(col2_end+prefs.BWIDTH, max(charsel_end+prefs.UIROW+prefs.BWIDTH, canvas_end+prefs.UIROW+prefs.BWIDTH));
@@ -137,19 +138,24 @@ void setup()
 
     // Create the UI buttons
     load_b=new Button(col2_start,canvas_start,"Load");
-    merge_b=new Button(col2_start+45,canvas_start,"Merge");
-    save_b=new Button(col2_start+99,canvas_start,"Save");
-    saveas_b=new Button(col2_start+144,canvas_start,"Save as");
-    ref_b=new Button(col2_start+210,canvas_start,"Ref"); 
+    merge_b=new Button(col2_start+49,canvas_start,"Merge");
+    save_b=new Button(col2_start+107,canvas_start,"Save");
+    saveas_b=new Button(col2_start+156,canvas_start,"Save as");
     
-    clear_b=new Button(col2_start,canvas_start+prefs.UIROW,"Clear");
-    preview_b=new Button(col2_start+47,canvas_start+prefs.UIROW,"Preview");
+    ref_b=new Button(col2_start,canvas_start+prefs.UIROW,"Reference");
+    preview_b=new Button(col2_start+85,canvas_start+prefs.UIROW,"Preview");
+    clear_b=new Button(col2_start+154,canvas_start+prefs.UIROW,"Clear");
+    
+    undo_b=new Button(col2_start,canvas_start+prefs.UIROW*2,"Undo");
+    redo_b=new Button(col2_start+50,canvas_start+prefs.UIROW*2,"Redo");
+    grid_b=new Button(col2_start+101,canvas_start+prefs.UIROW*2,"Grid");
+    crosshair_b=new Button(col2_start+144,canvas_start+prefs.UIROW*2,"Crosshair");
 
-    dupleft_b=new Button(col1_end-183,canvas_start-26,"<Dup");
-    dupright_b=new Button(col1_end-136,canvas_start-26," >");
-    cut_b=new Button(col1_end-114,canvas_start-26,"Cut");    
-    pasteleft_b=new Button(col1_end-81,canvas_start-26,"< Paste");
-    pasteright_b=new Button(col1_end-18,canvas_start-26," >");
+    dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
+    dupright_b=new Button(col1_end-152,canvas_start-26," >");
+    cut_b=new Button(col1_end-126,canvas_start-26,"Cut");    
+    pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
+    pasteright_b=new Button(col1_end-22,canvas_start-26," >");
     
     frame.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
     
@@ -779,7 +785,7 @@ void draw()
     
     drawbuttons();
     
-    anim_frames(canvas_start+3*16,col1_end-180);
+    anim_frames(canvas_start+3*16,col1_end-207);
     
     user_draw(); // Call user's additions
     

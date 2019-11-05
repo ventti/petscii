@@ -1,6 +1,9 @@
 /*
    Changelog:
    
+   5.11.2019: Locking and unlocking a frame produces a message
+   5.11.2019: New UI buttons: undo, redo, grid toggle, crosshair toggle. "Ref" changed to "Reference".
+   5.11.2019: Airier buttons and layout in general
    5.11.2019: Undo not done if mouse button down, as it messed up something
    1.3.2019: One more kludge fix to the SEQ output
    5.11.2018: Fixed a long-standing bug with nonstandard x/y size and frame selection

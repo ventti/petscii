@@ -34,7 +34,7 @@ class Preferences
     final int BWIDTH=20,     // Border width
               UIWIDTH=15*16, // Approx total width for the UI buttons
               ANWIDTH=12*16+4*16, // Approx total width for the anim buttons plus frame counter
-              UIROW=29,      // UI row size (text or button)
+              UIROW=30,      // UI row size (text or button)
     
               ERASEBUTTON=RIGHT, // Feel free to swap these
               PICKERBUTTON=CENTER,

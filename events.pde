@@ -386,6 +386,10 @@ void keyPressed() // Keyboard commands
         {
             Frame f=frames.get(currentframe);
             f.locked=!f.locked;
+            if(f.locked)
+                message("Frame locked");
+            else
+                message("Frame unlocked");
         }
         if(key=='d') // Dup
         {
@@ -503,6 +507,15 @@ void mouseClicked()
     if(preview_b.mouseover()) // Preview window in or out
         miniwin_init();
         
+    if(undo_b.mouseover())
+        cf.undo();
+    if(redo_b.mouseover())
+        cf.redo();
+    if(grid_b.mouseover())
+        prefs.grid=!prefs.grid;
+    if(crosshair_b.mouseover())
+        prefs.crosshair=!prefs.crosshair;
+    
     if(clear_b.mouseover())
     {
         cf.undo_save();
