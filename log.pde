@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   5.11.2019: Make UI text stand better out from the border color bg
    5.11.2019: Toggle case also with ctrl/cmd-shift and show message about it
    5.11.2019: Locking and unlocking a frame produces a message
    5.11.2019: New UI buttons: undo, redo, grid toggle, crosshair toggle. "Ref" changed to "Reference".

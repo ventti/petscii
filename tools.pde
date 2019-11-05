@@ -349,10 +349,11 @@ void message(String s)
 // Display color/char numbers, locations and more
 void showinfo()
 {
-    if(red(machine.rgb[cf.border])+green(machine.rgb[cf.border])+blue(machine.rgb[cf.border])>384)
+    // Decide text color based on border color, somewhat psychovisual (green matters most)
+    if(red(machine.rgb[cf.border])*3+green(machine.rgb[cf.border])*5+blue(machine.rgb[cf.border])*2>1280)
         fill(0);
     else
-        fill(200);
+        fill(210);
     noStroke();
     
     String s="";
