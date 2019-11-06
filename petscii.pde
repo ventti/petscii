@@ -34,6 +34,8 @@ int     ref=-1,                  // Various modes
         typing=0,
         selectmode=0,
         shift=0;
+        
+long reftime=-1;
 
 boolean control=false,
         oldcontrol=false,
@@ -251,6 +253,7 @@ void draw()
             {
                 refname=s;
                 ref=1;
+                reftime=timestamp(s);
             }
             else
                 message(s+" cannot be opened.");

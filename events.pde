@@ -328,6 +328,14 @@ void keyPressed() // Keyboard commands
             ref=(ref+1)%4;
         if(key=='T' && ref>-1)
         {
+            if(reftime!=timestamp(refname)) // Updated in the meanwhile!
+            {
+                if(loadreference(refname))
+                    reftime=timestamp(refname);
+                else
+                    message(refname+" cannot be opened.");
+            }
+          
             cf.undo_save();
             ref=0;
             dither();

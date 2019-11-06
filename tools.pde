@@ -656,3 +656,9 @@ PrintWriter safeWriter(String name)
     
     return f;
 }
+
+long timestamp(String name) // Get file date
+{
+    File f=new File(name);
+    return f.lastModified();
+}
