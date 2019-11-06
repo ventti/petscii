@@ -14,7 +14,7 @@ class C64 extends Machine
     final int c64_shift[][]={{111,82,70,64,67,68,69,119},
                              {101,84,71,66,93,72,89,103},
                              {116,84,71,66,93,72,89,106}};
-
+                             
     C64()
     {
         machine=C64;
@@ -59,6 +59,7 @@ class C64 extends Machine
         
         rgb=c64_rgb;
         shift=c64_shift;
+        grow=thick_grow;
     }
     
     // Set lower or upper case. True for lowercase, false for normal mode.

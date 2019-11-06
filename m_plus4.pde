@@ -67,6 +67,7 @@ class Plus4 extends Machine
         
         rgb=plus4_rgb;
         shift=plus4_shift;
+        grow=thick_grow;
     }
     
     // Set lower or upper case

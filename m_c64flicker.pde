@@ -78,6 +78,7 @@ class C64flicker extends Machine
         
         rgb=flicker_rgb;
         shift=c64_shift;
+        grow=thick_grow;
     }
     
     // Set lower or upper case. True for lowercase, false for normal mode.

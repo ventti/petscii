@@ -97,6 +97,7 @@ void setup()
         default: ;
     }
     cset.shift=machine.shift; // Need to do this properly later
+    cset.grow=machine.grow;
         
     // Create an empty image
     if(X==0 || Y==0)

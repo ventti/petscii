@@ -49,6 +49,7 @@ class Pet extends Machine
         
         rgb=pet_rgb;
         shift=pet_shift;
+        grow=default_grow;
     }
         
     // Let's just strip the colors

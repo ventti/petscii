@@ -9,6 +9,7 @@ class Charset
            sets[][],
            remap[],
            shift[][],
+           grow[][],
            erasechar,
            charactercount,
            xsize,

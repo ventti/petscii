@@ -4,7 +4,8 @@
 class Machine
 {
     int rgb[],
-        shift[][];
+        shift[][],
+        grow[][];
         
     int erasecolor,
         defaultbg,
@@ -20,6 +21,20 @@ class Machine
            remapfile,
            fontfile,
            setfile;
+           
+    final int default_grow[][]={{32,100,111,121,98,248,247,227,160,228,239,249,226,120,119,99}, // For thin charset
+                                {227,224,228},
+                                {99,96,100},
+                                {32,101,116,117,97,246,234,231,160,229,244,245,225,118,106,103}}; // For thick charset
+                                
+    final int thick_grow[][]={{32,100,111,121,98,248,247,227,160,228,239,249,226,120,119,99},
+                                {227,224,228},
+                                {99,96,100},
+                                {32,101,117,97,246,234,160,244,245,225,118,103},
+                                {32,116,117},
+                                {118,106,32},
+                                {160,244,245},
+                                {246,234,160}};
            
     final String NOT_IMPLEMENTED="File type not implemented for this machine.";
     
@@ -241,6 +256,7 @@ class Machine
             current=cset.remap[curidx];
         }
         cset.shift=shift; // Need to do this properly later
+        cset.grow=grow;
         
         message("Loaded "+name+", size "+str(loadx)+"x"+str(loady)+" chars");
         return true;

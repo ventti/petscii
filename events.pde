@@ -26,8 +26,7 @@ void keyPressed() // Keyboard commands
     int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
         bloy=(mouseY-canvas_start)/machine.chary;
 
-// The old simpler version
-    if(keyCode==SHIFT)
+    if(keyCode==SHIFT) // Case switch
     {
         if(control)
         {
@@ -37,6 +36,7 @@ void keyPressed() // Keyboard commands
           cset.initrender(machine.charx,machine.chary);
           current=cset.remap[curidx];
           cset.shift=machine.shift; // Need to do this properly later
+          cset.grow=machine.grow;
           
           System.gc();
           message("Use ctrl/cmd-shift to toggle case");
@@ -365,6 +365,34 @@ void keyPressed() // Keyboard commands
                     curidx=i;
         }
         
+        // And a similar one: grow characters by one line
+        if((keyCode==UP || keyCode==DOWN) && !machine.lowercase)
+        {
+            int plus=1;
+            if(keyCode==DOWN)
+                plus=-1;
+                
+            boolean found=false;
+            for(int j=0;!found && j<cset.grow.length;j++)
+                for(int i=0;i<cset.grow[j].length;i++)
+                {
+                    if(current==cset.grow[j][i])
+                    {
+                        int idx=i+plus;
+                        if(idx<0)
+                          idx=cset.grow[j].length-1;
+                        idx%=cset.grow[j].length;
+                        current=cset.grow[j][idx];
+                        found=true;
+                        break;
+                    }
+                }
+                
+            for(int i=0;i<cset.charactercount;i++)
+                if(cset.remap[i]==current)
+                    curidx=i;
+        }
+        
         // A quick hack for one-button mice
         if(key==',' && machine.palettemode)
             cf.setbg((cf.bg+1)%(machine.maxbg+1));
@@ -632,6 +660,7 @@ void mouseClicked()
         cset.initrender(machine.charx,machine.chary);
         current=cset.remap[curidx];
         cset.shift=machine.shift; // Need to do this properly later
+        cset.grow=machine.grow;
         
         System.gc();
         message("Right click charsel to toggle case");

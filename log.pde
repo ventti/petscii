@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   6.11.2019: Up and down arrow grow and shrink stick characters
    6.11.2019: Reference image is reloaded if the timestamp is changed when converting
    5.11.2019: Make UI text stand better out from the border color bg
    5.11.2019: Toggle case also with ctrl/cmd-shift and show message about it

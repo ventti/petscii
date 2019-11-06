@@ -45,6 +45,7 @@ class Vic20 extends Machine
         
         rgb=vic20_rgb;
         shift=vic20_shift;
+        grow=default_grow;
     }
     
     // VIC has asymmetric border/pen/bg color handling
