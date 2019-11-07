@@ -541,7 +541,12 @@ void mouseClicked()
         mergeselect=true;
     if(preview_b.mouseover()) // Preview window in or out
         miniwin_init();
-        
+    
+    if(export_prg_b.mouseover())
+        machine.save_prg(ext(filename,".prg"));
+    if(export_png_b.mouseover())
+        machine.save_png(ext(filename,".png"),cf,true);
+    
     if(undo_b.mouseover())
     {
         cf.undo();

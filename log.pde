@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   7.11.2019: Save PRG and PNG work
    7.11.2019: Reorganized the buttons heavily
    7.11.2019: Some curious problem with C64 PRG export fixed
    7.11.2019: Minor fixes to thumbnail updates with undo/redo button and importing
