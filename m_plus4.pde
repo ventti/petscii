@@ -348,4 +348,39 @@ class Plus4 extends Machine
         
         message("Written "+name);
     }
+    
+    void import_prg(String name)
+    {
+        if(X!=40 || Y!=25)
+        {
+            message("Cannot import to this size image (40x25 only)");
+            return;
+        }
+        
+        byte b[]=loadBytes(name);
+        if(b==null) // Some checks
+        {
+            message("Cannot open file "+name);
+            return;
+        }
+        if(b.length!=2088)
+        {
+            message("Incorrect file size. Must be 2088.");
+            return;
+        }
+        
+        // Ok, let's go!
+        cf.undo_save();
+
+        cf.border=((int)b[20])&0x7f;
+        cf.bg=((int)b[25])&0x7f;
+        
+        int offset=88;
+        for(int i=0;i<X*Y;i++)
+            cf.setchar(i,((int)b[offset++])&0xff);
+        for(int i=0;i<X*Y;i++)
+            cf.setcolor(i,((int)b[offset++])&0x7f);
+        
+        message("Imported "+name);
+    }
 }

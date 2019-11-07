@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   7.11.2019: Import for Plus/4 too, others probably not worth the hassle
    7.11.2019: "Import .prg" button and initial support for reading back exported PRGs (C64 only so far)
    6.11.2019: Up and down arrow grow and shrink stick characters
    6.11.2019: Reference image is reloaded if the timestamp is changed when converting
