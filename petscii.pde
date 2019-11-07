@@ -22,6 +22,7 @@ int X=0,Y=0,                     // Picture size in chars
     backupcounter=0,
     selx=0,sely=0,selw=0,selh=0,     // Selection params
     cursorx=0,cursory=0,
+    lastgrow=0,
     
     messagecounter=0,
     focuscount=0,

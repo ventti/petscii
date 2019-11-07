@@ -349,27 +349,37 @@ void keyPressed() // Keyboard commands
         }
         
         // And a similar one: grow characters by one line
-        if((keyCode==UP || keyCode==DOWN) && !machine.lowercase)
+        if(keyCode==UP || keyCode==DOWN)
         {
             int plus=1;
             if(keyCode==DOWN)
                 plus=-1;
-                
+            
+            for(int j=2;j<cset.grow.length;j++) // Replace identical chars first
+                if(current==cset.grow[j][0])
+                    current=cset.grow[j][1];
+            
             boolean found=false;
-            for(int j=0;!found && j<cset.grow.length;j++)
-                for(int i=0;i<cset.grow[j].length;i++)
+            for(int j=0;!found && j<2;j++) // Check both slides
+            {
+                int k=lastgrow; // Use the previous working one first
+                
+                for(int i=0;i<cset.grow[k].length;i++)
                 {
-                    if(current==cset.grow[j][i])
+                    if(current==cset.grow[k][i])
                     {
                         int idx=i+plus;
                         if(idx<0)
-                          idx=cset.grow[j].length-1;
-                        idx%=cset.grow[j].length;
-                        current=cset.grow[j][idx];
+                          idx=cset.grow[k].length-1;
+                        idx%=cset.grow[k].length;
+                        current=cset.grow[k][idx];
                         found=true;
                         break;
                     }
                 }
+                if(!found)
+                    lastgrow=1-lastgrow;
+            }
                 
             for(int i=0;i<cset.charactercount;i++)
                 if(cset.remap[i]==current)
