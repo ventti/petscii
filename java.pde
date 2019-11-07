@@ -102,7 +102,8 @@ int selector(String title,String opt)
 final int LOADPIX=0,
           LOADPETSCII=1,
           SAVEPETSCII=2,
-          MERGEPETSCII=3;
+          MERGEPETSCII=3,
+          LOADPRG=4;
 
 // File selector
 String fileselector(String dir,int mode)
@@ -113,10 +114,17 @@ String fileselector(String dir,int mode)
     fc.setDialogTitle("Select a File");
     
     if(mode==LOADPIX) // Show image files
+    {
         fc.setFileFilter(new FileNameExtensionFilter("Images (*.png,*.gif,*.jpg)",
                          "png","gif","jpg","jpeg"));
+    }
     else
-        fc.setFileFilter(new FileNameExtensionFilter("PETSCII Images (*.c)","c")); // Show only .c
+    {
+        if(mode==LOADPRG)
+            fc.setFileFilter(new FileNameExtensionFilter("PRG files (*.prg)","prg")); // Show only .prg
+        else
+            fc.setFileFilter(new FileNameExtensionFilter("PETSCII Images (*.c)","c")); // Show only .c
+    }
     
     if(mode<=LOADPETSCII)
         fc.setApproveButtonText("Load");
@@ -124,6 +132,8 @@ String fileselector(String dir,int mode)
         fc.setApproveButtonText("Save");
     if(mode==MERGEPETSCII)
         fc.setApproveButtonText("Merge");
+    if(mode==LOADPRG)
+        fc.setApproveButtonText("Import");
     
     int returnVal = fc.showOpenDialog(this);
     

@@ -50,7 +50,8 @@ boolean control=false,
         fileselect=false, // "Event" flags for file operations
         mergeselect=false,
         saveselect=false,
-        refselect=false;
+        refselect=false,
+        importselect=false;
         
 float   avgms=0; // For profiling
 int     blink=0;
@@ -70,7 +71,7 @@ int    col1_start,col1_end, // x
 
 // UI buttons
 Button load_b,merge_b,save_b,saveas_b,ref_b,
-       clear_b,preview_b,
+       import_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
        undo_b,redo_b,grid_b,crosshair_b;
 
@@ -145,9 +146,10 @@ void setup()
     save_b=new Button(col2_start+107,canvas_start,"Save");
     saveas_b=new Button(col2_start+156,canvas_start,"Save as");
     
-    ref_b=new Button(col2_start,canvas_start+prefs.UIROW,"Reference");
-    preview_b=new Button(col2_start+85,canvas_start+prefs.UIROW,"Preview");
-    clear_b=new Button(col2_start+154,canvas_start+prefs.UIROW,"Clear");
+    ref_b=new Button(col2_start,canvas_start+prefs.UIROW,"Ref");
+    import_b=new Button(col2_start+37,canvas_start+prefs.UIROW,"Import .prg");
+    preview_b=new Button(col2_start+124,canvas_start+prefs.UIROW,"Preview");
+    clear_b=new Button(col2_start+193,canvas_start+prefs.UIROW,"Clear");
     
     undo_b=new Button(col2_start,canvas_start+prefs.UIROW*2,"Undo");
     redo_b=new Button(col2_start+50,canvas_start+prefs.UIROW*2,"Redo");
@@ -260,6 +262,16 @@ void draw()
                 message(s+" cannot be opened.");
         }
         refselect=false;
+        repaint=true;
+    }
+    if(importselect) // Fileselect "event" for Import (PRG)
+    {
+        String s=fileselector(prefs.path,LOADPRG);
+        if(s!=null)
+        {
+            machine.import_prg(s);
+        }
+        importselect=false;
         repaint=true;
     }
     

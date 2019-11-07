@@ -36,7 +36,7 @@ class Machine
                                 {160,244,245},
                                 {246,234,160}};
            
-    final String NOT_IMPLEMENTED="File type not implemented for this machine.";
+    final String NOT_IMPLEMENTED="Feature not implemented for this machine.";
     
     boolean palettemode,
             lowercase;
@@ -414,6 +414,12 @@ class Machine
         p.save(name);
         
         message("Written "+name);
+    }
+    
+    // Importer stub
+    void import_prg(String name)
+    {
+        message(NOT_IMPLEMENTED);
     }
     
     // Various exporter stubs

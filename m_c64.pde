@@ -309,7 +309,7 @@ class C64 extends Machine
         }
         
         // Read template
-        byte b[]=loadBytes("template-c64.prg");
+        byte b[]=loadBytes("name");
           
         // Replace some bytes
         if(lowercase)
@@ -328,6 +328,54 @@ class C64 extends Machine
         saveBytes(name,b);
         
         message("Written "+name);
+    }
+    
+    void import_prg(String name)
+    {
+        if(X!=40 || Y!=25)
+        {
+            message("Cannot import to this size image (40x25 only)");
+            return;
+        }
+        
+        byte b[]=loadBytes(name);
+        if(b==null) // Some checks
+        {
+            message("Cannot open file "+name);
+            return;
+        }
+        if(b.length!=2499 && b.length!=2098)
+        {
+            message("Incorrect file size. Must be 2098 or 2499.");
+            return;
+        }
+        
+        // Ok, let's go!
+        cf.undo_save();
+        if(b.length==2098)
+        {
+            cf.border=((int)b[25])&0xf;
+            cf.bg=((int)b[30])&0xf;
+            
+            int offset=98;
+            for(int i=0;i<X*Y;i++)
+                cf.setchar(i,((int)b[offset++])&0xff);
+            for(int i=0;i<X*Y;i++)
+                cf.setcolor(i,((int)b[offset++])&0xf);
+        }
+        if(b.length==2499) // Old prg version, different offsets
+        {
+            cf.border=((int)b[0x1ab])&0xf;
+            cf.bg=((int)b[0x1ac])&0xf;
+            
+            int offset=429;
+            for(int i=0;i<X*Y;i++)
+                cf.setchar(i,((int)b[offset++])&0xff);
+            for(int i=0;i<X*Y;i++)
+                cf.setcolor(i,((int)b[offset++])&0xf);
+        }
+        
+        message("Imported "+name);
     }
     
     void save_seq(String name)

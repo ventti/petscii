@@ -552,6 +552,8 @@ void mouseClicked()
         saveselect=true;
     if(ref_b.mouseover())
         refselect=true;
+    if(import_b.mouseover())
+        importselect=true;
     if(merge_b.mouseover())
         mergeselect=true;
     if(preview_b.mouseover()) // Preview window in or out
