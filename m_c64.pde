@@ -309,7 +309,7 @@ class C64 extends Machine
         }
         
         // Read template
-        byte b[]=loadBytes("name");
+        byte b[]=loadBytes("template-c64.prg");
           
         // Replace some bytes
         if(lowercase)
