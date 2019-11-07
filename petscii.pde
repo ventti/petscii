@@ -271,6 +271,7 @@ void draw()
         {
             machine.import_prg(s);
         }
+        cf.updatethumb();
         importselect=false;
         repaint=true;
     }

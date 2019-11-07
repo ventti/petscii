@@ -560,9 +560,15 @@ void mouseClicked()
         miniwin_init();
         
     if(undo_b.mouseover())
+    {
         cf.undo();
+        cf.updatethumb();
+    }
     if(redo_b.mouseover())
+    {
         cf.redo();
+        cf.updatethumb();
+    }
     if(grid_b.mouseover())
         prefs.grid=!prefs.grid;
     if(crosshair_b.mouseover())
