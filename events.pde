@@ -26,23 +26,6 @@ void keyPressed() // Keyboard commands
     int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
         bloy=(mouseY-canvas_start)/machine.chary;
 
-    if(keyCode==SHIFT) // Case switch
-    {
-        if(control)
-        {
-          machine.setcase(!machine.lowercase);
-          
-          cset=new Petscii(machine.fontfile,machine.remapfile,machine.setfile);
-          cset.initrender(machine.charx,machine.chary);
-          current=cset.remap[curidx];
-          cset.shift=machine.shift; // Need to do this properly later
-          cset.grow=machine.grow;
-          
-          System.gc();
-          message("Use ctrl/cmd-shift to toggle case");
-        }
-    }
-//        shift=1;
     if(platform==MACOSX)
     {
         if(keyCode==COMMAND)
@@ -552,7 +535,7 @@ void mouseClicked()
         saveselect=true;
     if(ref_b.mouseover())
         refselect=true;
-    if(import_b.mouseover())
+    if(import_prg_b.mouseover())
         importselect=true;
     if(merge_b.mouseover())
         mergeselect=true;
@@ -569,10 +552,20 @@ void mouseClicked()
         cf.redo();
         cf.updatethumb();
     }
+    if(case_b.mouseover()) // Case switch
+    {
+        machine.setcase(!machine.lowercase);
+      
+        cset=new Petscii(machine.fontfile,machine.remapfile,machine.setfile);
+        cset.initrender(machine.charx,machine.chary);
+        current=cset.remap[curidx];
+        cset.shift=machine.shift; // Need to do this properly later
+        cset.grow=machine.grow;
+      
+        System.gc();
+    }
     if(grid_b.mouseover())
         prefs.grid=!prefs.grid;
-    if(crosshair_b.mouseover())
-        prefs.crosshair=!prefs.crosshair;
     
     if(clear_b.mouseover())
     {
