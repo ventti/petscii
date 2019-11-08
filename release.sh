@@ -36,7 +36,7 @@ date >>petscii_release/README.txt
 echo >>petscii_release/README.txt
 
 zip -r petscii.zip petscii_release
-scp petscii.zip kameli.net:public_html/kode
+scp petscii.zip marq@kameli.net:public_html/kode
 
 cd petscii
 rm -r linux32 linux64 windows32 windows64 mac
