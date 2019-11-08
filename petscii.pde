@@ -146,7 +146,7 @@ void setup()
     merge_b=new Button(col2_start+49,canvas_start,"Merge");
     save_b=new Button(col2_start+107,canvas_start,"Save");
     saveas_b=new Button(col2_start+156,canvas_start,"Save as");
-    ref_b=new Button(col2_start+226,canvas_start,"Ref.");
+    ref_b=new Button(col2_start+228,canvas_start,"Ref.");
     
     import_prg_b=new Button(col2_start,canvas_start+prefs.UIROW,"Load .prg");
     export_prg_b=new Button(col2_start+79,canvas_start+prefs.UIROW,"Save .prg");
@@ -155,9 +155,9 @@ void setup()
     
     undo_b=new Button(col2_start,canvas_start+prefs.UIROW*2,"Undo");
     redo_b=new Button(col2_start+50,canvas_start+prefs.UIROW*2,"Redo");
-    clear_b=new Button(col2_start+101,canvas_start+prefs.UIROW*2,"Clear");
-    grid_b=new Button(col2_start+152,canvas_start+prefs.UIROW*2,"Grid");
-    case_b=new Button(col2_start+195,canvas_start+prefs.UIROW*2,"Case");
+    clear_b=new Button(col2_start+113,canvas_start+prefs.UIROW*2,"Clear");
+    grid_b=new Button(col2_start+175,canvas_start+prefs.UIROW*2,"Grid");
+    case_b=new Button(col2_start+218,canvas_start+prefs.UIROW*2,"Case");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
     dupright_b=new Button(col1_end-152,canvas_start-26," >");

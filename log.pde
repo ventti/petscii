@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   8.11.2019: A bit improved button grouping
    7.11.2019: UIWIDTH was wrong after the changes
    7.11.2019: Growing sticks now remembers whether it was horizontal/vertical last
    7.11.2019: Save PRG and PNG work

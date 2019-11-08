@@ -32,7 +32,7 @@ class Preferences
               undodepth=33; // Needs to be one bigger than the actual undo steps
     
     final int BWIDTH=20,     // Border width
-              UIWIDTH=260, // Approx total width for the UI buttons
+              UIWIDTH=265, // Approx total width for the UI buttons
               ANWIDTH=12*16+4*16, // Approx total width for the anim buttons plus frame counter
               UIROW=30,      // UI row size (text or button)
     
