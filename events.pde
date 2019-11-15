@@ -247,6 +247,11 @@ void keyPressed() // Keyboard commands
             selw=-selw;
             selh=-selh;
         }
+        if(key==ESC)
+        {
+            selw=selh=0;
+        }
+        
         if(keyCode==KeyEvent.VK_A && control) // Select all
         {
             selectmode=1;
