@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   14.5.2020: Look for prefs.txt also in the home directory as a little hack
    16.11.2019: Pressing esc removes selection
    8.11.2019: A bit improved button grouping
    7.11.2019: UIWIDTH was wrong after the changes

@@ -188,7 +188,7 @@ class Machine
         boolean cont=true;
         
         while(cont)
-        {
+        {            
             if(i<lines.length && lines[i].substring(0,13).equals("unsigned char")) // Another frame
             {
                 currentframe++;
