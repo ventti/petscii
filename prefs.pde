@@ -74,8 +74,14 @@ class Preferences
     void readprefs(String namn)
     {
         String row[]=loadStrings(namn);
+        
         if(row==null)
-            row=loadStrings(System.getProperty("user.home")+"/"+namn);
+        {
+            row=loadStrings(System.getProperty("user.home")+File.separator+namn);
+
+            if(row==null)
+                row=loadStrings(sketchPath("")+namn);
+        }
         
         if(row!=null)
         {            
