@@ -5,6 +5,8 @@ import java.awt.event.KeyEvent;
 
 final int COMMAND=157;
 
+boolean tablethack=false;
+
 // This is here just to tell right/left shift apart
 void keyPressed(java.awt.event.KeyEvent ke)
 {
@@ -540,6 +542,9 @@ void mouseClicked()
 {
     int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
         bloy=(mouseY-canvas_start)/machine.chary;
+        
+    if(prefs.tablet && !tablethack)
+        return;
     
     // Load, save etc. button handling
     if(load_b.mouseover())
@@ -751,5 +756,12 @@ void mousePressed()
 }
 void mouseReleased()
 {
+    if(prefs.tablet)
+    {
+        tablethack=true;
+        mouseClicked();
+        tablethack=false;
+    }
+    
     repaint=true;
 }

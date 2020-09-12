@@ -51,7 +51,8 @@ class Preferences
               showoff=false, // Show memory offset
     
               miniwin=false,
-              debug=false;
+              debug=false,
+              tablet=false;
     
     final boolean ORIGOZERO=false,     // Show starting from (0,0) or (1,1)
                   PRINTMESSAGES=false; // Print messages to console, if false then to screen
@@ -91,13 +92,13 @@ class Preferences
                 {
                     String s[]=split(row[i],"=");
                     
-                    if(s[0].equals("ZOOM"))
+                    if(s[0].equals("ZOOM") && s.length>1)
                     {
                         zoom=int(s[1]);
                         if(zoom<1 && zoom<=10)
                             zoom=2;
                     }
-                    if(s[0].equals("FRAMERATE"))
+                    if(s[0].equals("FRAMERATE") && s.length>1)
                         framerate=int(s[1]);
                     if(s[0].equals("MACHINE") && s.length>1)
                     {
@@ -116,7 +117,7 @@ class Preferences
                         path=refpath=s[1];
                         message("Default path: "+path);
                     }
-                    if(s[0].equals("OFFSET"))
+                    if(s[0].equals("OFFSET") && s.length>1)
                     { 
                         if(s[1].equals("1"))
                             showoff=true;
@@ -148,6 +149,13 @@ class Preferences
                     {
                         if(s[1].length()>1)
                             backupfile=s[1];
+                    }
+                    if(s[0].equals("TABLET") && s.length>1)
+                    {
+                        if(s[1].equals("1"))
+                            tablet=true;
+                        else
+                            tablet=false;
                     }
                 }
             }
