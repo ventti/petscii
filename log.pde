@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   3.10.2020: shadowPressed/Button kludge for catching missed quick mouse clicks. Should be done with event handlers, but it's pretty complicated.
    12.9.2020: Experimental tablet hack with mouseReleased() and a bit more robust prefs handling in a couple of cases
    25.5.2020: Use system-specific file separator for prefs, also look in the app folder
    14.5.2020: Look for prefs.txt also in the home directory as a little hack

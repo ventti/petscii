@@ -63,6 +63,10 @@ String filename="",refname="",
 PImage reference;
 PFont  font;
 
+// Somewhat bad mouse hack to work around bad event handling that I did initially
+boolean shadowPressed=false;
+int shadowButton=0;
+
 // UI parameters
 int    col1_start,col1_end, // x
        col2_start,col2_end,
@@ -295,11 +299,19 @@ void draw()
         else
         {
             delay(200);
+            shadowPressed=true;
+            shadowButton=0;
             return;    // And yield too
         }
     }
     else
         focuscount=0;
+        
+    if(mousePressed)
+    {
+        shadowPressed=true;
+        shadowButton=mouseButton;
+    }
     
     // Check if we need to actually refresh the screen
     if(infield())
@@ -308,7 +320,7 @@ void draw()
             repaint=true;
             
         boolean erasing=false;
-        if(mousePressed && mouseButton!=LEFT)
+        if(shadowPressed && shadowButton!=LEFT)
             erasing=true;
         if(alt && cset.pixellogic(mouseX,mouseY,cf.getchar(blox,bloy),erasing)!=cf.getchar(blox,bloy))
             repaint=true;
@@ -328,9 +340,9 @@ void draw()
         }
         
         // Handle these separately
-        if(incharsel() && mousePressed)
+        if(incharsel() && shadowPressed)
             repaint=true;
-        if(incolorsel() && mousePressed)
+        if(incolorsel() && shadowPressed)
             repaint=true;        
         
         // Another kludge to handle the UI buttons
@@ -372,7 +384,11 @@ void draw()
         repaint=true;
     
     if(!repaint) // Let's leave it there, then
+    {
+        shadowPressed=false;
+        shadowButton=0;
         return;
+    }
     repaint=false;
     
     // Border
@@ -412,21 +428,21 @@ void draw()
     boolean erasing=false;
     
     // User interaction(!)
-    if(mousePressed && infield() && typing==0 && floodfill==0)
+    if(shadowPressed && infield() && typing==0 && floodfill==0)
     {       
         if(firstclick)
         {
             // Save an undo step under certain conditions
-            if(!control && mouseButton!=prefs.PICKERBUTTON)
+            if(!control && shadowButton!=prefs.PICKERBUTTON)
                 cf.undo_save();
-            if(alt && mouseButton==prefs.PICKERBUTTON) // A kludge here 'coz of my window manager
+            if(alt && shadowButton==prefs.PICKERBUTTON) // A kludge here 'coz of my window manager
                 cf.undo_save();
             firstclick=false;
         }
 
         if(alt) // "Pixel" drawing mode
         {
-            if(mouseButton==LEFT)
+            if(shadowButton==LEFT)
             {
                 if(shift!=1)
                     cf.setchar(blox,bloy,cset.pixellogic(mouseX,mouseY,cf.getchar(blox,bloy),false));
@@ -444,7 +460,7 @@ void draw()
         {
             if(control) // Selection going on
             {
-                if(mouseButton==LEFT) // Mark an area
+                if(shadowButton==LEFT) // Mark an area
                 {
                     if(firstsel || selectmode==2)
                     {
@@ -509,7 +525,7 @@ void draw()
                 cursorx=blox; // Let's set this, too
                 cursory=bloy;
                 
-                if(mouseButton==LEFT && !oldcontrol)
+                if(shadowButton==LEFT && !oldcontrol)
                 {
                     if(selw>0 && selh>0) // Draw with selection
                     {
@@ -544,7 +560,7 @@ void draw()
                             cf.setcolor(blox,bloy,pen);
                     }
                 }
-                if(mouseButton==prefs.PICKERBUTTON)
+                if(shadowButton==prefs.PICKERBUTTON)
                 {
                     if(shift!=1)
                     {
@@ -556,7 +572,7 @@ void draw()
                     if(shift!=2)
                         pen=cf.getcolor(blox,bloy);
                 }
-                if(mouseButton==prefs.ERASEBUTTON && !oldcontrol) // Erase
+                if(shadowButton==prefs.ERASEBUTTON && !oldcontrol) // Erase
                 {
                     if(selw>0 && selh>0) // Erase with selection
                     {
@@ -597,11 +613,11 @@ void draw()
     }
     
     // Color selector
-    if(mousePressed && incolorsel())
+    if(shadowPressed && incolorsel())
         machine.colorselclicks();
     
     // Char selector
-    if(mousePressed && incharsel() && (mouseButton==LEFT || mouseButton==prefs.PICKERBUTTON) && !control)
+    if(shadowPressed && incharsel() && (shadowButton==LEFT || shadowButton==prefs.PICKERBUTTON) && !control)
     {
         curidx=(mouseX-col2_start)/machine.charx+(mouseY-charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
@@ -622,9 +638,9 @@ void draw()
         }
     }
     
-    if(mousePressed && typing>0) // Only move the cursor
+    if(shadowPressed && typing>0) // Only move the cursor
     {
-        if(mouseButton==LEFT && infield())
+        if(shadowButton==LEFT && infield())
         {
             cursorx=blox;
             cursory=bloy;
@@ -749,7 +765,7 @@ void draw()
                 if(selectmode==1) // Normal selection
                 {
                     noFill();
-                    if(mousePressed)
+                    if(shadowPressed)
                         stroke(255,30,30,160);
                     else
                         stroke(0,255,0,120);
@@ -824,6 +840,9 @@ void draw()
     
     if(secondframe!=null)
         miniwin_refresh();
+    
+    shadowPressed=false; // Better reset now
+    shadowButton=0;
     
     if(prefs.debug)
     {

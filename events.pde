@@ -726,6 +726,9 @@ void mouseClicked()
 
 void mousePressed()
 {
+    shadowPressed=true;
+    shadowButton=mouseButton;
+    
     // Catch quick presses on the color selector
     if(incolorsel())
         machine.colorselclicks();

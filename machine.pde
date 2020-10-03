@@ -112,11 +112,11 @@ class Machine
         }
         else
         {
-            if(mouseButton==LEFT && cindex<=maxpen)
+            if(shadowButton==LEFT && cindex<=maxpen)
                 pen=cindex;
-            if(mouseButton==prefs.PICKERBUTTON && cindex<=maxborder)
+            if(shadowButton==prefs.PICKERBUTTON && cindex<=maxborder)
                 cf.setborder(cindex);
-            if(mouseButton==prefs.ERASEBUTTON && cindex<=maxbg)
+            if(shadowButton==prefs.ERASEBUTTON && cindex<=maxbg)
                 cf.setbg(cindex);
         }
     }
