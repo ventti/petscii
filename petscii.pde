@@ -1,5 +1,5 @@
 /*
-  A PETSCII drawing app. Originally made for Zoo'13 PETSCII compo, because I couln't find anything suitable for Linux/Mac. 
+  A PETSCII drawing app. Originally made for the Zoo'13 PETSCII compo, because I couln't find anything suitable for Linux/Mac. 
   
   See here: http://www.kameli.net/marq/?page_id=2717
   Changelog can be found on log.pde
