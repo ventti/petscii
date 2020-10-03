@@ -15,7 +15,38 @@ final String ANAME="delta";
 
 // Keyboard hook
 void user_key()
-{    
+{   
+    if(key=='E') // TCE's ".pet" format
+    {
+        if(prefs.machine!=C64)
+        {
+            message("Not implemented on this platform");
+            return;
+        }
+        
+        byte b[]=new byte[5+X*Y*2];
+        
+        // Fill the header and the data
+        b[0]=(byte)X;
+        b[1]=(byte)Y;
+        b[2]=(byte)cf.border;
+        b[3]=(byte)cf.bg;
+        if(machine.lowercase)
+            b[4]=1;
+        else
+            b[4]=0;
+            
+        int offset=5;
+        for(int i=0;i<X*Y;i++)
+            b[offset++]=(byte)cf.getchar(i);
+        for(int i=0;i<X*Y;i++)
+            b[offset++]=(byte)cf.getcolor(i);
+        
+        saveBytes(ext(filename,".pet"),b);
+        
+        message("Wrote "+ext(filename,".pet"));
+    }
+    
     if(key=='w')
     {
         if(prefs.machine!=C64 && prefs.machine!=PLUS4)
