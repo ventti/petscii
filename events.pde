@@ -502,6 +502,8 @@ void keyPressed() // Keyboard commands
         }
         if(key=='e')
             machine.save_prg(ext(filename,".prg"));
+        if(key=='E')
+            machine.save_pet(ext(filename,".pet"));
             
         user_key(); // Call user's keyboard handler
     }

@@ -443,4 +443,8 @@ class Machine
     {
         message(NOT_IMPLEMENTED);
     }
+    void save_pet(String name)
+    {
+        message(NOT_IMPLEMENTED);
+    }
 }

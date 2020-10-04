@@ -503,4 +503,29 @@ class C64 extends Machine
         
         message("Written "+name);
     }
+    
+    void save_pet(String name)
+    {
+        byte b[]=new byte[5+X*Y*2];
+        
+        // Fill the header and the data
+        b[0]=(byte)X;
+        b[1]=(byte)Y;
+        b[2]=(byte)cf.border;
+        b[3]=(byte)cf.bg;
+        if(lowercase)
+            b[4]=1;
+        else
+            b[4]=0;
+            
+        int offset=5;
+        for(int i=0;i<X*Y;i++)
+            b[offset++]=(byte)cf.getchar(i);
+        for(int i=0;i<X*Y;i++)
+            b[offset++]=(byte)cf.getcolor(i);
+        
+        saveBytes(name,b);
+        
+        message("Written "+name);
+    }
 }
