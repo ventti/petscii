@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   9.10.2020: Don't show the upcoming character or selection in the tablet mode because they'll just hang there
    4.10.2020: Properly integrated the .pet file format into machine.pde, removed from user.pde
    3.10.2020: Experimental support for exporting the binary .pet format (C64 only)
    3.10.2020: shadowPressed/Button kludge for catching missed quick mouse clicks. Should be done with event handlers, but it's pretty complicated.

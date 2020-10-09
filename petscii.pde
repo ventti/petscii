@@ -664,7 +664,7 @@ void draw()
         oldcontrol=true;
     
     // Show what's coming if you click
-    if(typing==0 && infield())
+    if(typing==0 && infield() && !prefs.tablet)
     {
         // Show the upcoming character
         if(!control && (selw<=0 || selh<=0))
@@ -783,7 +783,7 @@ void draw()
             }
         
             // Show paste target
-            if(infield() && !control)
+            if(infield() && !control && !prefs.tablet)
             {
                 int halfx=blox-selw/2,
                     halfy=bloy-selh/2;
