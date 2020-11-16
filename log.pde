@@ -1,6 +1,9 @@
 /*
    Changelog:
    
+   16.11.2020: args[] is null if empty these days, not just an empty array
+   16.11.2020: Major rewrite of the preview window code
+   15.11.2020: First steps toward migrating to Processing 3, some things are broken yet and had to start using settings()
    9.10.2020: Don't show the upcoming character or selection in the tablet mode because they'll just hang there
    4.10.2020: Properly integrated the .pet file format into machine.pde, removed from user.pde
    3.10.2020: Experimental support for exporting the binary .pet format (C64 only)

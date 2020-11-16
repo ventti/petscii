@@ -162,7 +162,7 @@ class Preferences
         }
         
         // Parse the command line
-        for(int i=0;i<args.length;i++)
+        for(int i=0;args!=null && i<args.length;i++)
         {
             // Set the machine
             for(int j=0;j<machinenames.length;j++)

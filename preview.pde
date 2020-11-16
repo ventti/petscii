@@ -1,78 +1,30 @@
 
-// Mini preview window code. Grabbed this 2nd window code from here:
-// http://forum.processing.org/one/topic/popup-how-to-open-a-new-window.html
+// New mini preview window code
 
-import javax.swing.JFrame;
-import java.awt.Dimension;
-
-PFrame secondframe=null;
-SecondApplet sa;
+SecondApplet sa=null;
+boolean sa_visible=false;
 
 void miniwin_init()
 {
-    if(secondframe==null)
-        secondframe = new PFrame();
-    else
-        secondframe.setVisible(true);
-        
-    frame.toFront();
-    frame.repaint(); // Might help
-    delay(200); // A kludge to give it some time to init (I hope)
+    if(sa==null) // No window yet
+    {
+        sa=new SecondApplet(X,Y);
+        sa_visible=true;
+    }
+    else // Hide/show
+    {
+        sa_visible=!sa_visible;
+        sa.getSurface().setVisible(sa_visible);
+    }
+    delay(200); // Seems to help?
 }
 
 void miniwin_refresh()
 {
-    if(sa==null || secondframe==null)
+    if(sa==null)
         return;
-        
-    sa.noStroke();
-    sa.fill(machine.rgb[cf.border]);
-    sa.rect(0,0,                                    prefs.BWIDTH*2+X*cset.xsize,prefs.BWIDTH);
-    sa.rect(0,0,                                    prefs.BWIDTH,prefs.BWIDTH*2+Y*cset.ysize);
-    sa.rect(X*cset.xsize+prefs.BWIDTH,0,            prefs.BWIDTH,prefs.BWIDTH*2+Y*cset.ysize);
-    sa.rect(prefs.BWIDTH,prefs.BWIDTH+Y*cset.ysize, X*cset.xsize,prefs.BWIDTH);
-
-    try 
-    {
-        sa.loadPixels();
-    }
-    catch(NullPointerException e)
-    {
-        if(prefs.debug)
-            println("Miniwin null pointer.");
-        return;
-    }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-        if(prefs.debug)
-            println("Miniwin out of bounds.");
-        return;
-    }
-    
-    if(sa.pixels.length<(X*cset.xsize+2*prefs.BWIDTH)*(prefs.BWIDTH*2+Y*cset.ysize)) // Something wrong with memory allocation
-        return;
-    for(int j=0;j<Y;j++)
-        for(int i=0;i<X;i++)
-            drawsmallchar(sa,prefs.BWIDTH+i*cset.xsize,prefs.BWIDTH+j*cset.ysize, cf.chars[j*X+i],cf.colors[j*X+i],cf.bg);
-    sa.updatePixels();
-    sa.redraw();
-}
-
-void drawsmallchar(SecondApplet sa,int x,int y,int num,int fg,int bg)
-{
-    int a=machine.rgb[fg],
-        b=machine.rgb[bg],
-        idx;
-    
-    idx=x+y*sa.width;
-    for(int j=0;j<cset.ysize;j++)
-        for(int i=0;i<cset.xsize;i++)
-        {
-            if((cset.bitmap.pixels[num*cset.xsize+i+j*cset.charactercount*cset.xsize]&0xff) > 20)
-                sa.pixels[idx+i+j*sa.width]=a;
-            else
-                sa.pixels[idx+i+j*sa.width]=b;
-        }
+    if(sa_visible)
+        sa.draw();
 }
 
 public class SecondApplet extends PApplet
@@ -81,48 +33,62 @@ public class SecondApplet extends PApplet
   
   SecondApplet(int xchars,int ychars)
   {
+      super();
       x=xchars;
       y=ychars;
+      runSketch(new String[]{this.getClass().getName()}, this);
+  }
+  public void settings()
+  {
+      size(x*cset.xsize+prefs.BWIDTH*2,y*cset.ysize+prefs.BWIDTH*2);
   }
   public void setup()
   {
-      size(x*cset.xsize+prefs.BWIDTH*2,y*cset.ysize+prefs.BWIDTH*2);
-      background(cf.border);
+      surface.setTitle("1x1 Pixel CSDb Preview");
       noLoop();
   }
   public void draw()
   {
+    loadPixels();
+    
+    for(int i=0;i<sa.pixels.length;i++) // Border
+        pixels[i]=machine.rgb[cf.border];
+        
+    for(int j=0;j<y;j++)
+        for(int i=0;i<x;i++)
+            drawsmallchar(prefs.BWIDTH+i*cset.xsize,prefs.BWIDTH+j*cset.ysize, cf.chars[j*x+i],cf.colors[j*x+i],cf.bg);
+
+    updatePixels();
+  }
+  void exit()
+  {
+      sa_visible=false;
+      surface.setVisible(false);
+  }
+  
+  void drawsmallchar(int x,int y,int num,int fg,int bg)
+  {
+    int a=machine.rgb[fg],
+        b=machine.rgb[bg],
+        idx;
+    
+    idx=x+y*width;
+    for(int j=0;j<cset.ysize;j++)
+        for(int i=0;i<cset.xsize;i++)
+        {
+            if((cset.bitmap.pixels[num*cset.xsize+i+j*cset.charactercount*cset.xsize]&0xff) > 20)
+                pixels[idx+i+j*width]=a;
+            else
+                pixels[idx+i+j*width]=b;
+        }
   }
   void keyPressed()
   {
       if(key==ESC)
       {
-          secondframe.setVisible(false);
+          sa_visible=false;
+          surface.setVisible(false);
           key=0;
       }
   }
-}
-
-public class PFrame extends JFrame
-{
-    public PFrame()
-    {
-        setBounds(0,0, X*cset.xsize+prefs.BWIDTH*2,Y*cset.ysize+prefs.BWIDTH*2);
-        getContentPane().setPreferredSize(new Dimension(X*cset.xsize+prefs.BWIDTH*2,Y*cset.ysize+prefs.BWIDTH*2)); // Another kludge!
-        pack();
-        setResizable(false);
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        setTitle("1x1 Pixel CSDb Preview");
-        show();
-
-        sa=new SecondApplet(X,Y);
-        sa.init();
-        add(sa);
-        
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent e) {
-                setVisible(false);
-            }
-        });
-    }
 }

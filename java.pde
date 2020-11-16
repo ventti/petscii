@@ -135,7 +135,7 @@ String fileselector(String dir,int mode)
     if(mode==LOADPRG)
         fc.setApproveButtonText("Import");
     
-    int returnVal = fc.showOpenDialog(this);
+    int returnVal = fc.showOpenDialog(null);
     
     if(returnVal==JFileChooser.APPROVE_OPTION)
     {

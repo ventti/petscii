@@ -80,9 +80,9 @@ Button load_b,merge_b,save_b,saveas_b,ref_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
        undo_b,redo_b,grid_b,case_b;
 
-void setup()
+void settings() // Need to have this in Processing 3.x
 {
-    javatheme();
+    javatheme(); // Part of the prefs handling needs to be here now to open a window of a non-fixed size
     
     prefs=new Preferences();
     prefs.readprefs(prefs.PREFSFILE);
@@ -136,9 +136,13 @@ void setup()
     charsel_end=charsel_start+cset.charactercount/16*machine.chary;
     
     size(col2_end+prefs.BWIDTH, max(charsel_end+prefs.UIROW+prefs.BWIDTH, canvas_end+prefs.UIROW+prefs.BWIDTH));
+    noSmooth();
+}
+
+void setup()
+{
     frameRate(prefs.framerate);
     noStroke();
-    noSmooth();
     
     font=loadFont(prefs.FONTFILE);
     textFont(font);
@@ -169,7 +173,7 @@ void setup()
     pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
     pasteright_b=new Button(col1_end-22,canvas_start-26," >");
     
-    frame.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
+    surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
     
     user_setup(); // Call users' own functions
     
@@ -838,7 +842,7 @@ void draw()
 
     cf.updatethumb();
     
-    if(secondframe!=null)
+    if(sa!=null)
         miniwin_refresh();
     
     shadowPressed=false; // Better reset now

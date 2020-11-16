@@ -8,7 +8,7 @@ final int COMMAND=157;
 boolean tablethack=false;
 
 // This is here just to tell right/left shift apart
-void keyPressed(java.awt.event.KeyEvent ke)
+void keyPressed(KeyEvent ke)
 {
     if(ke.getKeyCode()==SHIFT)
     {
@@ -17,7 +17,7 @@ void keyPressed(java.awt.event.KeyEvent ke)
         else
             shift=2;
     }
-    nativeKeyEvent(ke);
+    //nativeKeyEvent(ke);
 }
 
 void keyPressed() // Keyboard commands

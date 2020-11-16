@@ -176,7 +176,7 @@ class Machine
         
         if(!merge)
         {
-            frame.setTitle(name+" ("+str(X)+"x"+str(Y)+")");
+            surface.setTitle(name+" ("+str(X)+"x"+str(Y)+")");
         
             anim_init();
             cf.undo_purge();
@@ -317,7 +317,7 @@ class Machine
             return;
 
         if(!name.equals(prefs.backupfile))
-            frame.setTitle(name+" ("+str(X)+"x"+str(Y)+")");
+            surface.setTitle(name+" ("+str(X)+"x"+str(Y)+")");
     
         for(int i=0;i<framecount;i++) // Save each frame
         {
