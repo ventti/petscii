@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   16.11.2020: Managed to fix left/right shift handling for P3 too using a bit different kludge
    16.11.2020: args[] is null if empty these days, not just an empty array
    16.11.2020: Major rewrite of the preview window code
    15.11.2020: First steps toward migrating to Processing 3, some things are broken yet and had to start using settings()

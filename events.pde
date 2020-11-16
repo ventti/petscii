@@ -7,19 +7,6 @@ final int COMMAND=157;
 
 boolean tablethack=false;
 
-// This is here just to tell right/left shift apart
-void keyPressed(KeyEvent ke)
-{
-    if(ke.getKeyCode()==SHIFT)
-    {
-        if(ke.getKeyLocation()==KeyEvent.KEY_LOCATION_LEFT)
-            shift=1;
-        else
-            shift=2;
-    }
-    //nativeKeyEvent(ke);
-}
-
 void keyPressed() // Keyboard commands
 {
     // Some typical special characters for the typing mode
@@ -40,6 +27,17 @@ void keyPressed() // Keyboard commands
     }
     if(keyCode==ALT)
         alt=true;
+    
+    if(keyCode==SHIFT)
+    {
+        java.awt.event.KeyEvent ke;
+        ke=(java.awt.event.KeyEvent)keyEvent.getNative();
+        
+        if(ke.getKeyLocation()==KeyEvent.KEY_LOCATION_LEFT)
+            shift=1;
+        else
+            shift=2;
+    }
     
     if(typing>0) // A special mode where you can type
     {
