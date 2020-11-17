@@ -109,24 +109,6 @@ final int LOADPIX=0,
           MERGEPETSCII=3,
           LOADPRG=4;
 
-class Filsu implements FilenameFilter
-{
-    String patt[];
-    
-    Filsu(String s[])
-    {
-        patt=s;
-    }   
-    boolean accept(File dir,String name)
-    {
-        for(int i=0;i<patt.length;i++)
-            if(name.toLowerCase().endsWith(patt[i]))
-                return true;
-            
-        return false;
-    }
-}
-
 // File selector
 String fileselector(String dir,int mode)
 {
@@ -215,5 +197,23 @@ String fileselector(String dir,int mode)
         }
         else
             return null;
+    }
+}
+
+class Filsu implements FilenameFilter // Had to hack something like this for the AWT FileDialog
+{
+    String patt[];
+    
+    Filsu(String s[])
+    {
+        patt=s;
+    }   
+    boolean accept(File dir,String name)
+    {
+        for(int i=0;i<patt.length;i++)
+            if(name.toLowerCase().endsWith(patt[i]))
+                return true;
+            
+        return false;
     }
 }
