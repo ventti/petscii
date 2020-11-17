@@ -8,6 +8,8 @@ mv application.windows32 windows32
 mv application.windows64 windows64
 mv application.macosx mac
 
+rm -rf application.linux-arm*
+
 cp prefs.txt linux32
 cp prefs.txt linux64
 cp prefs-msdos.txt windows32/prefs.txt
