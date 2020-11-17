@@ -52,7 +52,8 @@ class Preferences
     
               miniwin=false,
               debug=false,
-              tablet=false;
+              tablet=false,
+              forceAWT=false;
     
     final boolean ORIGOZERO=false,     // Show starting from (0,0) or (1,1)
                   PRINTMESSAGES=false; // Print messages to console, if false then to screen
@@ -156,6 +157,13 @@ class Preferences
                             tablet=true;
                         else
                             tablet=false;
+                    }
+                    if(s[0].equals("FORCEAWT") && s.length>1) // Prefer AWT instead of the "native" look for Win/Lin(GTK)
+                    {
+                        if(s[1].equals("1"))
+                            forceAWT=true;
+                        else
+                            forceAWT=false;
                     }
                 }
             }

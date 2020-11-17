@@ -82,11 +82,12 @@ Button load_b,merge_b,save_b,saveas_b,ref_b,
 
 void settings() // Need to have this in Processing 3.x
 {
-    javatheme(); // Part of the prefs handling needs to be here now to open a window of a non-fixed size
-    
+    // Load prefs
     prefs=new Preferences();
     prefs.readprefs(prefs.PREFSFILE);
     filename=prefs.FILENAME;
+    
+    javatheme(); // Choose look and feel for fileselectors and popups
     
     if(prefs.machine==-1)
         prefs.machine=selector("Select a platform","C-64,C-64 flicker,VIC-20,PET 40x25,PET 80x25,Plus/4");

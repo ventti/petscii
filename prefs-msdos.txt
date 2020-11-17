@@ -19,5 +19,7 @@ YSIZE=
 UNDODEPTH=
 # Experimental tablet "mode" for making it easier to hit buttons
 TABLET=0
+# Force default AWT GUI look instead of Windows/Linux(GTK) native
+FORCEAWT=0
 # Command line for making animated gifs. Leave empty if none.
 CONVERTER=

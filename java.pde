@@ -10,6 +10,9 @@ import java.awt.*;
 
 void javatheme()
 {
+    if(prefs.forceAWT) // Don't even try a native look
+        return;
+    
     try // Let's try to set a native look
     {
         if(platform==LINUX)
