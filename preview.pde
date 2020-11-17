@@ -16,7 +16,7 @@ void miniwin_init()
         sa_visible=!sa_visible;
         sa.getSurface().setVisible(sa_visible);
     }
-    delay(200); // Seems to help?
+    delay(200); // Seems to help with focus, maybe not needed any more?
 }
 
 void miniwin_refresh()

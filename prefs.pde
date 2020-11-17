@@ -53,7 +53,7 @@ class Preferences
               miniwin=false,
               debug=false,
               tablet=false,
-              forceAWT=false;
+              forcemetal=false;
     
     final boolean ORIGOZERO=false,     // Show starting from (0,0) or (1,1)
                   PRINTMESSAGES=false; // Print messages to console, if false then to screen
@@ -158,12 +158,12 @@ class Preferences
                         else
                             tablet=false;
                     }
-                    if(s[0].equals("FORCEAWT") && s.length>1) // Prefer AWT instead of the "native" look for Win/Lin(GTK)
+                    if(s[0].equals("FORCEMETAL") && s.length>1) // Prefer Metal instead of the "native" look for Win/Lin(GTK)
                     {
                         if(s[1].equals("1"))
-                            forceAWT=true;
+                            forcemetal=true;
                         else
-                            forceAWT=false;
+                            forcemetal=false;
                     }
                 }
             }
