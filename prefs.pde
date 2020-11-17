@@ -49,11 +49,11 @@ class Preferences
               crosshair=false, 
               info=true, 
               showoff=false, // Show memory offset
-    
-              miniwin=false,
+
               debug=false,
               tablet=false,
-              forcemetal=false;
+              forcemetal=false, // Force use of 
+              awtselector=false; // Use AWT's file dialog instead of JFileChooser
     
     final boolean ORIGOZERO=false,     // Show starting from (0,0) or (1,1)
                   PRINTMESSAGES=false; // Print messages to console, if false then to screen
@@ -164,6 +164,13 @@ class Preferences
                             forcemetal=true;
                         else
                             forcemetal=false;
+                    }
+                    if(s[0].equals("AWTSELECTOR") && s.length>1) // Use AWT's fileselector instead of Swing's
+                    {
+                        if(s[1].equals("1"))
+                            awtselector=true;
+                        else
+                            awtselector=false;
                     }
                 }
             }

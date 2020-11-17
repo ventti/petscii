@@ -1,25 +1,27 @@
-# Minimum 1, probably very slow after 3.
+# Minimum 1, probably very slow after 3
 ZOOM=2
-# Normally 60. Decrease for less CPU use, increase for responsiveness.
+# Editor framerate, more than 60 may improve responsiveness
 FRAMERATE=60
 # One of: C64, C64FLICKER, VIC20, PET, PETHI, PLUS4. Leave empty for selector.
 MACHINE=
 # One of: PAL, NTSC, SQUARE. Used for stretch calculations.
 ASPECT=
-# Default image and ref path, leave empty for default.
+# Default image and ref path, leave empty for default
 PATH=
 # Name with optional full path for the backup file instead of _backup_.c
 BACKUPFILE=
-# Show character position memory offsets (0=no, 1=yes).
-OFFSET=
-# Canvas x and y size, leave empty for defaults.
+# Show character position memory offsets (0=no, 1=yes)
+OFFSET=0
+# Canvas x and y size in characters, leave empty for defaults
 XSIZE=
 YSIZE=
-# Maximum undo steps (32 by default).
+# Maximum undo steps, leave empty for the default 32
 UNDODEPTH=
-# Experimental tablet "mode" for making it easier to hit buttons
+# Experimental "tablet mode" for making it easier to hit buttons
 TABLET=0
 # Force default Java Metal UI look instead of Windows/Linux(GTK) native
 FORCEMETAL=0
+# Use AWT's fileselector instead of the normal Swing one
+AWTSELECTOR=0
 # Command line for making animated gifs. Leave empty if none.
 CONVERTER=

@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.*;
 
 void javatheme()
 {
@@ -108,49 +109,111 @@ final int LOADPIX=0,
           MERGEPETSCII=3,
           LOADPRG=4;
 
+class Filsu implements FilenameFilter
+{
+    String patt[];
+    
+    Filsu(String s[])
+    {
+        patt=s;
+    }   
+    boolean accept(File dir,String name)
+    {
+        for(int i=0;i<patt.length;i++)
+            if(name.toLowerCase().endsWith(patt[i]))
+                return true;
+            
+        return false;
+    }
+}
+
 // File selector
 String fileselector(String dir,int mode)
 {
-    JFileChooser fc=new JFileChooser(dir);
-    
-    fc.setPreferredSize(new Dimension(480, 500));
-    fc.setDialogTitle("Select a File");
-    
-    if(mode==LOADPIX) // Show image files
+    if(prefs.awtselector)
     {
-        fc.setFileFilter(new FileNameExtensionFilter("Images (*.png,*.gif,*.jpg)",
-                         "png","gif","jpg","jpeg"));
-    }
-    else
-    {
-        if(mode==LOADPRG)
-            fc.setFileFilter(new FileNameExtensionFilter("PRG files (*.prg)","prg")); // Show only .prg
+        FileDialog fd;
+        if(mode==SAVEPETSCII)
+            fd=new FileDialog(frame, "Select a file", FileDialog.SAVE);
         else
-            fc.setFileFilter(new FileNameExtensionFilter("PETSCII Images (*.c)","c")); // Show only .c
-    }
-    
-    if(mode<=LOADPETSCII)
-        fc.setApproveButtonText("Load");
-    if(mode==SAVEPETSCII)
-        fc.setApproveButtonText("Save");
-    if(mode==MERGEPETSCII)
-        fc.setApproveButtonText("Merge");
-    if(mode==LOADPRG)
-        fc.setApproveButtonText("Import");
-    
-    int returnVal = fc.showOpenDialog(null);
-    
-    if(returnVal==JFileChooser.APPROVE_OPTION)
-    {
-        // Save cwd for next time
-        if(mode==LOADPIX)
-            prefs.refpath=fc.getCurrentDirectory().getPath();
+            fd=new FileDialog(frame, "Select a file", FileDialog.LOAD);
+
+        fd.setDirectory(dir);        
+        if(mode==LOADPIX) // Show image files
+        {
+            fd.setFilenameFilter(new Filsu(new String[] {".png",".gif",".jpg",".jpeg"}));
+        }
         else
-            prefs.path=fc.getCurrentDirectory().getPath();
+        {
+            if(mode==LOADPRG)
+                fd.setFilenameFilter(new Filsu(new String[] {".prg"})); // Show only .prg
+            else
+                fd.setFilenameFilter(new Filsu(new String[] {".c"})); // Show only .c
+        }
+    
+        delay(100); // Helps with clicks?
+    
+        fd.setAlwaysOnTop(true);
+        fd.setSize(800,600);
+        fd.setLocationRelativeTo(null);
+        fd.pack();
+        fd.toFront();
         
-        File file = fc.getSelectedFile();
-        return file.getPath();
+        fd.setVisible(true); // Show it
+        
+        if(fd.getDirectory()==null || fd.getFile()==null)
+            return null;
+            
+        if(mode==LOADPIX)
+            prefs.refpath=fd.getDirectory();
+        else
+            prefs.path=fd.getDirectory();
+
+        return fd.getDirectory()+fd.getFile();
     }
     else
-        return null;
+    {
+        JFileChooser fc=new JFileChooser(dir);
+        
+        fc.setPreferredSize(new Dimension(480, 500));
+        fc.setDialogTitle("Select a File");
+        
+        if(mode==LOADPIX) // Show image files
+        {
+            fc.setFileFilter(new FileNameExtensionFilter("Images (*.png,*.gif,*.jpg)",
+                             "png","gif","jpg","jpeg"));
+        }
+        else
+        {
+            if(mode==LOADPRG)
+                fc.setFileFilter(new FileNameExtensionFilter("PRG files (*.prg)","prg")); // Show only .prg
+            else
+                fc.setFileFilter(new FileNameExtensionFilter("PETSCII Images (*.c)","c")); // Show only .c
+        }
+        
+        if(mode<=LOADPETSCII)
+            fc.setApproveButtonText("Load");
+        if(mode==SAVEPETSCII)
+            fc.setApproveButtonText("Save");
+        if(mode==MERGEPETSCII)
+            fc.setApproveButtonText("Merge");
+        if(mode==LOADPRG)
+            fc.setApproveButtonText("Import");
+        
+        int returnVal = fc.showOpenDialog(null);
+        
+        if(returnVal==JFileChooser.APPROVE_OPTION)
+        {
+            // Save cwd for next time
+            if(mode==LOADPIX)
+                prefs.refpath=fc.getCurrentDirectory().getPath();
+            else
+                prefs.path=fc.getCurrentDirectory().getPath();
+            
+            File file = fc.getSelectedFile();
+            return file.getPath();
+        }
+        else
+            return null;
+    }
 }

@@ -1,7 +1,9 @@
 /*
    Changelog:
    
-   17.11.2020. Calling it FORCEAWT was a bad idea, let's go with FORCEMETAL
+   17.11.2020: Option to use AWT's fileselector with AWTSELECTOR, also implemented it
+   17.11.2020: Removed the useless miniwin pref
+   17.11.2020: Calling it FORCEAWT was a bad idea, let's go with FORCEMETAL
    17.11.2020: Probably cleaner to call redraw() rather than draw() for the preview window
    17.11.2020: Added the FORCEAWT pref to always go with the Java default look instead of "native" on Win/Lin
    16.11.2020: Managed to fix left/right shift handling for P3 too using a bit different kludge

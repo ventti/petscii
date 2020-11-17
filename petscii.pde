@@ -178,9 +178,6 @@ void setup()
     
     user_setup(); // Call users' own functions
     
-    if(prefs.miniwin)
-        miniwin_init();
-    
     backupcounter=millis();
     loadPixels();
 }
