@@ -24,7 +24,7 @@ void miniwin_refresh()
     if(sa==null)
         return;
     if(sa_visible)
-        sa.draw();
+        sa.redraw();
 }
 
 public class SecondApplet extends PApplet

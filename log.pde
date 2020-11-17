@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   17.11.2020: Probably cleaner to call redraw() rather than draw() for the preview window
    17.11.2020: Added the FORCEAWT pref to always go with the Java default look instead of "native" on Win/Lin
    16.11.2020: Managed to fix left/right shift handling for P3 too using a bit different kludge
    16.11.2020: args[] is null if empty these days, not just an empty array
