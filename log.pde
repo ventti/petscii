@@ -1,7 +1,7 @@
 /*
    Changelog:
    
-   18.11.2020: Framerate shouldn't be zero even if the prefs are broken
+   18.11.2020: Framerate shouldn't be zero even if the prefs are broken.
    17.11.2020: Option to use AWT's fileselector with AWTSELECTOR, also implemented it
    17.11.2020: Removed the useless miniwin pref
    17.11.2020: Calling it FORCEAWT was a bad idea, let's go with FORCEMETAL
