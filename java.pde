@@ -143,18 +143,17 @@ String fileselector(String dir,int mode)
         }
     
         delay(100); // Helps with clicks?
-    
+
         fd.setAlwaysOnTop(true);
         fd.setSize(800,600);
         fd.setLocationRelativeTo(null);
-        fd.pack();
         fd.toFront();
-        
+        fd.pack();
+        fd.requestFocus();        
         fd.setVisible(true); // Show it
         
-        // Trying to get the window back to focus after selection, but this seems useless
-        fd.setAlwaysOnTop(true);
-        fd.setVisible(false);
+        // Trying to get the window back to focus after selection, but this is just guessing
+        surface.setVisible(true);
         frame.toFront();
         frame.requestFocus();
         
