@@ -21,7 +21,8 @@ UNDODEPTH=
 TABLET=0
 # Force default Java Metal UI look instead of Windows/Linux(GTK) native
 FORCEMETAL=0
-# Use AWT's fileselector instead of the normal Swing one
-AWTSELECTOR=0
+# Leave empty for platform default, 0=use Swing fileselector (Windows default)
+# 1=use AWT fileselector (Linux and Mac default)
+AWTSELECTOR=
 # Command line for making animated gifs. Leave empty if none.
 CONVERTER=

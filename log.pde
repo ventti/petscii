@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   18.11.2020: Use AWT or Swing fileselector based on the platform, can still be overridden using prefs
    18.11.2020: Framerate shouldn't be zero even if the prefs are broken.
    17.11.2020: Option to use AWT's fileselector with AWTSELECTOR, also implemented it
    17.11.2020: Removed the useless miniwin pref

@@ -29,8 +29,9 @@ class Preferences
               zoom=2,
               framerate=60,
               aspect=PAL,
-              undodepth=33; // Needs to be one bigger than the actual undo steps
-    
+              undodepth=33, // Needs to be one bigger than the actual undo steps
+              awtselector=-1; // Use AWT's file dialog instead of JFileChooser, -1 = platform default
+
     final int BWIDTH=20,     // Border width
               UIWIDTH=265, // Approx total width for the UI buttons
               ANWIDTH=12*16+4*16, // Approx total width for the anim buttons plus frame counter
@@ -52,8 +53,7 @@ class Preferences
 
               debug=false,
               tablet=false,
-              forcemetal=false, // Force use of 
-              awtselector=false; // Use AWT's file dialog instead of JFileChooser
+              forcemetal=false; // Force use of Metal theme
     
     final boolean ORIGOZERO=false,     // Show starting from (0,0) or (1,1)
                   PRINTMESSAGES=false; // Print messages to console, if false then to screen
@@ -172,9 +172,9 @@ class Preferences
                     if(s[0].equals("AWTSELECTOR") && s.length>1) // Use AWT's fileselector instead of Swing's
                     {
                         if(s[1].equals("1"))
-                            awtselector=true;
-                        else
-                            awtselector=false;
+                            awtselector=1;
+                        if(s[1].equals("0"))
+                            awtselector=0;
                     }
                 }
             }

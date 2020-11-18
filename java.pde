@@ -11,6 +11,15 @@ import java.io.*;
 
 void javatheme()
 {
+    if(prefs.awtselector==-1) // Depending on the platform use either Swing or AWT fileselector (unless overridden in prefs)
+        switch(platform)
+        {
+            case LINUX: prefs.awtselector=1; break; 
+            case WINDOWS: prefs.awtselector=0; break; 
+            case MACOSX: prefs.awtselector=1; break;
+            default: prefs.awtselector=0; break;
+        }
+    
     if(prefs.forcemetal) // Don't even try a native look
         return;
     
@@ -112,7 +121,7 @@ final int LOADPIX=0,
 // File selector
 String fileselector(String dir,int mode)
 {
-    if(prefs.awtselector)
+    if(prefs.awtselector==1)
     {
         FileDialog fd;
         if(mode==SAVEPETSCII)
