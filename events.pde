@@ -458,7 +458,7 @@ void keyPressed() // Keyboard commands
         if(key=='A')
             machine.save_asm(ext(filename,".s"),true);
         // Only relevant/implemented for the C-64
-        if(key=='q')
+        if(key=='q' && !control)
             machine.save_seq(ext(filename,".seq"));
         if(key=='p' || key=='P')
         {

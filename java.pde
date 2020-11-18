@@ -147,9 +147,9 @@ String fileselector(String dir,int mode)
         fd.setAlwaysOnTop(true);
         fd.setSize(800,600);
         fd.setLocationRelativeTo(null);
-        fd.toFront();
         fd.pack();
-        fd.requestFocus();        
+        fd.toFront();
+        fd.requestFocus();     
         fd.setVisible(true); // Show it
         
         // Trying to get the window back to focus after selection, but this is just guessing
