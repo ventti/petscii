@@ -243,7 +243,7 @@ void anim_init()
 {
     currentframe=0;
     framecount=1;
-    frames=new ArrayList();  
+    frames=new ArrayList<Frame>();  
     frames.add(cf);
     
     scratch=new Frame();

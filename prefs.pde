@@ -100,7 +100,11 @@ class Preferences
                             zoom=2;
                     }
                     if(s[0].equals("FRAMERATE") && s.length>1)
+                    {
                         framerate=int(s[1]);
+                        if(framerate<1) // Can't be negative or 0
+                            framerate=60;
+                    }
                     if(s[0].equals("MACHINE") && s.length>1)
                     {
                         for(int j=0;j<machinenames.length;j++)

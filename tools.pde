@@ -474,7 +474,7 @@ boolean inside(int left,int top,int right,int bottom)
 }
 
 // Simple UI buttons
-ArrayList<Button> butts=new ArrayList();
+ArrayList<Button> butts=new ArrayList<Button>();
 
 class Button
 {
@@ -521,8 +521,8 @@ class Button
 
 void drawbuttons()
 {
-    for(int i=0;i<butts.size();i++)
-        butts.get(i).draw();
+    for(Button butt: butts)
+        butt.draw();
 }
 
 // Load the reference image
