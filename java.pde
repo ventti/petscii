@@ -128,7 +128,7 @@ String fileselector(String dir,int mode)
         if(mode==SAVEPETSCII)
         {
             fd=new FileDialog(frame, "Select a file", FileDialog.SAVE);
-            Path p=Paths.get(filename);
+            Path p=Paths.get(filename); // Extract the actual filename from the path
             fd.setFile(p.getFileName().toString());
         }
         else
