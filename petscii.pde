@@ -174,6 +174,9 @@ void setup()
     pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
     pasteright_b=new Button(col1_end-22,canvas_start-26," >");
     
+    // Disable not implemented buttons
+    machine.disablebuttons();
+    
     surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
     
     user_setup(); // Call users' own functions

@@ -51,6 +51,13 @@ class Pet extends Machine
         shift=pet_shift;
         grow=default_grow;
     }
+    
+    void disablebuttons() // Not implemented features
+    {
+        import_prg_b.disabled=true;
+        export_prg_b.disabled=true;
+        case_b.disabled=true;
+    }
         
     // Let's just strip the colors
     void remapcolors(Machine other)

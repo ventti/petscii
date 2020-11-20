@@ -48,6 +48,12 @@ class Vic20 extends Machine
         grow=default_grow;
     }
     
+    void disablebuttons() // Not implemented features
+    {
+        import_prg_b.disabled=true;
+        case_b.disabled=true;
+    }
+    
     // VIC has asymmetric border/pen/bg color handling
     void remapcolors(Machine other)
     {

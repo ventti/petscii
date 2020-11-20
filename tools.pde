@@ -480,7 +480,8 @@ class Button
 {
     int x,y,w,h;
     
-    boolean prevstate; // Was there mouseover or not?
+    boolean prevstate, // Was there mouseover or not?
+            disabled;  // Don't do anything
     
     String text;
     
@@ -491,6 +492,7 @@ class Button
         w=(int)textWidth(txt)+9;
         h=20;
         prevstate=false;
+        disabled=false;
 
         text=txt;
         
@@ -507,11 +509,18 @@ class Button
         rect(x,y,w,h,3,3,3,3);
         fill(40);
         text(text,x+5,y+16);
+        
+        stroke(40,100); // Stroke over disabled buttons
+        if(disabled)
+            line(x,y+h/2,x+w,y+h/2);
         noStroke();
     }
     
     boolean mouseover()
     {
+        if(disabled)
+            return false;
+            
         if(mouseX>x && mouseY>y && mouseX<=x+w && mouseY<=y+20)
             return true;
         else

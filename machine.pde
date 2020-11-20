@@ -49,6 +49,10 @@ class Machine
     void setcase(boolean keis)
     {
     }
+    
+    void disablebuttons() // Disable not implemented buttons
+    {
+    }
 
     // Draw the color selector and its markers
     void drawcolorselector(int px,int py,int pen,int bg,int border)

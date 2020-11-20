@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   20.11.2020: Machines can (and will) disable buttons that are not implemented on that platform
    20.11.2020: No need to ask about overwrite with the AWT selector, as it does it already on its own. Changed "Overwrite?" to "Overwrite file?".
    20.11.2020: Didn't work on a Mac. Let's try a fix by extracting the filename from the path first.
    20.11.2020: Offer the current name when "saving as" in the AWT selector. Also helps with the recent files view.

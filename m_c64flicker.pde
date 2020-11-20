@@ -81,6 +81,11 @@ class C64flicker extends Machine
         grow=thick_grow;
     }
     
+    void disablebuttons() // Not implemented features
+    {
+        import_prg_b.disabled=true;
+    }
+    
     // Set lower or upper case. True for lowercase, false for normal mode.
     void setcase(boolean keis)
     {
