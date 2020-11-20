@@ -29,13 +29,14 @@ class Preferences
               zoom=2,
               framerate=60,
               aspect=PAL,
-              undodepth=33, // Needs to be one bigger than the actual undo steps
-              awtselector=-1; // Use AWT's file dialog instead of JFileChooser, -1 = platform default
+              undodepth=33,   // Needs to be one bigger than the actual undo steps
+              awtselector=-1, // Use AWT's file dialog instead of JFileChooser, -1 = platform default
+              bwidth=10;      // Border width
 
-    final int BWIDTH=20,     // Border width
-              UIWIDTH=265, // Approx total width for the UI buttons
+    final int UIWIDTH=265, // Approx total width for the UI buttons
               ANWIDTH=12*16+4*16, // Approx total width for the anim buttons plus frame counter
               UIROW=30,      // UI row size (text or button)
+              PREBORDER=20, // Preview window border width
     
               ERASEBUTTON=RIGHT, // Feel free to swap these
               PICKERBUTTON=CENTER,

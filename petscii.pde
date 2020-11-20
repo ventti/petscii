@@ -125,9 +125,10 @@ void settings() // Need to have this in Processing 3.x
     clip_colors=new int[X*Y];
 
     // Various UI locations: x
-    col1_start=prefs.BWIDTH;
+    prefs.bwidth*=prefs.zoom;
+    col1_start=prefs.bwidth;
     col1_end=col1_start+max(X*machine.charx,prefs.ANWIDTH+2*X+16); // fit 2 frames at least
-    col2_start=col1_end+prefs.BWIDTH;
+    col2_start=col1_end+prefs.bwidth;
     col2_end=col2_start+max(16*machine.charx,prefs.UIWIDTH);       // Buttons or char selector
 
     if(16*machine.charx>prefs.UIWIDTH) // Center buttons
@@ -136,7 +137,7 @@ void settings() // Need to have this in Processing 3.x
         buttons_start=col2_start;
 
     // y
-    canvas_start=max(prefs.BWIDTH+Y, prefs.UIROW+prefs.BWIDTH); // Anim frame + border or buttons + border
+    canvas_start=max(prefs.bwidth+Y, prefs.UIROW+prefs.bwidth); // Anim frame + border or buttons + border
     canvas_end=canvas_start+Y*machine.chary;
     colorsel_start=canvas_start+3*prefs.UIROW+5;
     charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
@@ -144,7 +145,7 @@ void settings() // Need to have this in Processing 3.x
     
 
     
-    size(col2_end+prefs.BWIDTH, max(charsel_end+prefs.UIROW+prefs.BWIDTH, canvas_end+prefs.UIROW+prefs.BWIDTH));
+    size(col2_end+prefs.bwidth, max(charsel_end+prefs.UIROW+prefs.bwidth, canvas_end+prefs.UIROW+prefs.bwidth));
     noSmooth();
 }
 
