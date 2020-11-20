@@ -128,13 +128,18 @@ void settings() // Need to have this in Processing 3.x
     prefs.bwidth*=prefs.zoom;
     col1_start=prefs.bwidth;
     col1_end=col1_start+max(X*machine.charx,prefs.ANWIDTH+2*X+16); // fit 2 frames at least
-    col2_start=col1_end+prefs.bwidth;
-    col2_end=col2_start+max(16*machine.charx,prefs.UIWIDTH);       // Buttons or char selector
-
-    if(16*machine.charx>prefs.UIWIDTH) // Center buttons
+    
+    if(16*machine.charx>prefs.UIWIDTH) // Charsel wider than buttonbar
+    {
+        col2_start=col1_end+prefs.bwidth;
         buttons_start=col2_start+8*machine.charx-prefs.UIWIDTH/2;
+    }
     else
-        buttons_start=col2_start;
+    {
+        buttons_start=col1_end+prefs.bwidth;
+        col2_start=buttons_start+prefs.UIWIDTH/2-8*machine.charx;
+    }
+    col2_end=col1_end+prefs.bwidth+max(16*machine.charx,prefs.UIWIDTH);       // Buttons or char selector
 
     // y
     canvas_start=max(prefs.bwidth+Y, prefs.UIROW+prefs.bwidth); // Anim frame + border or buttons + border
@@ -142,8 +147,6 @@ void settings() // Need to have this in Processing 3.x
     colorsel_start=canvas_start+3*prefs.UIROW+5;
     charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
     charsel_end=charsel_start+cset.charactercount/16*machine.chary;
-    
-
     
     size(col2_end+prefs.bwidth, max(charsel_end+prefs.UIROW+prefs.bwidth, canvas_end+prefs.UIROW+prefs.bwidth));
     noSmooth();

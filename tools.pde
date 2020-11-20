@@ -400,7 +400,10 @@ void showinfo()
     if(cset.findset(current,false)!=-1) // Set if any
     {
         textAlign(RIGHT);
-        text(cset.setnames[cset.findset(current,false)],col2_end,charsel_end+16);
+        if(prefs.zoom==1)
+            text(cset.setnames[cset.findset(current,false)],col2_end,charsel_end+16);
+        else
+            text(cset.setnames[cset.findset(current,false)],col2_start+16*machine.charx,charsel_end+16);
         textAlign(LEFT);
     }
     
