@@ -125,7 +125,10 @@ String fileselector(String dir,int mode)
     {
         FileDialog fd;
         if(mode==SAVEPETSCII)
+        {
             fd=new FileDialog(frame, "Select a file", FileDialog.SAVE);
+            fd.setFile(filename);
+        }
         else
             fd=new FileDialog(frame, "Select a file", FileDialog.LOAD);
 
