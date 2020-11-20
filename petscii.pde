@@ -246,9 +246,9 @@ void draw()
             
             int i=0;
             File f=new File(filename);
-            if(f.exists())
+            if(f.exists() && prefs.awtselector==0)
             {
-                i=selector("Overwrite?","Yes,No");
+                i=selector("Overwrite file?","Yes,No");
             }
             if(i==0)
                 machine.save_c(filename,false);

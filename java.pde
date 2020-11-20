@@ -201,9 +201,9 @@ String fileselector(String dir,int mode)
         if(mode==LOADPRG)
             fc.setApproveButtonText("Import");
         
-        int returnVal = fc.showOpenDialog(null);
+        int returnval=fc.showOpenDialog(null); // Should be showSaveDialog for SAVEPETSCII, but then the button text won't change... 
         
-        if(returnVal==JFileChooser.APPROVE_OPTION)
+        if(returnval==JFileChooser.APPROVE_OPTION)
         {
             // Save cwd for next time
             if(mode==LOADPIX)
