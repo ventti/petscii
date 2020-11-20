@@ -31,10 +31,10 @@ class Preferences
               aspect=PAL,
               undodepth=33,   // Needs to be one bigger than the actual undo steps
               awtselector=-1, // Use AWT's file dialog instead of JFileChooser, -1 = platform default
-              bwidth=10;      // Border width
+              bwidth=12;      // Border width
 
     final int UIWIDTH=265, // Approx total width for the UI buttons
-              ANWIDTH=12*16+4*16, // Approx total width for the anim buttons plus frame counter
+              ANWIDTH=17*16, // Approx total width for the anim buttons plus frame counter
               UIROW=30,      // UI row size (text or button)
               PREBORDER=20, // Preview window border width
     

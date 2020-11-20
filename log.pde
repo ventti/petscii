@@ -1,6 +1,8 @@
 /*
    Changelog:
    
+   20.11.2020: Fixed a long-standing small bug in thumbnail location calculations. ZOOM=1 better layout.
+               If thumbnails don't fit on top of the canvas, put them on the right instead.
    20.11.2020: Center color/charsel if the buttonbar is wider
    20.11.2020: Scale borders based on zoom to allow for a smaller window at zoom 1 and more air at 3
    20.11.2020: Buttons are centered now in higher zoomlevels to look tidier

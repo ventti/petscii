@@ -73,7 +73,9 @@ int    col1_start,col1_end, // x
        buttons_start,
        canvas_start,canvas_end, // y
        colorsel_start,
-       charsel_start,charsel_end;
+       charsel_start,charsel_end,
+       anim_start, // Anim frames
+       anim_end;
 
 // UI buttons
 Button load_b,merge_b,save_b,saveas_b,ref_b,
@@ -127,7 +129,7 @@ void settings() // Need to have this in Processing 3.x
     // Various UI locations: x
     prefs.bwidth*=prefs.zoom;
     col1_start=prefs.bwidth;
-    col1_end=col1_start+max(X*machine.charx,prefs.ANWIDTH+2*X+16); // fit 2 frames at least
+    col1_end=col1_start+max(X*machine.charx,prefs.ANWIDTH); // fit 2 frames at least
     
     if(16*machine.charx>prefs.UIWIDTH) // Charsel wider than buttonbar
     {
@@ -150,6 +152,17 @@ void settings() // Need to have this in Processing 3.x
     
     size(col2_end+prefs.bwidth, max(charsel_end+prefs.UIROW+prefs.bwidth, canvas_end+prefs.UIROW+prefs.bwidth));
     noSmooth();
+
+    // Anim frames' location
+    anim_start=col1_start+70;
+    anim_end=col1_end-216;
+    
+    if((anim_end-anim_start)/X<6) // if we can't fit enough frames in the normal location
+        if(anim_end-anim_start < col2_end-(col1_end+prefs.bwidth)) // And there is more space on the right...
+        {
+            anim_start=col1_end+prefs.bwidth+4; // Put the frames on the right
+            anim_end=col2_end;
+        }
 }
 
 void setup()
@@ -838,7 +851,7 @@ void draw()
     
     drawbuttons();
     
-    anim_frames(canvas_start+3*16,col1_end-207);
+    anim_frames(anim_start,anim_end); // Draw animation frames
     
     user_draw(); // Call user's additions
     

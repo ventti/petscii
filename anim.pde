@@ -346,7 +346,7 @@ void anim_frames(int sx,int ex)
     noFill();
     
     visible=0;
-    for(int x=sx;x<=ex-X-10;x+=X+3)
+    for(int x=sx;x<=ex-X;x+=X+3)
         visible++;
     
     i=currentframe-visible/2;
@@ -359,7 +359,7 @@ void anim_frames(int sx,int ex)
     if(framecount<=visible)
         i=0;
     
-    for(int x=sx;x<=ex-X-10 && i<frames.size();x+=X+3,i++)
+    for(int x=sx;x<=ex-X && i<frames.size();x+=X+3,i++)
     {
         if(i!=currentframe)
             stroke(128);
@@ -406,7 +406,7 @@ void anim_clicks(int sx,int ex)
         return;
 
     visible=0;
-    for(int x=sx;x<=ex-X-10;x+=X+3)
+    for(int x=sx;x<=ex-X;x+=X+3)
         visible++;
     
     i=currentframe-visible/2;
@@ -419,7 +419,7 @@ void anim_clicks(int sx,int ex)
     if(framecount<=visible)
         i=0;
     
-    for(int x=sx;x<=ex-X-10 && i<frames.size();x+=X+3,i++)
+    for(int x=sx;x<=ex-X && i<frames.size();x+=X+3,i++)
     {
         f=frames.get(i);
         
