@@ -70,6 +70,7 @@ int shadowButton=0;
 // UI parameters
 int    col1_start,col1_end, // x
        col2_start,col2_end,
+       buttons_start,
        canvas_start,canvas_end, // y
        colorsel_start,
        charsel_start,charsel_end;
@@ -129,12 +130,19 @@ void settings() // Need to have this in Processing 3.x
     col2_start=col1_end+prefs.BWIDTH;
     col2_end=col2_start+max(16*machine.charx,prefs.UIWIDTH);       // Buttons or char selector
 
+    if(16*machine.charx>prefs.UIWIDTH) // Center buttons
+        buttons_start=col2_start+8*machine.charx-prefs.UIWIDTH/2;
+    else
+        buttons_start=col2_start;
+
     // y
     canvas_start=max(prefs.BWIDTH+Y, prefs.UIROW+prefs.BWIDTH); // Anim frame + border or buttons + border
     canvas_end=canvas_start+Y*machine.chary;
     colorsel_start=canvas_start+3*prefs.UIROW+5;
     charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
     charsel_end=charsel_start+cset.charactercount/16*machine.chary;
+    
+
     
     size(col2_end+prefs.BWIDTH, max(charsel_end+prefs.UIROW+prefs.BWIDTH, canvas_end+prefs.UIROW+prefs.BWIDTH));
     noSmooth();
@@ -151,22 +159,22 @@ void setup()
     anim_init();
 
     // Create the UI buttons
-    load_b=new Button(col2_start,canvas_start,"Load");
-    merge_b=new Button(col2_start+49,canvas_start,"Merge");
-    save_b=new Button(col2_start+107,canvas_start,"Save");
-    saveas_b=new Button(col2_start+156,canvas_start,"Save as");
-    ref_b=new Button(col2_start+228,canvas_start,"Ref.");
+    load_b=new Button(buttons_start,canvas_start,"Load");
+    merge_b=new Button(buttons_start+49,canvas_start,"Merge");
+    save_b=new Button(buttons_start+107,canvas_start,"Save");
+    saveas_b=new Button(buttons_start+156,canvas_start,"Save as");
+    ref_b=new Button(buttons_start+228,canvas_start,"Ref.");
     
-    import_prg_b=new Button(col2_start,canvas_start+prefs.UIROW,"Load .prg");
-    export_prg_b=new Button(col2_start+79,canvas_start+prefs.UIROW,"Save .prg");
-    export_png_b=new Button(col2_start+158,canvas_start+prefs.UIROW,".png");
-    preview_b=new Button(col2_start+200,canvas_start+prefs.UIROW,"Preview");
+    import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg");
+    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg");
+    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png");
+    preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview");
     
-    undo_b=new Button(col2_start,canvas_start+prefs.UIROW*2,"Undo");
-    redo_b=new Button(col2_start+50,canvas_start+prefs.UIROW*2,"Redo");
-    clear_b=new Button(col2_start+113,canvas_start+prefs.UIROW*2,"Clear");
-    grid_b=new Button(col2_start+175,canvas_start+prefs.UIROW*2,"Grid");
-    case_b=new Button(col2_start+218,canvas_start+prefs.UIROW*2,"Case");
+    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo");
+    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo");
+    clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
+    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
+    case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
     dupright_b=new Button(col1_end-152,canvas_start-26," >");
