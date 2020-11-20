@@ -1,7 +1,7 @@
 /*
    Changelog:
    
-   20.11.2020: Didn't work on a Mac. Let's try a fix.
+   20.11.2020: Didn't work on a Mac. Let's try a fix by extracting the filename from the path first.
    20.11.2020: Offer the current name when "saving as" in the AWT selector. Also helps with the recent files view.
    18.11.2020: Let's NOT export a SEQ every time users press command-q on Mac to exit
    18.11.2020: AWT fileselector loses focus a bit less now
