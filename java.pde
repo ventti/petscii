@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
+import java.nio.file.*;
 
 void javatheme()
 {
@@ -127,7 +128,8 @@ String fileselector(String dir,int mode)
         if(mode==SAVEPETSCII)
         {
             fd=new FileDialog(frame, "Select a file", FileDialog.SAVE);
-            fd.setFile(filename);
+            Path p=Paths.get(filename);
+            fd.setFile(p.getFileName().toString());
         }
         else
             fd=new FileDialog(frame, "Select a file", FileDialog.LOAD);
