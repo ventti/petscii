@@ -254,37 +254,55 @@ void ffill(int x,int y,int c,int col,int tchar,int tcol,boolean coloronly)
     if(cf.locked)
         return;
     
-    if(coloronly)
+    IntList list=new IntList();
+    int maxlength=0;
+    
+    list.append(x);
+    list.append(y);
+    
+    while(list.size()>0)
     {
-        if(cf.getchar(x,y)!=cset.erasechar && cf.getcolor(x,y)==tcol) // Yes, change color
+        if(prefs.debug)
         {
-            cf.setcolor(x,y,col);
-            if(x>0)
-                ffill(x-1,y,c,col,tchar,tcol,coloronly);
-            if(x<X-1)
-                ffill(x+1,y,c,col,tchar,tcol,coloronly);
-            if(y>0)
-                ffill(x,y-1,c,col,tchar,tcol,coloronly);
-            if(y<Y-1)
-                ffill(x,y+1,c,col,tchar,tcol,coloronly);
+            if(list.size()>maxlength)
+            {
+                maxlength=list.size();
+                println("List max length: "+str(maxlength));
+            }
         }
-    }
-    else
-    {
-        if(cf.getchar(x,y)==tchar) // Yes, change color+char
+        
+        x=list.get(0); // Next position and remove this
+        list.remove(0);
+        y=list.get(0);
+        list.remove(0);
+
+        if(x>=0 && x<X && y>=0 && y<Y) // Sensible place?
         {
-            if(machine.maxpen==0 || cf.getcolor(x,y)==tcol) // For color modes consider color too
-            {            
-                cf.setchar(x,y,c);
-                cf.setcolor(x,y,col);
-                if(x>0)
-                    ffill(x-1,y,c,col,tchar,tcol,coloronly);
-                if(x<X-1)
-                    ffill(x+1,y,c,col,tchar,tcol,coloronly);
-                if(y>0)
-                    ffill(x,y-1,c,col,tchar,tcol,coloronly);
-                if(y<Y-1)
-                    ffill(x,y+1,c,col,tchar,tcol,coloronly);
+            if(coloronly)
+            {
+                if(cf.getchar(x,y)!=cset.erasechar && cf.getcolor(x,y)==tcol) // Yes, change color
+                {
+                    cf.setcolor(x,y,col);
+                    list.append(x-1); list.append(y);
+                    list.append(x+1); list.append(y);
+                    list.append(x);   list.append(y-1);
+                    list.append(x);   list.append(y+1);
+                }
+            }
+            else
+            {
+                if(cf.getchar(x,y)==tchar) // Yes, change color+char
+                {
+                    if(machine.maxpen==0 || cf.getcolor(x,y)==tcol) // For color modes consider color too
+                    {            
+                        cf.setchar(x,y,c);
+                        cf.setcolor(x,y,col);
+                        list.append(x-1); list.append(y);
+                        list.append(x+1); list.append(y);
+                        list.append(x);   list.append(y-1);
+                        list.append(x);   list.append(y+1);
+                    }
+                }
             }
         }
     }
