@@ -51,7 +51,24 @@ class Vic20 extends Machine
     void disablebuttons() // Not implemented features
     {
         import_prg_b.disabled=true;
-        case_b.disabled=true;
+    }
+    
+    // Set lower or upper case. True for lowercase, false for normal mode.
+    void setcase(boolean keis)
+    {
+        lowercase=keis;
+        if(lowercase)
+        {
+            fontfile="shifted-vic20.png";
+            remapfile="remap-lowercase.txt";
+            setfile="sets-lowercase.txt";
+        }
+        else
+        {
+            fontfile="petscii-vic20.png";
+            remapfile="remap-vic20.txt";
+            setfile="sets.txt";
+        }
     }
     
     // VIC has asymmetric border/pen/bg color handling
