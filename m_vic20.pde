@@ -117,12 +117,14 @@ class Vic20 extends Machine
     "\n"+
     "#include <string.h>\n";
     
-    final String VIC_CFOOTER=
+    final String VIC_CFOOTER1=
     "\n"+
     "void main(void)\n"+
     "{\n"+
     "  *(char *)0x900f=img[0];\n"+
-    "  *(char *)0x9005=0xf0;\n"+
+    "  *(char *)0x9005=0xf0;\n";
+    
+    final String VIC_CFOOTER2=
     "\n"+
     "  memcpy((void *)0x1e00,&img[1],506);\n"+
     "  memcpy((void *)0x9600,&img[507],506);\n"+
@@ -159,7 +161,12 @@ class Vic20 extends Machine
         }
         f.println("};");    
     
-        f.println(VIC_CFOOTER);
+        f.println(VIC_CFOOTER1);
+        if(lowercase)
+            f.println("  *(char *)0x9005=242;");
+        else
+            f.println("  *(char *)0x9005=240;");
+        f.println(VIC_CFOOTER2);
         
         f.flush();
         f.close();
@@ -182,6 +189,8 @@ class Vic20 extends Machine
         f.println("10 rem petcat -text -w2 -l 1001 -o export.prg export.bas");
         f.println("20 print chr$(147)");
         f.println("30 poke 36879,"+str(16*cf.bg+cf.border+8));
+        if(lowercase)
+            f.println("35 poke 36869,242");
         f.println("40 for i=0 to 505:read a:poke 7680+i,a:read a:poke 38400+i,a:next");
         f.println("50 goto 50");
         
