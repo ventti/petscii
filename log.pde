@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   22.11.2020: Asm and prg export done for the lowercase-aware VIC
    22.11.2020: VIC-20 lowercase now available, will be saved and loaded, not exported yet
    21.11.2020: New non-recursive floodfill, doesn't crash with very large images any more
    20.11.2020: Fixed a long-standing small bug in thumbnail location calculations. ZOOM=1 better layout.

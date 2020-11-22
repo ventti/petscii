@@ -256,6 +256,11 @@ class Vic20 extends Machine
         {
             f.println("\tlda\t#"+str(cf.border+cf.bg*16+8));
             f.println("\tsta\t$900f");
+            if(lowercase)
+            {
+                f.println("\tlda\t#242");
+                f.println("\tsta\t$9005");
+            }
             f.println(VIC_CODE);
             
             f.println("img:");
@@ -300,7 +305,7 @@ class Vic20 extends Machine
     
     void save_prg(String name)
     {
-        int offset=387;
+        int offset=0x3c;
         
         if(X*Y!=22*23)
         {
@@ -309,10 +314,12 @@ class Vic20 extends Machine
         }
         
         // Read template
-        byte b[]=loadBytes("template-vic20.prg");  
+        byte b[]=loadBytes("template-vic20.prg");
         
         // Replace some bytes
-        b[offset++]=(byte)(cf.border+cf.bg*16+8);
+        b[0x10]=(byte)(cf.border+cf.bg*16+8);
+        if(!lowercase)
+            b[0x15]=(byte)240;
         
         for(int i=0;i<X*Y;i++)
         {
