@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rm -r application.* *.c *.bas *.prg *.s *.o *.png *.gif *.d64
+rm -r application.* *.c *.bas *.prg *.s *.o *.png *.gif *.d64 *.pet
 cd ..
 rm petscii-beta.zip
 
