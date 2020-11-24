@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   24.11.2020: Some more security. Show a confirmation dialog if the user tries to exit without saving, feat. ugly JFrame kludge and boolean dirty
    22.11.2020: BASIC and C export hopefully too
    22.11.2020: Asm and prg export done for the lowercase-aware VIC
    22.11.2020: VIC-20 lowercase now available, will be saved and loaded, not exported yet

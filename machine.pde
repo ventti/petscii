@@ -119,9 +119,15 @@ class Machine
             if(shadowButton==LEFT && cindex<=maxpen)
                 pen=cindex;
             if(shadowButton==prefs.PICKERBUTTON && cindex<=maxborder)
+            {
                 cf.setborder(cindex);
+                dirty=true;
+            }
             if(shadowButton==prefs.ERASEBUTTON && cindex<=maxbg)
+            {
                 cf.setbg(cindex);
+                dirty=true;
+            }
         }
     }
     
@@ -185,7 +191,7 @@ class Machine
             anim_init();
             cf.undo_purge();
             currentframe=-1;
-        }
+        }   
         
         String s[];
         int i=0,defaultcolor=erasecolor;
@@ -263,6 +269,10 @@ class Machine
         cset.grow=grow;
         
         message("Loaded "+name+", size "+str(loadx)+"x"+str(loady)+" chars");
+        if(merge)
+            dirty=true;
+        else
+            dirty=false;
         return true;
     }
 
@@ -365,6 +375,8 @@ class Machine
         f.flush();
         f.close();
         
+        if(!name.equals(prefs.backupfile))
+            dirty=false;
         message("Written "+name);
     }
         

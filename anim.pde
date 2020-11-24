@@ -155,6 +155,8 @@ class Frame
     {
         if(locked)
             return;
+            
+        dirty=true; // Not saved since last edit
         
         arrayCopy(chars,undochars[head]);
         undobg[head]=bg;
@@ -311,6 +313,7 @@ void addframe(int pos)
     frames.add(pos,f);
     f.updatethumb();
     framecount++;
+    dirty=true;
 }
 
 // Cut current frame to scratch
@@ -326,6 +329,7 @@ void cutframe(boolean copyonly)
 
     if(currentframe==framecount)
         currentframe--;
+    dirty=true;
 }
 
 void pasteframe(int pos)

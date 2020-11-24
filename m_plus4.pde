@@ -381,6 +381,7 @@ class Plus4 extends Machine
         for(int i=0;i<X*Y;i++)
             cf.setcolor(i,((int)b[offset++])&0x7f);
         
+        dirty=true;
         message("Imported "+name);
     }
 }

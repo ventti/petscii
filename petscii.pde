@@ -7,6 +7,8 @@
   - Marq/Fit^L!T^Dkd, with additions from Dr. TerrorZ/L!T
 */
 
+import processing.awt.*;
+
 // Global stuff
 Preferences prefs;
 
@@ -47,12 +49,14 @@ boolean control=false,
         repaint=true,
         infidel=true,
         selectadd=true,
+        dirty=false, // Unsaved work
         
         fileselect=false, // "Event" flags for file operations
         mergeselect=false,
         saveselect=false,
         refselect=false,
-        importselect=false;
+        importselect=false,
+        exitpressed=false;
         
 float   avgms=0; // For profiling
 int     blink=0;
@@ -167,6 +171,11 @@ void settings() // Need to have this in Processing 3.x
 
 void setup()
 {
+    // A hack required to catch window close events
+    PSurfaceAWT.SmoothCanvas sur=(PSurfaceAWT.SmoothCanvas)surface.getNative();
+    JFrame j=(JFrame)sur.getFrame();
+    j.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    
     frameRate(prefs.framerate);
     noStroke();
     
@@ -311,6 +320,19 @@ void draw()
         cf.updatethumb();
         importselect=false;
         repaint=true;
+    }
+    if(exitpressed) // Trying to close the window, huh?
+    {
+        if(dirty) // Unsaved work?
+        {
+            int options=selector("Exit without saving?","Yes,No");
+            if(options==0)
+                super.exit();
+        }
+        else
+            super.exit();
+        
+        exitpressed=false;
     }
     
     // Better remove modifiers when switching a window
@@ -890,4 +912,9 @@ void draw()
         println(Runtime.getRuntime().totalMemory());
         println(Runtime.getRuntime().freeMemory());
     }
+}
+
+void exit()
+{
+    exitpressed=true;
 }

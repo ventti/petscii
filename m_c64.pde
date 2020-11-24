@@ -375,6 +375,7 @@ class C64 extends Machine
                 cf.setcolor(i,((int)b[offset++])&0xf);
         }
         
+        dirty=true;
         message("Imported "+name);
     }
     
