@@ -36,7 +36,7 @@ class Machine
                                 {244,229},
                                 {234,231}};
            
-    final String NOT_IMPLEMENTED="Feature not implemented for this machine.";
+    final String NOT_IMPLEMENTED="Feature not implemented on this platform";
     
     boolean palettemode,
             lowercase;
@@ -231,7 +231,7 @@ class Machine
                 }
                 else
                 {
-                    cf.setborder(0);
+                    cf.setborder(this.defaultborder);
                     cf.setbg(0);
                 }
                 
