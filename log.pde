@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   25.11.2020: New DISABLEWHEEL pref
    25.11.2020: Machine now has a wheelevent() method, only implemented on the Plus/4 so far
    24.11.2020: Some more security. Show a confirmation dialog if the user tries to exit without saving, feat. ugly JFrame kludge and boolean dirty
    22.11.2020: BASIC and C export hopefully too
