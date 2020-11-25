@@ -16,6 +16,8 @@ class Dirart extends Machine
         
         nativex=16;
         nativey=25;
+        if(X!=16) // Don't try to override this
+            X=16;
         
         fontfile="petscii-c64.png";
         remapfile="remap-c64.txt";
@@ -47,12 +49,19 @@ class Dirart extends Machine
         defaultbg=0;
         erasecolor=1;
         maxpen=0;
-        maxborder=0;
+        maxborder=1;
         maxbg=0;
         green=1;
         
         rgb=dirart_rgb;
         shift=dirart_shift;
         grow=thick_grow;
+    }
+    
+    void ownbuttons() // Not implemented features
+    {
+        import_prg_b.disabled=true;
+        export_prg_b.disabled=true;
+        case_b.disabled=true;
     }
 }

@@ -95,8 +95,11 @@ class Frame
         {
             if(getchar(i)!=undochars[tmphead][i])
                 return true;
-            if(getcolor(i)!=undocolors[tmphead][i])
-                return true;
+            if(machine.palettemode)
+            {
+                if(getcolor(i)!=undocolors[tmphead][i])
+                    return true;
+            }
         }
         
         return false;

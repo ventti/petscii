@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   25.11.2020: Fixed a long-standing bug in PET modes, the editor would crash when exiting typing mode
    25.11.2020: Initial dirart class, disablebuttons() renamed to ownbuttons()
    25.11.2020: File and other dialogs moved to a separate requesters() function
    25.11.2020: Use more descriptive HOLE instead of -1 when there's a hole in the selection 
