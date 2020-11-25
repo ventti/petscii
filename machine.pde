@@ -50,7 +50,7 @@ class Machine
     {
     }
     
-    void disablebuttons() // Disable not implemented buttons
+    void ownbuttons() // Disable not implemented buttons or change some if needed
     {
     }
 

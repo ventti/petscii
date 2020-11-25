@@ -97,17 +97,18 @@ void settings() // Need to have this in Processing 3.x
     javatheme(); // Choose look and feel for fileselectors and popups
     
     if(prefs.machine==-1)
-        prefs.machine=selector("Select a platform","C-64,C-64 flicker,VIC-20,PET 40x25,PET 80x25,Plus/4");
+        prefs.machine=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
     delay(200); // Superstition? 
     
     switch(prefs.machine)
     {
         case C64:   machine=new C64(); break;
         case C64FLICKER: machine=new C64flicker(); break;
-        case VIC20: machine=new Vic20(); break;
+        case DIRART: machine=new Dirart(); break;
         case PET:   machine=new Pet(); break;
         case PETHI: machine=new Pethi(); break;
         case PLUS4: machine=new Plus4(); break;
+        case VIC20: machine=new Vic20(); break;
         default: ;
     }
     cset.shift=machine.shift; // Need to do this properly later
@@ -208,8 +209,8 @@ void setup()
     pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
     pasteright_b=new Button(col1_end-22,canvas_start-26," >");
     
-    // Disable not implemented buttons
-    machine.disablebuttons();
+    // Disable and change not implemented buttons
+    machine.ownbuttons();
     
     surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
     

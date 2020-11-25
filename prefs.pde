@@ -4,18 +4,20 @@
 // Machine numbers and their corresponding names
 final int C64=0,
           C64FLICKER=1,
-          VIC20=2, 
+          DIRART=2, 
           PET=3,
           PETHI=4,
-          PLUS4=5;
+          PLUS4=5,
+          VIC20=6;
 
 final String machinenames[]={
           "C64",
           "C64FLICKER",
-          "VIC20",
+          "DIRART",
           "PET",
           "PETHI",
-          "PLUS4"
+          "PLUS4",
+          "VIC20"
           };
           
 // Video systems for aspect ratio calculation

@@ -81,7 +81,7 @@ class C64flicker extends Machine
         grow=thick_grow;
     }
     
-    void disablebuttons() // Not implemented features
+    void ownbuttons() // Not implemented features
     {
         import_prg_b.disabled=true;
     }

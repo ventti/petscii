@@ -52,7 +52,7 @@ class Pet extends Machine
         grow=default_grow;
     }
     
-    void disablebuttons() // Not implemented features
+    void ownbuttons() // Not implemented features
     {
         import_prg_b.disabled=true;
         export_prg_b.disabled=true;
