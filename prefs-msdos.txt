@@ -24,5 +24,7 @@ FORCEMETAL=0
 # Leave empty for platform default, 0=use Swing fileselector (Windows default)
 # 1=use AWT fileselector (Linux and Mac default)
 AWTSELECTOR=
+# Disable mouse wheel in case it annoys you
+DISABLEWHEEL=0
 # Command line for making animated gifs. Leave empty if none.
 CONVERTER=

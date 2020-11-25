@@ -54,7 +54,8 @@ class Preferences
 
               debug=false,
               tablet=false,
-              forcemetal=false; // Force use of Metal theme
+              forcemetal=false, // Force use of Metal theme
+              disablewheel=false; // Disable mouse wheel
     
     final boolean ORIGOZERO=false,     // Show starting from (0,0) or (1,1)
                   PRINTMESSAGES=false; // Print messages to console, if false then to screen
@@ -176,6 +177,13 @@ class Preferences
                             awtselector=1;
                         if(s[1].equals("0"))
                             awtselector=0;
+                    }
+                    if(s[0].equals("DISABLEWHEEL") && s.length>1) // Disable mouse wheel actions
+                    {
+                        if(s[1].equals("1"))
+                            disablewheel=true;
+                        else
+                            disablewheel=false;
                     }
                 }
             }

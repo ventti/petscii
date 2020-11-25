@@ -689,7 +689,7 @@ void mouseClicked()
         cset.grow=machine.grow;
         
         System.gc();
-        message("Right click charsel to toggle case");
+        message("Right click char selector to toggle case");
     }
 
     // Remap characters on ctrl-click on the selector
@@ -767,4 +767,10 @@ void mouseReleased()
     }
     
     repaint=true;
+}
+
+void mouseWheel(processing.event.MouseEvent event)
+{
+    if(!prefs.disablewheel)
+        machine.wheelevent(event.getCount()); // Machine-specific mouse wheel handling
 }

@@ -70,6 +70,59 @@ class Plus4 extends Machine
         grow=thick_grow;
     }
     
+    void wheelevent(float e)
+    {
+        // Plus4 has something here! Let's inc/dec color brightness
+        
+        if(selw>0 && selh>0) // Do the whole selection
+        {
+            if(e>0) // Brighter
+            {
+                for(int i=0;i<selw*selh;i++)
+                {
+                    if(clip_colors[i]!=-1)
+                    {
+                        clip_colors[i]+=16;
+                        if(clip_colors[i]>=128)
+                            clip_colors[i]-=16;
+                    }
+                }
+            }
+            else // Darker
+            {
+                for(int i=0;i<selw*selh;i++)
+                {
+                    if(clip_colors[i]!=-1)
+                    {
+                        clip_colors[i]-=16;
+                        if(clip_colors[i]<0)
+                            clip_colors[i]+=16;
+                    }
+                }
+            }
+            repaint=true;
+        }
+        else // Just change pen color
+        {
+            if(e>0) // Brighter
+            {
+                pen+=16;
+                if(pen>=128)
+                    pen-=16;
+                else
+                    repaint=true;
+            }
+            else // Darker
+            {
+                pen-=16;
+                if(pen<0)
+                    pen+=16;
+                else
+                    repaint=true;
+            }
+        }
+    }
+    
     // Set lower or upper case
     void setcase(boolean keis)
     {

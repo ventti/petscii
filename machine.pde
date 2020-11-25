@@ -131,6 +131,11 @@ class Machine
         }
     }
     
+    void wheelevent(float e) // Machine-specific wheel event handler
+    {
+        // Do nothing by default. Might change in the future.
+    }
+    
     // Load a piccy
     boolean load_c(String name,boolean merge)
     {
