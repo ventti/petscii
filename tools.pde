@@ -8,7 +8,7 @@ void rrotate()
     
     for(int i=0;i<selw*selh;i++) // Remap
     {
-        if(clip_chars[i]!=-1)
+        if(clip_chars[i]!=HOLE)
             clip_chars[i]=cset.rotate(clip_chars[i]);
     }
     
@@ -37,7 +37,7 @@ void hflip()
 {
     for(int i=0;i<selw*selh;i++) // Remap
     {
-        if(clip_chars[i]!=-1)
+        if(clip_chars[i]!=HOLE)
             clip_chars[i]=cset.hflip(clip_chars[i]);
     }
     
@@ -64,7 +64,7 @@ void vflip()
 {
     for(int i=0;i<selw*selh;i++) // Remap
     {
-        if(clip_chars[i]!=-1)
+        if(clip_chars[i]!=HOLE)
             clip_chars[i]=cset.vflip(clip_chars[i]);
     }
     
@@ -432,7 +432,7 @@ void showinfo()
         {
             int cnt=0;
             for(int i=0;i<X*Y;i++)
-                if(clip_chars[i]!=-1)
+                if(clip_chars[i]!=HOLE)
                     cnt++;
             text(str(cnt)+" chars",col1_end,canvas_end+16);
         }
@@ -613,7 +613,7 @@ void optimize_clip()
     {
         for(int x=0;x<selw;x++)
         {
-            if(clip_chars[y*selw+x]!=-1)
+            if(clip_chars[y*selw+x]!=HOLE)
             {
                 last=y;
                 if(first==-1)
@@ -641,7 +641,7 @@ void optimize_clip()
     {
         for(int y=0;y<selh;y++)
         {
-            if(clip_chars[y*selw+x]!=-1)
+            if(clip_chars[y*selw+x]!=HOLE)
             {
                 last=x;
                 if(first==-1)

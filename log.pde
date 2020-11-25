@@ -1,6 +1,8 @@
 /*
    Changelog:
    
+   25.11.2020: File and other dialogs moved to a separate requesters() function
+   25.11.2020: Use more descriptive HOLE instead of -1 when there's a hole in the selection 
    25.11.2020: New DISABLEWHEEL pref
    25.11.2020: Machine now has a wheelevent() method, only implemented on the Plus/4 so far
    24.11.2020: Some more security. Show a confirmation dialog if the user tries to exit without saving, feat. ugly JFrame kludge and boolean dirty

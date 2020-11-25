@@ -240,100 +240,7 @@ void draw()
     if(frameCount%100==0)
         System.gc();
     
-    // UI file operations
-    if(fileselect) // Fileselect "event" for Load
-    {
-        String s=fileselector(prefs.path,LOADPETSCII);
-        if(s!=null)
-        {
-            if(machine.load_c(s,false))
-                filename=s;
-            else
-                message(s+" cannot be opened.");
-        }
-        fileselect=false;
-        repaint=true;
-    }
-    if(mergeselect) // Fileselect "event" for Load
-    {
-        String s=fileselector(prefs.path,MERGEPETSCII);
-        if(s!=null)
-        {
-            if(!machine.load_c(s,true))
-                message(s+" cannot be opened.");
-        }
-        mergeselect=false;
-        repaint=true;
-    }
-    if(saveselect) // Fileselect "event" for Save as
-    {
-        String s=fileselector(prefs.path,SAVEPETSCII);
-        if(s!=null)
-        {
-            // Add extension if needed
-            if(s.length()<=2)
-                s+=".c";
-            else
-            {
-                if(!s.substring(s.length()-2).equals(".c") &&
-                   !s.substring(s.length()-2).equals(".C"))
-                    s+=".c";
-            }
-            filename=s;
-            
-            int i=0;
-            File f=new File(filename);
-            if(f.exists() && prefs.awtselector==0)
-            {
-                i=selector("Overwrite file?","Yes,No");
-            }
-            if(i==0)
-                machine.save_c(filename,false);
-        }
-        saveselect=false;
-        repaint=true;
-    }
-    if(refselect) // Fileselect "event" for Reference image
-    {
-        String s=fileselector(prefs.refpath,LOADPIX);
-        if(s!=null)
-        {
-            if(loadreference(s))
-            {
-                refname=s;
-                ref=1;
-                reftime=timestamp(s);
-            }
-            else
-                message(s+" cannot be opened.");
-        }
-        refselect=false;
-        repaint=true;
-    }
-    if(importselect) // Fileselect "event" for Import (PRG)
-    {
-        String s=fileselector(prefs.path,LOADPRG);
-        if(s!=null)
-        {
-            machine.import_prg(s);
-        }
-        cf.updatethumb();
-        importselect=false;
-        repaint=true;
-    }
-    if(exitpressed) // Trying to close the window, huh?
-    {
-        if(dirty) // Unsaved work?
-        {
-            int options=selector("Exit without saving?","Yes,No");
-            if(options==0)
-                super.exit();
-        }
-        else
-            super.exit();
-        
-        exitpressed=false;
-    }
+    requesters(); // File open/save and other dialogs
     
     // Better remove modifiers when switching a window
     if(!focused)
@@ -549,13 +456,13 @@ void draw()
                         if(selectmode!=2)
                         {
                             for(int i=0;i<X*Y;i++)
-                                clip_chars[i]=-1;
+                                clip_chars[i]=HOLE;
                             selw=X;
                             selh=Y;
                             selx=sely=-1;
                         }
                         
-                        if(clip_chars[blox+bloy*X]==-1)
+                        if(clip_chars[blox+bloy*X]==HOLE)
                             selectadd=true;
                         else
                             selectadd=false;
@@ -567,7 +474,7 @@ void draw()
                         clip_colors[blox+bloy*X]=cf.getcolor(blox,bloy);
                     }
                     else
-                        clip_chars[blox+bloy*X]=-1;
+                        clip_chars[blox+bloy*X]=HOLE;
                     
                     selectmode=2;
                 }
@@ -681,7 +588,7 @@ void draw()
             {
                 if(clip_chars[i]==current)
                 {
-                    clip_chars[i]=-1;
+                    clip_chars[i]=HOLE;
                     found=true;
                 }
             }
@@ -912,9 +819,107 @@ void draw()
         println(Runtime.getRuntime().totalMemory());
         println(Runtime.getRuntime().freeMemory());
     }
+} // Draw end
+
+void requesters() // Various file selectors and dialogs that can't be called in event handlers
+{
+    // UI file operations
+    if(fileselect) // Fileselect "event" for Load
+    {
+        String s=fileselector(prefs.path,LOADPETSCII);
+        if(s!=null)
+        {
+            if(machine.load_c(s,false))
+                filename=s;
+            else
+                message(s+" cannot be opened.");
+        }
+        fileselect=false;
+        repaint=true;
+    }
+    if(mergeselect) // Fileselect "event" for Load
+    {
+        String s=fileselector(prefs.path,MERGEPETSCII);
+        if(s!=null)
+        {
+            if(!machine.load_c(s,true))
+                message(s+" cannot be opened.");
+        }
+        mergeselect=false;
+        repaint=true;
+    }
+    if(saveselect) // Fileselect "event" for Save as
+    {
+        String s=fileselector(prefs.path,SAVEPETSCII);
+        if(s!=null)
+        {
+            // Add extension if needed
+            if(s.length()<=2)
+                s+=".c";
+            else
+            {
+                if(!s.substring(s.length()-2).equals(".c") &&
+                   !s.substring(s.length()-2).equals(".C"))
+                    s+=".c";
+            }
+            filename=s;
+            
+            int i=0;
+            File f=new File(filename);
+            if(f.exists() && prefs.awtselector==0)
+            {
+                i=selector("Overwrite file?","Yes,No");
+            }
+            if(i==0)
+                machine.save_c(filename,false);
+        }
+        saveselect=false;
+        repaint=true;
+    }
+    if(refselect) // Fileselect "event" for Reference image
+    {
+        String s=fileselector(prefs.refpath,LOADPIX);
+        if(s!=null)
+        {
+            if(loadreference(s))
+            {
+                refname=s;
+                ref=1;
+                reftime=timestamp(s);
+            }
+            else
+                message(s+" cannot be opened.");
+        }
+        refselect=false;
+        repaint=true;
+    }
+    if(importselect) // Fileselect "event" for Import (PRG)
+    {
+        String s=fileselector(prefs.path,LOADPRG);
+        if(s!=null)
+        {
+            machine.import_prg(s);
+        }
+        cf.updatethumb();
+        importselect=false;
+        repaint=true;
+    }
+    if(exitpressed) // Trying to close the window, huh?
+    {
+        if(dirty) // Unsaved work?
+        {
+            int options=selector("Exit without saving?","Yes,No");
+            if(options==0)
+                super.exit();
+        }
+        else
+            super.exit();
+        
+        exitpressed=false;
+    }
 }
 
-void exit()
+void exit() // Override default exit()
 {
     exitpressed=true;
 }

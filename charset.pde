@@ -1,6 +1,8 @@
 
 // Character and font related bits
 
+final int HOLE=-1;
+
 class Charset
 {
     PImage bitmap,pet[];
@@ -47,7 +49,7 @@ class Charset
                         return i;
                 }
                         
-        return(-1);            
+        return -1;            
     }
     
     // Loads a char selector remap file
@@ -159,7 +161,7 @@ class Charset
     // Plot a char here with this color
     void drawchar(int x,int y,int num,int fg,int bg)
     {
-        if(num==-1)
+        if(num==HOLE)
             return;
         
         if(pet==null) // So there: trying to draw before calling initrender()

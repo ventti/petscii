@@ -80,7 +80,7 @@ class Plus4 extends Machine
             {
                 for(int i=0;i<selw*selh;i++)
                 {
-                    if(clip_colors[i]!=-1)
+                    if(clip_colors[i]!=HOLE)
                     {
                         clip_colors[i]+=16;
                         if(clip_colors[i]>=128)
@@ -92,7 +92,7 @@ class Plus4 extends Machine
             {
                 for(int i=0;i<selw*selh;i++)
                 {
-                    if(clip_colors[i]!=-1)
+                    if(clip_colors[i]!=HOLE)
                     {
                         clip_colors[i]-=16;
                         if(clip_colors[i]<0)

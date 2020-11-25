@@ -170,7 +170,7 @@ void keyPressed() // Keyboard commands
             if(selw>0 && selh>0)
             {
                 for(int i=0;i<selw*selh;i++)
-                    if(clip_chars[i]!=-1)
+                    if(clip_chars[i]!=HOLE)
                         clip_chars[i]=cset.invertchar(clip_chars[i]);
             }
             else
@@ -275,7 +275,7 @@ void keyPressed() // Keyboard commands
             if(selw>0 && selh>0)
             {
                 for(int i=0;i<selw*selh;i++)
-                    if(clip_chars[i]!=-1 && cset.findset(clip_chars[i],true)!=-1) // Remap all the chars from a selection
+                    if(clip_chars[i]!=HOLE && cset.findset(clip_chars[i],true)!=-1) // Remap all the chars from a selection
                     {
                         int tmp=cset.findset(clip_chars[i],true);
                         for(int j=0;j<cset.charactercount;j++)
@@ -746,7 +746,7 @@ void mousePressed()
             {
                 if(clip_chars[i]==current)
                 {
-                    clip_chars[i]=-1;
+                    clip_chars[i]=HOLE;
                     found=true;
                 }
             }
