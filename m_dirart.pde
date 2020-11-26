@@ -113,7 +113,7 @@ class Dirart extends Machine
     {
         if(other.palettemode)
         {
-            cf.border=0;
+            cf.border=1;
             cf.bg=0;
             
             for(int i=0;i<X*Y;i++)
