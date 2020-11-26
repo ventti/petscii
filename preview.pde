@@ -72,6 +72,12 @@ public class SecondApplet extends PApplet
         b=machine.rgb[bg],
         idx;
     
+    if(!machine.validate(num)) // Invalid char, oh no. Show in red.
+    {
+        a=#773333;
+        b=#441111;
+    }
+    
     idx=x+y*width;
     for(int j=0;j<cset.ysize;j++)
         for(int i=0;i<cset.xsize;i++)

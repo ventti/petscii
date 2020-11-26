@@ -173,6 +173,12 @@ class Charset
             b=machine.rgb[bg],
             idx;
         
+        if(!machine.validate(num)) // Invalid char, oh no. Show in red.
+        {
+            a=#773333;
+            b=#441111;
+        }
+        
         idx=x+y*width;
         for(int j=0,k=0;j<machine.chary;j++)
         {

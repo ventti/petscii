@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   26.11.2020: Show illegal chars in red in dirart
    25.11.2020: Some more little fixes to advance the dirart mode
    25.11.2020: Fixed a long-standing bug in PET modes, the editor would crash when exiting typing mode
    25.11.2020: Initial dirart class, disablebuttons() renamed to ownbuttons()

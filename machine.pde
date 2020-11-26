@@ -53,6 +53,11 @@ class Machine
     void ownbuttons() // Disable not implemented buttons or change some if needed
     {
     }
+    
+    boolean validate(int c) // Check if this char is ok
+    {
+        return true;
+    }
 
     // Draw the color selector and its markers
     void drawcolorselector(int px,int py,int pen,int bg,int border)
@@ -263,7 +268,7 @@ class Machine
                 i++;
 
                 if(machine!=sourcemachine.machine)
-                    remapcolors(sourcemachine);                
+                    remapcolors(sourcemachine);          
                    
                 cf.updatethumb();
             }
