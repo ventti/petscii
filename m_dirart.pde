@@ -72,11 +72,28 @@ class Dirart extends Machine
         grow=thick_grow;
     }
     
+    // Set lower or upper case. True for lowercase, false for normal mode.
+    void setcase(boolean keis)
+    {
+        lowercase=keis;
+        if(lowercase)
+        {
+            fontfile="shifted-c64.png";
+            remapfile="remap-lowercase.txt";
+            setfile="sets-lowercase.txt";
+        }
+        else
+        {
+            fontfile="petscii-c64.png";
+            remapfile="remap-c64.txt";
+            setfile="sets.txt";
+        }
+    }
+    
     void ownbuttons() // Not implemented features
     {
         import_prg_b.disabled=true;
         export_prg_b.disabled=true;
-        case_b.disabled=true;
     }
     
     boolean validate(int c) // Dirart has plenty of disabled chars
