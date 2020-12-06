@@ -1,7 +1,7 @@
 /*
    Changelog:
    
-   26.11.2020: Still some bug with border colorwhen loading from another mode to dirart. The charset should be ok now.
+   26.11.2020: Still some bug with border color when loading from another mode to dirart. The charset should be ok now.
    26.11.2020: Enable case in dirart at least for now
    26.11.2020: Show illegal chars in red in dirart
    25.11.2020: Some more little fixes to advance the dirart mode
