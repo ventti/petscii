@@ -16,6 +16,18 @@ final String ANAME="delta";
 // Keyboard hook
 void user_key()
 {   
+    if(key=='å') // A hack Ele requested for saving colors and chars separately :)
+    {
+        byte b[]=new byte[X*Y];
+        for(int i=0;i<X*Y;i++)
+            b[i]=(byte)cf.getchar(i);
+        saveBytes(ext(filename,".chars"),b);
+        for(int i=0;i<X*Y;i++)
+            b[i]=(byte)cf.getcolor(i);
+        saveBytes(ext(filename,".colors"),b);
+        message("Wrote "+ext(filename,".chars")+" and "+ext(filename,".colors"));
+    }
+    
     if(key=='w') // So far undocumented animation speedcode generator
     {
         if(prefs.machine!=C64 && prefs.machine!=PLUS4)

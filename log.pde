@@ -1,6 +1,7 @@
 /*
    Changelog:
    
+   10.8.2021: A hidden hack to export colors and chars by pressing 'å'
    26.11.2020: Still some bug with border color when loading from another mode to dirart. The charset should be ok now.
    26.11.2020: Enable case in dirart at least for now
    26.11.2020: Show illegal chars in red in dirart
