@@ -10,7 +10,7 @@ class Dirart extends Machine
                                 {116,84,71,66,93,72,89,106}};
                                 
     // Disabled chars because of listing limitations
-    final int forbidden_chars[]={34,128,141,148,
+    final int forbidden_chars[]={34,128,141,145,147,148,157,
                                  160,161,162,163,164,165,166,167,
                                  168,169,170,171,172,173,174,175,
                                  176,177,178,179,180,181,182,183,
