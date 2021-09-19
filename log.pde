@@ -1,7 +1,7 @@
 /*
    Changelog:
    
-   19.9.2021: Removed a couple of inverted chars (S, Q and ]) from dirart
+   19.9.2021: Removed a couple of inverted chars (S, Q, ], 211, 221) from dirart
    10.8.2021: A hidden hack to export colors and chars by pressing 'å'
    26.11.2020: Still some bug with border color when loading from another mode to dirart. The charset should be ok now.
    26.11.2020: Enable case in dirart at least for now
