@@ -411,10 +411,10 @@ class Machine
         
         if(borderi)
         {
-            rowlen+=DBORDER*2;
-            xoff=DBORDER;
-            yoff=DBORDER*rowlen;
-            p=createImage(cset.xsize*X+DBORDER*2,cset.ysize*Y+DBORDER*2,RGB);
+            rowlen+=prefs.PREBORDER_X*2;
+            xoff=prefs.PREBORDER_X;
+            yoff=prefs.PREBORDER_Y*rowlen;
+            p=createImage(cset.xsize*X+prefs.PREBORDER_X*2,cset.ysize*Y+prefs.PREBORDER_Y*2,RGB);
         }
         else
             p=createImage(cset.xsize*X,cset.ysize*Y,RGB);
