@@ -43,6 +43,27 @@ void javatheme()
         }
     }
     catch (Exception e) {};
+    
+    // scale the default swing font size (11px), which is awfully little with smallish 4K displays
+    int fs = int(11 + 2.5 * float(prefs.zoom)); 
+    setDefaultSize(fs);
+}
+
+void setDefaultSize(int size){
+    int n = UIManager.getLookAndFeelDefaults().keySet().size();
+    Object[] keys = UIManager.getLookAndFeelDefaults().keySet().toArray(new Object[n]);
+
+    for (Object key : keys) {
+
+        if (key != null && key.toString().toLowerCase().contains("font")) {
+
+            Font font = UIManager.getDefaults().getFont(key);
+            if (font != null) {
+                font = font.deriveFont((float)size);
+                UIManager.put(key, font);
+            }
+        }
+    }
 }
 
 class Selector extends JPanel implements ActionListener
