@@ -212,6 +212,13 @@ void setup()
     // Disable and change not implemented buttons
     machine.ownbuttons();
     
+    // autoload this image on startup
+    if (prefs.inputfile != "")
+    {
+      filename = prefs.inputfile;
+      machine.load_c(filename, false);
+    }
+
     surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
     
     user_setup(); // Call users' own functions

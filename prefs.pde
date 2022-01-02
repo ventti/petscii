@@ -71,8 +71,9 @@ class Preferences
     String    path="", // Default paths for files
               refpath="",
               backupfile="_backup_.c",
-              convertcommand="";
-    
+              convertcommand="",
+              inputfile="";  // image to be autoloaded
+
     Preferences()
     {
     }
@@ -223,6 +224,13 @@ class Preferences
                         X=x;
                         Y=y;
                     }
+                }
+            }
+            if(args[i].equalsIgnoreCase("-input")) // load file
+            {
+                if(args.length>i+1)
+                {
+                    inputfile = args[i+1];
                 }
             }
         }
