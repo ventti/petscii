@@ -280,4 +280,10 @@ void user_key()
 //        
 //        message("Wrote "+ANAME+".bas");
 //    }
+    // Ctrl-d: to exit immediately
+    if((keyCode == KeyEvent.VK_D) && control && shift==0 && !alt)
+    {
+      super.exit();
+    }
+
 }
