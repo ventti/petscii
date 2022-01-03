@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# Variables
+# FIXME
+PETSCII=$1
+INPUT=$2
+MACHINE=$3
+COMMAND_ARRAY=$4
+_SLEEP="1"
+_WAITSTART="3"
+
+log(){
+    echo "$(date --rfc-3339=seconds): ${1}"
+}
+
+usage(){
+    echo "usage: $(basename $0) /path/to/petscii /path/to/image.c MACHINE \"cmd;cmd;cmd\""
+    exit 1
+}
+
+which xvfb-run > /dev/null || (echo "ERROR: Xvfb-run is required but not installed."; exit 1)
+which xdotool > /dev/null || (echo "ERROR: xdotool is required but not installed."; exit 1)
+
+if [[ -z "${COMMAND_ARRAY}" ]]; then
+    usage
+fi
+
+teardown(){
+    log "Teardown"
+    pkill xvfb-run || echo "no xvfb-run running"
+    pkill Xvfb || echo "no xvfb running"
+    rm -rf /tmp/xvfb.auth || echo "no xvfb.auth"
+    rm -rf nohup.out
+    if [ -n "${_DISPLAY-}" ]; then
+        export DISPLAY=${_DISPLAY}
+    fi
+}
+
+setup(){
+    log "Setup"
+    # set display to Xvfb
+    export _DISPLAY=${DISPLAY}
+    export DISPLAY=:99
+
+}
+
+run_petscii(){
+  log "Starting \"${PETSCII}\""
+  xvfb-run -e /dev/stdout --server-num 99 --auth-file /tmp/xvfb.auth -s "-ac -screen 0 1280x1024x24"\
+  ${PETSCII} -input ${INPUT} -${MACHINE} 2>&1 &
+  sleep ${_SLEEP}
+}
+
+run_commands(){
+  log "Running command batch"
+  IFS=';' read -r -a COMMANDS <<< "${COMMAND_ARRAY}"
+  for COMMAND in "${COMMANDS[@]}"; do
+    log "Running command: ${COMMAND}"
+    xdotool key ${COMMAND}
+    sleep ${_SLEEP}
+  done
+}
+
+#just in case
+teardown
+
+sleep ${_SLEEP}
+
+setup
+
+sleep ${_SLEEP}
+
+run_petscii
+
+# wait to start
+sleep ${_WAITSTART}
+
+# loop the commands
+run_commands
+
+# exit
+xdotool key Ctrl+d
+
+teardown
+log "DONE"

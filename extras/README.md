@@ -41,3 +41,34 @@ Brief explanation on how this repo was created from the original subversion loca
 ```sh
 git svn clone --no-metadata --authors-file=users.txt svn://kameli.net/marq/petscii
 ```
+
+## PETSCII_CLI
+
+`petscii_cli` is an experimental add-on to run PETSCII editor headless in Linux systems. 
+
+The purpose of this is to enable PETSCII as an integral part of a modern cross-dev CI automation toolchain, so that 
+format conversion work and other export routine jobs can be automated.
+
+### Pre-requirements
+
+As PETSCII is based on Processing sketch, it [cannot be run headless natively](https://github.com/processing/processing/wiki/Running-without-a-Display#why-do-i-need-to-do-this). Virtual X framebuffer is needed.
+
+* [Xvfb](https://en.wikipedia.org/wiki/Xvfb) for acting as a X11 display server
+* [xdotool](http://manpages.ubuntu.com/manpages/trusty/man1/xdotool.1.html) for running the keyboard commands
+
+### Usage
+
+```
+usage: petscii_cli /path/to/petscii /path/to/image.c MACHINE "cmd;cmd;cmd"
+```
+
+* `MACHINE` is one of the machines the PETSCII supports
+* commands are given as a list of keyboard commands separated with a semicolon, with `xdotool` syntax
+
+### Example
+
+This example loads `/tmp/example.c`, exports it as `.prg` and creates screenshots as `.png` with borders.
+
+```sh
+./petscii_cli ../application.linux64/petscii /tmp/example.c C64 "e;P"
+```
