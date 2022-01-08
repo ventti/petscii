@@ -285,5 +285,9 @@ void user_key()
     {
       super.exit();
     }
-
+    // Ctrl-e: execute plugin script
+    if((keyCode == KeyEvent.VK_E) && control && shift==0 && !alt)
+    {
+      exec_plugin();
+    }
 }

@@ -1,3 +1,11 @@
+# My PETSCII fork
+
+Why?
+
+* to fix the preview / export image size to meet the CSDb specs
+* to learn some Processing/Java basics
+* to try out few random ideas
+
 # Notes to self
 
 This README is just a note for myself to remember what I did to get the dev env up and running.
@@ -42,6 +50,8 @@ Brief explanation on how this repo was created from the original subversion loca
 git svn clone --no-metadata --authors-file=users.txt svn://kameli.net/marq/petscii
 ```
 
+# Added functionality
+
 ## PETSCII_CLI
 
 `petscii_cli` is an experimental add-on to run PETSCII editor headless in Linux systems. 
@@ -72,3 +82,84 @@ This example loads `/tmp/example.c`, exports it as `.prg` and creates screenshot
 ```sh
 ./petscii_cli ../application.linux64/petscii /tmp/example.c C64 "e;P"
 ```
+
+## Export plugin scripting with Javascript
+
+Experimental Javascript scripting functionality is added to the editor.
+
+On top of the export formats PETSCII supports natively, the purpose of the plugin API is to enable exporting the PETSCII data to (almost) any user-specified output format.
+
+
+`Ctrl-e` can be used to call `plugin.js` located at the folder of the PETSCII executable.
+
+** TODO: if `plugin.js` does not exist, a file selector dialog is to be invoked. **
+
+It is a design choice to expose only a subset of parameters to the scripting. The API binds the following variables to the user scripts:
+
+| variable        | type        | purpose                                                                                   |
+|-----------------|-------------|-------------------------------------------------------------------------------------------|
+| `stdout`        | PrintStream | exposes [System.out](https://docs.oracle.com/javase/8/docs/api/java/lang/System.html#out) |
+| `outputs`       | ArrayList<Output> | ArrayList of output writers, see below                                              |
+| `colors`        | int[]      | color array                                                                                |
+| `chars`         | int[]      | character array                                                                            |
+| `border`        | int        | border color                                                                               |
+| `bg`            | bg         | background color                                                                           |
+| `filename`      | String     | path and file name of the current image                                                    |
+| `fileprefix`    | String     | filename without `.c` suffix                                                               |
+| `currentframe`  | int        | index of the current frame                                                                 |
+
+### Output objects
+
+Output object binds together a file name and a [PrintWriter](https://docs.oracle.com/javase/8/docs/api/java/io/PrintWriter.html) for it.
+
+| variable        | type        |
+|-----------------|-------------|
+| `pwriter`       | PrintWriter |
+| `filename`      | String      |
+
+These output objects are handled through `outputs` ArrayList. Initialising an output file via `outputs` requires minimal boilerplate:
+
+```js
+// get the file index
+var fp = outputs.add_file("myfile.ext");
+
+// get the corresponding output object's PrintWriter
+var outfile = outputs.get(fp).pwriter;
+```
+
+Then the PrintWriter is consequently available for use:
+
+```js
+// using the printwriter instance
+outfile.println("Hello world");
+```
+
+Adding multiple output files works just by repeating that pattern. Using `fileprefix` makes file naming quite convenient.
+
+```js
+var fpa = outputs.add_file(fileprefix + ".asm");
+var asmfile = outputs.get(fpa).pwriter;
+
+var fpt = outputs.add_file(fileprefix + ".txt");
+var txtfile = outputs.get(fpt).pwriter;
+```
+
+Same file cannot be added as output twice. `add_file` will return the file index of the existing
+
+File index can also be acquired with `get_file`. `-1` is returned if no corresponding file found:
+
+```js
+var fp = outputs.get_file("myfile.ext");
+if (fp < 0){
+    stdout.println("myfile.ext is not an output");
+}
+```
+
+Trying to add same output twice will return the index of the file.
+
+Note that the PrintWriter is flushed and closed after script execution, thus no need to do it explicitly in the script.
+
+### Example
+
+Examples can be found at [/extras/examples](examples).
+
