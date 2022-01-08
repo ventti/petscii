@@ -92,7 +92,7 @@ On top of the export formats PETSCII supports natively, the purpose of the plugi
 
 `Ctrl-e` can be used to call `plugin.js` located at the folder of the PETSCII executable.
 
-** TODO: if `plugin.js` does not exist, a file selector dialog is to be invoked. **
+**TODO**: if `plugin.js` does not exist, a file selector dialog is to be invoked.
 
 It is a design choice to expose only a subset of parameters to the scripting. The API binds the following variables to the user scripts:
 
@@ -103,10 +103,11 @@ It is a design choice to expose only a subset of parameters to the scripting. Th
 | `colors`        | int[]      | color array                                                                                |
 | `chars`         | int[]      | character array                                                                            |
 | `border`        | int        | border color                                                                               |
-| `bg`            | bg         | background color                                                                           |
+| `bg`            | int        | background color                                                                           |
 | `filename`      | String     | path and file name of the current image                                                    |
 | `fileprefix`    | String     | filename without `.c` suffix                                                               |
 | `currentframe`  | int        | index of the current frame                                                                 |
+| `machine`       | String     | the target MACHINE in PETSCII editor                                                       |
 
 ### Output objects
 
@@ -155,11 +156,27 @@ if (fp < 0){
 }
 ```
 
+### Platform-specific scoping
+
+Plugin can be scoped with PETSCII `machine`, e.g. as follows:
+
+```js
+if (machine == "C64"){
+    // do stuff applicable for C64
+}
+else if (machine == "VIC20"){
+    // do stuff applicable for VIC20
+}
+// etc.
+```
+
 Trying to add same output twice will return the index of the file.
 
 Note that the PrintWriter is flushed and closed after script execution, thus no need to do it explicitly in the script.
 
 ### Example
 
-Examples can be found at [/extras/examples](examples).
+Examples can be found at [/extras/plugins](plugins). 
+
+Copy a script to PETSCII executable's folder as `plugin.js`, try `Ctrl-e` and see what happens.
 

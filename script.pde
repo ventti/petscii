@@ -70,6 +70,7 @@ class Script
     bindings.put("stdout", System.out);
     bindings.put("outputs", outputs);
 
+    bindings.put("machine", machine.machinename);
     bindings.put("colors", cf.colors);  // colormap
     bindings.put("chars", cf.chars);  // charmap
     bindings.put("border", cf.border);  // border color
