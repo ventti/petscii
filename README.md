@@ -1,34 +1,35 @@
-# My PETSCII fork
+Marq's PETSCII editor (Vent's fork)
+===================================
 
-This is Vent's fork of Marq's PETSCII editor. 
+This is Vent's fork of Marq's PETSCII editor.
 
-See here for the original editor: http://www.kameli.net/marq/?page_id=2717
+See here for the original editor: [http://www.kameli.net/marq/?page_id=2717](http://www.kameli.net/marq/?page_id=2717)
 
-## Why?
+This document tries to briefly describe the differences between these two and why they do exist.
+
+# Why?
 
 * to fix the preview / export image size to meet the CSDb specs
 * to learn some Processing/Java basics
-* to try out few random ideas
+* to try out few random ideas that simplify my own PETSCII editor use cases
 
 # Installation
 
-All versions are available in a single .zip package, as with the original PETSCII. 
+All versions and source code are available in a single .zip package, as with the original PETSCII. 
 
-Installation as mentioned in [Marq's PETSCII editor page](http://www.kameli.net/marq/?page_id=2717)
+[Click here to download](https://github.com/ventti/petscii/releases/latest/download/petscii.zip) the latest release .zip.
+
+Installation as mentioned in [the original PETSCII editor docs](http://www.kameli.net/marq/?page_id=2717)
 
 > It should be straightforward to download and unzip the package, after which you can run the version that corresponds to your operating system of choice: Linux, Mac or Windows. 32-bit binaries are still included, but you may encounter problems with old Windows or Mac OS versions – I can’t support and test each and every one of them.
-
-Some enhancements done for Linux, though.
 
 ## Linux
 
 I wanted a simple way to install and upgrade PETSCII on both mine and Junior's PCs. Hence, a package with a desktop icon!
 
-Package -based installation introduced to simplify the updates. Desktop icon introduced for convenience.
+Download the **.deb** or **.rpm** package from [latest release page](https://github.com/ventti/petscii/releases/latest/) and use your package manager to install the PETSCII editor.
 
-Download the package from [releases page](https://github.com/ventti/petscii/releases/) and use your package manager to install the PETSCII editor.
-
-Examples, assuming the currently latest release:
+Examples, assuming the latest release at the time of writing:
 
 ```sh
 sudo dpkg -i petscii_0.2.0-1_amd64.deb
@@ -42,9 +43,13 @@ sudo dnf install petscii-0.2.0-1-x86_64.rpm
 
 Note that .rpm is created using [Alien](https://en.wikipedia.org/wiki/Alien_(file_converter)) and the release is untested.
 
-# Configuration
+# Added functionality
 
-## Linux
+## Configuration
+
+Handling user preferences has minor differences to the original PETSCII.
+
+### Linux
 
 Linux version in this fork includes slight enhancements.
 
@@ -55,52 +60,6 @@ User preference file `prefs.txt` and export plugin `plugin.js` are loaded as per
 * system-specific: `/etc/petscii/`
 * home directory (legacy option): `$HOME` 
 * petscii installation directory (legacy option): `/usr/share/petscii/` 
-
-# Notes to self
-
-This README is just a note for myself to remember what I did to get the dev env up and running.
-
-## Compilation
-
-Compilation of PETSCII is done with Processing 3.
-
-### Pre-requirements
-
-* Processing 3 installed (here, [3.5.4](https://github.com/processing/processing/releases/download/processing-0270-3.5.4/processing-3.5.4-linux64.tgz))
-* Java JRE 8 (e.g. `sudo apt install openjdk-8-jre` in Ubuntu)
-* Cross-binutils for Win64 (x64) using MinGW-w64 (i.e. `sudo apt-get install binutils-mingw-w64-x86-64`) for patching the Launch4j
-
-### Patching the Launch4j
-
-Processing 3 comes with Launch4j executable wrapper that has ([issues](https://sourceforge.net/p/launch4j/feature-requests/74/)).
-
-Ld and Windres need to be patched with their 64bit equivalents.
-
-After extracting Processing archive, replace the 
-
-```sh
-cd processing-3.5.4/modes/java/application/launch4j/bin/windres
-rm ld windres
-ln -sf /usr/bin/x86_64-w64-mingw32-ld ./ld
-ln -sf /usr/bin/x86_64-w64-mingw32-windres ./windres
-```
-
-## Import original repo from svn
-
-Brief explanation on how this repo was created from the original subversion location.
-
-### Pre-requirements
-
-* git, svn and git-svn are installed
-* authors-file created (here [users.txt](extras/users.txt))
-
-### Import svn repository
-
-```sh
-git svn clone --no-metadata --authors-file=users.txt svn://kameli.net/marq/petscii
-```
-
-# Added functionality
 
 ## PETSCII_CLI
 
@@ -139,6 +98,12 @@ Experimental Javascript scripting functionality is added to the editor.
 
 On top of the export formats PETSCII supports natively, the purpose of the plugin API is to enable exporting the PETSCII data to (almost) any user-specified output format.
 
+The plugin concept was created having faster integration of the images to custom code. Having a single plugin as chosen method relies on the fact that often such custom code 
+is needed for a highly specific and unique use-cases, such as demo effect or game development. Consequently, only a single plugin is relevant per time. 
+Also, this reduces the need to implement a plethora of file exporter variants to the editor itself.
+
+The plugin concept shares the preference file seek hierarchy of the PETSCII editor, described above.
+Thus, if images are stored in their own folders, each folder may have its own exporter plugin. Such plugin is then easily triggerable with a keyboard shortcut.
 
 `Ctrl-e` can be used to call `plugin.js` located at the folder of the PETSCII executable.
 
