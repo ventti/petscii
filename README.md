@@ -1,10 +1,60 @@
 # My PETSCII fork
 
-Why?
+This is Vent's fork of Marq's PETSCII editor. 
+
+See here for the original editor: http://www.kameli.net/marq/?page_id=2717
+
+## Why?
 
 * to fix the preview / export image size to meet the CSDb specs
 * to learn some Processing/Java basics
 * to try out few random ideas
+
+# Installation
+
+All versions are available in a single .zip package, as with the original PETSCII. 
+
+Installation as mentioned in [Marq's PETSCII editor page](http://www.kameli.net/marq/?page_id=2717)
+
+> It should be straightforward to download and unzip the package, after which you can run the version that corresponds to your operating system of choice: Linux, Mac or Windows. 32-bit binaries are still included, but you may encounter problems with old Windows or Mac OS versions – I can’t support and test each and every one of them.
+
+Some enhancements done for Linux, though.
+
+## Linux
+
+I wanted a simple way to install and upgrade PETSCII on both mine and Junior's PCs. Hence, a package with a desktop icon!
+
+Package -based installation introduced to simplify the updates. Desktop icon introduced for convenience.
+
+Download the package from [releases page](https://github.com/ventti/petscii/releases/) and use your package manager to install the PETSCII editor.
+
+Examples, assuming the currently latest release:
+
+```sh
+sudo dpkg -i petscii_0.2.0-1_amd64.deb
+```
+
+or
+
+```sh
+sudo dnf install petscii-0.2.0-1-x86_64.rpm
+```
+
+Note that .rpm is created using [Alien](https://en.wikipedia.org/wiki/Alien_(file_converter)) and the release is untested.
+
+# Configuration
+
+## Linux
+
+Linux version in this fork includes slight enhancements.
+
+User preference file `prefs.txt` and export plugin `plugin.js` are loaded as per the following priority order:
+
+* image-specific: from current image directory
+* user-specific: `$HOME/.petscii`
+* system-specific: `/etc/petscii/`
+* home directory (legacy option): `$HOME` 
+* petscii installation directory (legacy option): `/usr/share/petscii/` 
 
 # Notes to self
 
@@ -42,7 +92,7 @@ Brief explanation on how this repo was created from the original subversion loca
 ### Pre-requirements
 
 * git, svn and git-svn are installed
-* authors-file created (here [users.txt](users.txt))
+* authors-file created (here [users.txt](extras/users.txt))
 
 ### Import svn repository
 
@@ -176,7 +226,7 @@ Note that the PrintWriter is flushed and closed after script execution, thus no 
 
 ### Example
 
-Examples can be found at [/extras/plugins](plugins). 
+Examples can be found at [/extras/plugins](extras/plugins). 
 
 Copy a script to PETSCII executable's folder as `plugin.js`, try `Ctrl-e` and see what happens.
 
