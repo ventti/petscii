@@ -1,6 +1,5 @@
 /* example js plugin to export PETSCII frame in binary format */
-
-var fp = outputs.add_file("data.prg");  // returns output index
+var fp = outputs.add_file(fileprefix + "_data.prg");  // returns output index
 var output = outputs.get(fp).pwriter;
 
 function writeByte(b){

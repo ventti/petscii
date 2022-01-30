@@ -1,7 +1,7 @@
 /* example js plugin to export PETSCII frame in binary format */
 
-var fi = outputs.add_file("data.prg");  // returns output index
-var fj = outputs.add_file("data.txt");
+var fi = outputs.add_file(fileprefix + "_data.prg");  // returns output index
+var fj = outputs.add_file(fileprefix + "_data.txt");
 var output = outputs.get(fi).pwriter;  // returns output printwriter
 var meta = outputs.get(fj).pwriter;  //another printwriter for demonstrative purposes
 
