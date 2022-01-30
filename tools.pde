@@ -692,3 +692,49 @@ long timestamp(String name) // Get file date
     File f=new File(name);
     return f.lastModified();
 }
+
+class UserFile
+// enables to have project- and user account -specific files such as preferences and plugins
+{
+  public String name;  // name of the file without path
+  public String[] data;  // file contents
+  public String path;  // file name with path
+  
+  UserFile(String name)
+  {
+      this.name = name;
+  }
+  
+  void load()
+  // load a file from priority list of directories
+  {
+      String row[] = null;
+      // priority list of the preference paths
+      ArrayList<String> file_paths = new ArrayList<String>();
+  
+      file_paths.add(name);  // By default, highest priority for prefs is from current dir
+      if (System.getProperty("os.name").contains("Linux"))  // Linux-specific priority list
+      {
+          file_paths.add(System.getProperty("user.home") + "/.petscii/" + name);  // User-specific: $HOME/.petscii/<name>
+          file_paths.add("/etc/petscii/" + name);  // Global: /etc/petscii/<name>
+      }
+      // legacy preferences
+      file_paths.add(System.getProperty("user.home")+File.separator+name);  // Prefs from home
+      file_paths.add(sketchPath("") + name);  // Prefs from sketch path
+  
+      for (String path : file_paths)
+      {
+          row = loadStrings(path);
+          if (row != null)
+          {
+            this.path = path;
+            break;
+          }
+      }
+      this.data = row;
+  }
+  
+  String as_string(){
+    return join(this.data, "\n");
+  }
+}

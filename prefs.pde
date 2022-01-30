@@ -81,28 +81,9 @@ class Preferences
     // Read the preferences file
     void readprefs(String namn)
     {
-        String row[] = null;
-        // priority list of the preference paths
-        ArrayList<String> prefs_paths = new ArrayList<String>();
-
-        prefs_paths.add(namn);  // By default, highest priority for prefs is from current dir
-        if (System.getProperty("os.name").contains("Linux"))  // Linux-specific priority list
-        {
-            prefs_paths.add(System.getProperty("user.home") + "/.petscii/" + namn);  // User-specific: $HOME/.petscii/prefs.txt
-            prefs_paths.add("/etc/petscii/" + namn);  // Global: /etc/petscii/prefs.txt
-        }
-        // legacy preferences
-        prefs_paths.add(System.getProperty("user.home")+File.separator+namn);  // Prefs from home
-        prefs_paths.add(sketchPath("") + namn);  // Prefs from sketch path
-
-        for (String path : prefs_paths)
-        {
-            row = loadStrings(path);
-            if (row != null)
-            {
-              break;
-            }
-        }
+        UserFile prefsfile = new UserFile(namn);
+        prefsfile.load();
+        String row[] = prefsfile.data;
 
         if(row != null)
         {            

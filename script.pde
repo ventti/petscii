@@ -54,7 +54,7 @@ public class Outputs extends ArrayList<Output>
 
 class Script
 {
-  String scriptfile;  // scriptfile
+  public String scriptfile;  // scriptfile
   String script = "";  // scriptfile contents
   ScriptEngine js;
   Outputs outputs;
@@ -63,7 +63,10 @@ class Script
   {
     js = new ScriptEngineManager().getEngineByName("javascript");
     Bindings bindings = js.getBindings(ScriptContext.ENGINE_SCOPE);
-    load(scriptfile);
+    UserFile file = new UserFile(scriptfile);
+    file.load();
+    this.script = file.as_string();
+    this.scriptfile = file.path;
 
     outputs = new Outputs();
 
@@ -81,15 +84,6 @@ class Script
 
   }
 
-  private boolean load(String scriptfile)
-  {
-    String[] lines = loadStrings(scriptfile);
-    if (lines == null)
-      return false;
-    script = join(lines, "\n");
-    return true;
-  }
-
   public void execute() throws Exception
   {
     js.eval(script);
@@ -103,7 +97,7 @@ void exec_plugin(){
   {
     Script s = new Script(scriptfile);
     s.execute();
-    message("Executed " + scriptfile);
+    message("Executed plugin " + s.scriptfile);
   }
   catch (Exception e)
   {
