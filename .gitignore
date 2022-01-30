@@ -1,6 +1,11 @@
 .svn
 *.autosave
 application.* 
+linux64
+linux32
+windows64
+windows32
+mac
 *.c 
 *.bas 
 *.prg 
@@ -13,3 +18,4 @@ application.*
 *.colors
 *.seq
 *.chars
+.DS_Store
