@@ -482,4 +482,8 @@ class Machine
     {
         message(NOT_IMPLEMENTED);
     }
+    void load_charset(String name)
+    {
+        message(NOT_IMPLEMENTED);
+    }
 }

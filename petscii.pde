@@ -56,7 +56,8 @@ boolean control=false,
         saveselect=false,
         refselect=false,
         importselect=false,
-        exitpressed=false;
+        exitpressed=false,
+        charsetselect=false;
         
 float   avgms=0; // For profiling
 int     blink=0;
@@ -85,7 +86,7 @@ int    col1_start,col1_end, // x
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        import_prg_b,export_prg_b,export_png_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
-       undo_b,redo_b,grid_b,case_b,font_b;
+       undo_b,redo_b,grid_b,case_b,charset_b;
 
 void settings() // Need to have this in Processing 3.x
 {
@@ -202,7 +203,7 @@ void setup()
     clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
     grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
     case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
-    font_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Load charset");
+    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Load charset");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
     dupright_b=new Button(col1_end-152,canvas_start-26," >");
@@ -913,6 +914,17 @@ void requesters() // Various file selectors and dialogs that can't be called in 
         importselect=false;
         repaint=true;
     }
+    if(charsetselect) // Charsetselect "event" for Load
+    {
+        String s=fileselector(prefs.path,LOADPIX);
+        if(s!=null)
+        {
+            machine.load_charset(s);
+        }
+        charsetselect=false;
+        repaint=true;
+    }
+
     if(exitpressed) // Trying to close the window, huh?
     {
         if(dirty) // Unsaved work?
