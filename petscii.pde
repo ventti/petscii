@@ -203,8 +203,8 @@ void setup()
     clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
     grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
     case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
-    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Load charset");
-    charset_refresh_b=new Button(buttons_start+100,canvas_start+prefs.UIROW*3,"Refresh");
+    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Load charset", "Load a custom charset");
+    charset_refresh_b=new Button(buttons_start+105,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
     dupright_b=new Button(col1_end-152,canvas_start-26," >");

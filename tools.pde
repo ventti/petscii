@@ -504,8 +504,7 @@ class Button
     boolean prevstate, // Was there mouseover or not?
             disabled;  // Don't do anything
     
-    String text;
-    
+    String text, tooltip;
     Button(int px,int py,String txt)
     {
         x=px;
@@ -514,16 +513,32 @@ class Button
         h=20;
         prevstate=false;
         disabled=false;
-
+        tooltip = null;
         text=txt;
+        butts.add(this);
+    }
+    Button(int px,int py,String txt,String tip)
+    {
+        x=px;
+        y=py;
+        w=(int)textWidth(txt)+9;
+        h=20;
+        prevstate=false;
+        disabled=false;
+        tooltip = tip;
         
+        text=txt;
         butts.add(this);
     }
     
     void draw()
     {
         if(mouseover())
+        {
+            if (tooltip != null)
+                message(tooltip);
             stroke(200,0,0,255);
+        }
         else
             stroke(40);
         fill(220);
@@ -536,7 +551,7 @@ class Button
             line(x,y+h/2,x+w,y+h/2);
         noStroke();
     }
-    
+
     boolean mouseover()
     {
         if(disabled)
@@ -548,6 +563,7 @@ class Button
             return false;        
     }
 }
+
 
 void drawbuttons()
 {
