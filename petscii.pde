@@ -86,7 +86,7 @@ int    col1_start,col1_end, // x
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        import_prg_b,export_prg_b,export_png_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
-       undo_b,redo_b,grid_b,case_b,charset_b;
+       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b;
 
 void settings() // Need to have this in Processing 3.x
 {
@@ -204,6 +204,7 @@ void setup()
     grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
     case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
     charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Load charset");
+    charset_refresh_b=new Button(buttons_start+100,canvas_start+prefs.UIROW*3,"Refresh");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
     dupright_b=new Button(col1_end-152,canvas_start-26," >");
