@@ -37,7 +37,7 @@ class Preferences
 
     final int UIWIDTH=265, // Approx total width for the UI buttons
               ANWIDTH=17*16, // Approx total width for the anim buttons plus frame counter
-              UIROW=30,      // UI row size (text or button)
+              UIROW=24,      // UI row size (text or button)
               PREBORDER_X=32, // Preview window border width
               PREBORDER_Y=36, // Preview window border height
     
