@@ -195,6 +195,16 @@ Examples can be found at [/extras/plugins](extras/plugins).
 
 Copy a script to PETSCII executable's folder as `plugin.js`, try `Ctrl-e` and see what happens.
 
+## Custom charset (C64 only)
+
+Button `Load charset` can be used to load a 2048x8 pixels black/white .png as a custom C64 PETSCII charset.
+
+Button `Refresh` reloads the custom charset.
+
+### Character set remapping
+
+Default charset order for the PETSCII editor is non-linear. You can replace it with yours. If your custom charset file is e.g. `my-charset.png`, the custom remap for it is loaded from `my-charset-remap.txt`. If it does not exist, the previously loaded remap is used. You can copy a linear remap for your use from [/data/remap-normal.txt](/data/remap-normal.txt).
+
 ## Charset conversion script
 
 A script for converting 128x128 images to PETSCII charset and back can be found at [/extras/charset_conv.sh](extras/charset_conv.sh)
