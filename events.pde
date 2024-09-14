@@ -580,27 +580,20 @@ void mouseClicked()
     if(case_b.mouseover()) // Case switch
     {
         machine.setcase(!machine.lowercase);
-      
-        cset=new Petscii(machine.fontfile,machine.remapfile,machine.setfile);
-        cset.initrender(machine.charx,machine.chary);
-        current=cset.remap[curidx];
-        cset.shift=machine.shift; // Need to do this properly later
-        cset.grow=machine.grow;
+        machine.init_charset();
       
         System.gc();
     }
     if(charset_b.mouseover())  // load new charset
     {
         charsetselect=true;
-        message(machine.fontfile);
-        cset=new Petscii(machine.fontfile,machine.remapfile,machine.setfile);
-        cset.initrender(machine.charx,machine.chary);
-        current=cset.remap[curidx];
-        cset.shift=machine.shift; // Need to do this properly later
-        cset.grow=machine.grow;
-
+        machine.init_charset();
         System.gc();
 
+    }
+    if(charset_b.mouseover())  // load new charset
+        machine.init_charset();
+        System.gc();
     }
     if(grid_b.mouseover())
         prefs.grid=!prefs.grid;
@@ -695,11 +688,7 @@ void mouseClicked()
     {
         machine.setcase(!machine.lowercase);
         
-        cset=new Petscii(machine.fontfile,machine.remapfile,machine.setfile);
-        cset.initrender(machine.charx,machine.chary);
-        current=cset.remap[curidx];
-        cset.shift=machine.shift; // Need to do this properly later
-        cset.grow=machine.grow;
+        machine.init_charset();
         
         System.gc();
         message("Right click char selector to toggle case");

@@ -486,4 +486,12 @@ class Machine
     {
         message(NOT_IMPLEMENTED);
     }
+    void init_charset()
+    {
+        cset=new Petscii(fontfile,remapfile,setfile);
+        cset.initrender(charx,chary);
+        current=cset.remap[curidx];
+        cset.shift=shift; // Need to do this properly later
+        cset.grow=grow;
+    }
 }
