@@ -2,7 +2,8 @@
 ZOOM=2
 # Editor framerate, more than 60 may improve responsiveness
 FRAMERATE=60
-# One of: C64, C64FLICKER, VIC20, PET, PETHI, PLUS4. Leave empty for selector.
+# One of: C64, C64FLICKER, VIC20, PET, PETHI, PLUS4, DIRART
+# Leave empty for selector.
 MACHINE=
 # One of: PAL, NTSC, SQUARE. Used for stretch calculations.
 ASPECT=
