@@ -482,7 +482,7 @@ class Machine
     {
         message(NOT_IMPLEMENTED);
     }
-    void load_charset(String name)
+    void load_charset(String fontfile, String remapfile)
     {
         message(NOT_IMPLEMENTED);
     }

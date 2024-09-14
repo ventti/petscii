@@ -920,7 +920,11 @@ void requesters() // Various file selectors and dialogs that can't be called in 
         String s=fileselector(prefs.path,LOADPIX);
         if(s!=null)
         {
-            machine.load_charset(s);
+            String r = s.replace(".png", "-remap.txt");
+            File _f = new File(r);
+            if (! _f.exists())
+                r = machine.remapfile;
+            machine.load_charset(s, r);
         }
         charsetselect=false;
         repaint=true;

@@ -534,8 +534,9 @@ class C64 extends Machine
         
         message("Written "+name);
     }
-    void load_charset(String fontfile){
+    void load_charset(String fontfile, String remapfile){
         this.fontfile = fontfile;
-        message("Loaded " + this.fontfile);
+        this.remapfile = remapfile;
+        message("Loaded " + this.fontfile + " with remap " + this.remapfile);
     }
 }

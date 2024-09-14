@@ -592,6 +592,7 @@ void mouseClicked()
 
     }
     if(charset_b.mouseover())  // load new charset
+    {
         machine.init_charset();
         System.gc();
     }
