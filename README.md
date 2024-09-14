@@ -195,3 +195,25 @@ Examples can be found at [/extras/plugins](extras/plugins).
 
 Copy a script to PETSCII executable's folder as `plugin.js`, try `Ctrl-e` and see what happens.
 
+## Charset conversion script
+
+A script for converting 128x128 images to PETSCII charset and back can be found at [/extras/charset_conv.sh](extras/charset_conv.sh)
+
+### Usage
+
+```
+Usage: ./extras/charset_conv.sh [options] <input_file>
+
+Convert 128x128 pixels image to PETSCII editor charset or vice versa
+
+Options:
+  -h, --help      Show this help message and exit
+  -o, --output    Output file
+
+Examples: 
+    echo  Convert 128x128 pixels .png to charset or vice versa:
+  ./extras/charset_conv.sh input.png -o=output.png
+
+  Print dimensions of the image in (x,y) format:
+  ./extras/charset_conv.sh input.png
+```
