@@ -110,7 +110,7 @@ void settings() // Need to have this in Processing 3.x
         case PETHI: machine=new Pethi(); break;
         case PLUS4: machine=new Plus4(); break;
         case VIC20: machine=new Vic20(); break;
-        default: ;
+        default: machine=new C64();
     }
     cset.shift=machine.shift; // Need to do this properly later
     cset.grow=machine.grow;
