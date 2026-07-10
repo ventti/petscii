@@ -516,7 +516,7 @@ class Button
         tooltip = null;
         text=txt;
         butts.add(this);
-    }
+  }
     Button(int px,int py,String txt,String tip)
     {
         x=px;
@@ -531,17 +531,22 @@ class Button
         butts.add(this);
     }
     
+
+    
+    
     void draw()
     {
         if(mouseover())
         {
             if (tooltip != null)
                 message(tooltip);
+            fill(255);
             stroke(200,0,0,255);
         }
         else
+            fill(220);
             stroke(40);
-        fill(220);
+    
         rect(x,y,w,h,3,3,3,3);
         fill(40);
         text(text,x+5,y+16);
@@ -753,4 +758,5 @@ class UserFile
   String as_string(){
     return join(this.data, "\n");
   }
+  
 }
