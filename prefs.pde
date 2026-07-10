@@ -65,7 +65,8 @@ class Preferences
     
     final String FILENAME="image.c",   // Default name for an image
                  SETFILE="sets.txt",
-                 FONTFILE="arial.vlw", // UI font, 16 pix
+                 //FONTFILE="arial.vlw", // UI font, 16 pix
+                 FONTFILE="andalemono14.vlw",
                  PREFSFILE="prefs.txt";
     
     String    path="", // Default paths for files
