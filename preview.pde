@@ -1,69 +1,48 @@
-
-// New mini preview window code
-
-SecondApplet sa=null;
-boolean sa_visible=false;
-
-void miniwin_init()
+public class PreviewWindow extends PApplet //<>// //<>//
 {
-    if(sa==null) // No window yet
-    {
-        sa=new SecondApplet(X,Y);
-        sa_visible=true;
-    }
-    else // Hide/show
-    {
-        sa_visible=!sa_visible;
-        sa.getSurface().setVisible(sa_visible);
-    }
-    delay(200); // Seems to help with focus, maybe not needed any more?
-}
-
-void miniwin_refresh()
-{
-    if(sa==null)
-        return;
-    if(sa_visible)
-        sa.redraw();
-}
-
-public class SecondApplet extends PApplet
-{
-  int x,y;
+  int x,y, scale;
+  boolean vis;
   
-  SecondApplet(int xchars,int ychars)
+  PreviewWindow(int xchars,int ychars)
   {
-      super();
+      scale=1;
       x=xchars;
       y=ychars;
-      runSketch(new String[]{this.getClass().getName()}, this);
+      String[] a=new String[] {this.getClass().getName()};
+      PApplet.runSketch(a, this);
+      pWin = (PSurfaceAWT)surface;
+      pWin.setTitle("1x1 Pixel CSDb Preview");
+      vis = false;
+      pWin.setVisible(vis);
+      
   }
   public void settings()
   {
-      size(x*cset.xsize+prefs.PREBORDER_X*2,y*cset.ysize+prefs.PREBORDER_Y*2);
+      int xdim=x*cset.xsize+prefs.PREBORDER_X*2;
+      int ydim=y*cset.ysize+prefs.PREBORDER_Y*2;
+      size(xdim,ydim);
   }
   public void setup()
   {
-      surface.setTitle("1x1 Pixel CSDb Preview");
       noLoop();
   }
   public void draw()
   {
+//    if (!vis)
+  //    return;
     loadPixels();
-    
-    for(int i=0;i<sa.pixels.length;i++) // Border
+    for(int i=0;i<this.pixels.length;i++) // Border
         pixels[i]=machine.rgb[cf.border];
         
     for(int j=0;j<y;j++)
         for(int i=0;i<x;i++)
             drawsmallchar(prefs.PREBORDER_X+i*cset.xsize,prefs.PREBORDER_Y+j*cset.ysize, cf.chars[j*x+i],cf.colors[j*x+i],cf.bg);
-
     updatePixels();
   }
   void exit()
   {
-      sa_visible=false;
-      surface.setVisible(false);
+      pWin.setVisible(false);
+//      surface.setVisible(false);
   }
   
   void drawsmallchar(int x,int y,int num,int fg,int bg)
@@ -88,12 +67,18 @@ public class SecondApplet extends PApplet
                 pixels[idx+i+j*width]=b;
         }
   }
+  void show()
+  {
+    pWin.setVisible(true);
+    redraw();
+    loop();
+  }
   void keyPressed()
   {
       if(key==ESC)
       {
-          sa_visible=false;
-          surface.setVisible(false);
+          vis = false;
+          pWin.setVisible(vis);
           key=0;
       }
   }

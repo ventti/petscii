@@ -560,7 +560,7 @@ void mouseClicked()
     if(merge_b.mouseover())
         mergeselect=true;
     if(preview_b.mouseover()) // Preview window in or out
-        miniwin_init();
+        prevWin.show();
     
     if(export_prg_b.mouseover())
         machine.save_prg(ext(filename,".prg"));

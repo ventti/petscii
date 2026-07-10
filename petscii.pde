@@ -4,10 +4,14 @@
   See here: http://www.kameli.net/marq/?page_id=2717
   Changelog can be found on log.pde
 
-  - Marq/Fit^L!T^Dkd, with additions from Dr. TerrorZ/L!T
+  - Marq/Fit^L!T^Dkd, with additions from Dr. TerrorZ/L!T, further annihilated by Vent/Extend
 */
 
 import processing.awt.*;
+import java.awt.Frame;
+
+PreviewWindow prevWin;
+processing.awt.PSurfaceAWT pWin;
 
 // Global stuff
 Preferences prefs;
@@ -225,7 +229,7 @@ void setup()
     surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
     
     user_setup(); // Call users' own functions
-    
+    prevWin = new PreviewWindow(X,Y); // Build two, but show only one
     backupcounter=millis();
     loadPixels();
 }
@@ -807,10 +811,7 @@ void draw()
     }
 
     cf.updatethumb();
-    
-    if(sa!=null)
-        miniwin_refresh();
-    
+        
     shadowPressed=false; // Better reset now
     shadowButton=0;
     
@@ -830,6 +831,10 @@ void draw()
         println(Runtime.getRuntime().totalMemory());
         println(Runtime.getRuntime().freeMemory());
     }
+
+    if (prevWin.vis)
+      prevWin.redraw();
+
 } // Draw end
 
 void requesters() // Various file selectors and dialogs that can't be called in event handlers
