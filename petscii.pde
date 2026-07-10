@@ -864,6 +864,12 @@ void requesters() // Various file selectors and dialogs that can't be called in 
         refselect = false;
         repaint = true;
     }
+    if(importselect) // Fileselect "event" for Import (.prg)
+    {
+        selectInput("Select a .prg file", "importPrg");
+        importselect=false;
+        repaint=true;
+    }
 /*
     if(refselect) // Fileselect "event" for Reference image
     {

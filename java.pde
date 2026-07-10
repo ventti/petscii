@@ -186,6 +186,15 @@ void savePetscii(File selection)
     }
 }
 
+void importPrg(File selection)
+{
+    if(selection!=null)
+    {
+        machine.import_prg(selection.getAbsolutePath());
+        cf.updatethumb();
+    }
+}
+
 void loadPic(File selection)
 {
     if (selection != null)
