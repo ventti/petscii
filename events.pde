@@ -353,6 +353,14 @@ void keyPressed() // Keyboard commands
                     curidx=i;
         }
         
+        if (control){
+          int k = isKeyEventNumber(keyCode);
+          if (k > 0 && k < 5) {
+            prefs.zoom = k;
+            message("Zoom is set to " + k);
+          }
+        }
+        
         // And a similar one: grow characters by one line
         if(keyCode==UP || keyCode==DOWN)
         {
@@ -392,10 +400,17 @@ void keyPressed() // Keyboard commands
         }
         
         // A quick hack for one-button mice
+        int m = machine.maxbg+1;
+        
         if(key==',' && machine.palettemode)
-            cf.setbg((cf.bg+1)%(machine.maxbg+1));
+            cf.setbg((cf.bg+1) % m);
         if(key=='.' && machine.palettemode)
-            cf.setborder((cf.border+1)%(machine.maxborder+1));
+            cf.setborder((cf.border+1) % m);
+        if(key == ';' && machine.palettemode)  // TODO check this works with all keyboard layouts
+            cf.setbg(((cf.bg-1) % m + m) % m);
+        if(key == ':' && machine.palettemode)
+            cf.setborder(((cf.border-1) % m + m) % m);
+
         if(key=='§' && infield())
         {
             current=cf.getchar(blox,bloy);
@@ -775,4 +790,11 @@ void mouseWheel(processing.event.MouseEvent event)
 {
     if(!prefs.disablewheel)
         machine.wheelevent(event.getCount()); // Machine-specific mouse wheel handling
+}
+
+int isKeyEventNumber(int k) {
+  if (k >= KeyEvent.VK_0 && k <= KeyEvent.VK_9) {
+    return k - 48;  // VK_0 is 48, VK_9 is 57
+  }
+  return -1; // Return -1 if not in range
 }
