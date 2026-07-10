@@ -842,56 +842,29 @@ void requesters() // Various file selectors and dialogs that can't be called in 
     // UI file operations
     if(fileselect) // Fileselect "event" for Load
     {
-        String s=fileselector(prefs.path,LOADPETSCII);
-        if(s!=null)
-        {
-            if(machine.load_c(s,false))
-                filename=s;
-            else
-                message(s+" cannot be opened.");
-        }
+        selectInput("Select a file", "loadPetscii");
         fileselect=false;
-        repaint=true;
+        repaint=true; 
     }
     if(mergeselect) // Fileselect "event" for Load
     {
-        String s=fileselector(prefs.path,MERGEPETSCII);
-        if(s!=null)
-        {
-            if(!machine.load_c(s,true))
-                message(s+" cannot be opened.");
-        }
+        selectInput("Select a file", "loadPetscii");
         mergeselect=false;
         repaint=true;
     }
     if(saveselect) // Fileselect "event" for Save as
     {
-        String s=fileselector(prefs.path,SAVEPETSCII);
-        if(s!=null)
-        {
-            // Add extension if needed
-            if(s.length()<=2)
-                s+=".c";
-            else
-            {
-                if(!s.substring(s.length()-2).equals(".c") &&
-                   !s.substring(s.length()-2).equals(".C"))
-                    s+=".c";
-            }
-            filename=s;
-            
-            int i=0;
-            File f=new File(filename);
-            if(f.exists() && prefs.awtselector==0)
-            {
-                i=selector("Overwrite file?","Yes,No");
-            }
-            if(i==0)
-                machine.save_c(filename,false);
-        }
+        selectOutput("Save PETSCII .c", "savePetscii");
         saveselect=false;
         repaint=true;
     }
+    if(refselect) // Fileselect "event" for Reference image
+    {
+        selectInput("Select a file", "loadPic");
+        refselect = false;
+        repaint = true;
+    }
+/*
     if(refselect) // Fileselect "event" for Reference image
     {
         String s=fileselector(prefs.refpath,LOADPIX);
@@ -930,7 +903,7 @@ void requesters() // Various file selectors and dialogs that can't be called in 
         charsetselect=false;
         repaint=true;
     }
-
+*/
     if(exitpressed) // Trying to close the window, huh?
     {
         if(dirty) // Unsaved work?

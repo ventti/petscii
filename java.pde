@@ -103,11 +103,18 @@ class Selector extends JPanel implements ActionListener
         }
     }
 }
-
-// Select from a list
+int selector(String title, String opt)
+{
+  return -1;
+}
+/*// Select from a list
 int selector(String title,String opt)
 {
-    JFrame frame=new JFrame("");
+    PSurfaceAWT awtSurface = (PSurfaceAWT) surface;
+    SmoothCanvas canvas = (SmoothCanvas) awtSurface.getNative();
+    JFrame frame = (JFrame) canvas.getFrame();
+    //Frame frame = (Frame) (surface.getNative());
+  //  JFrame frame=new JFrame("");
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.setLocationRelativeTo(null);
     
@@ -133,15 +140,71 @@ int selector(String title,String opt)
     System.gc(); // It'll leak anyway...
     return(s.selection);
 }
-
+*/
 final int LOADPIX=0,
           LOADPETSCII=1,
           SAVEPETSCII=2,
           MERGEPETSCII=3,
           LOADPRG=4;
 
+void fileselector(String dir, int mode)
+{
+  selectInput("Select a file", "fileSelected");
+}
+
+void loadPetscii(File selection) 
+{
+    if (selection != null)
+    {
+        String fn = selection.getAbsolutePath();
+        if(machine.load_c(fn, false))
+        {
+            message(fn + " opened");
+            filename=fn;
+        }
+        else
+            message(selection.getName()+" cannot be opened.");
+    
+      }
+}
+
+void savePetscii(File selection)
+{
+    if(selection!=null)
+    {
+        filename = selection.getAbsolutePath();
+        if (!filename.endsWith(".c") && !filename.endsWith(".C"))
+            filename += ".c";
+        
+        int i=0;
+        if(selection.exists() && prefs.awtselector==0)
+        {
+            i=selector("Overwrite file?","Yes,No");
+        }
+        if(i==0)
+            machine.save_c(filename,false);
+    }
+}
+
+void loadPic(File selection)
+{
+    if (selection != null)
+    {
+        String filename = selection.getAbsolutePath();
+        if (loadreference(filename))
+        {
+            refname = filename;  
+            ref = 1;
+            reftime = selection.lastModified();
+        }
+        else
+            message(filename + " cannot be opened.");
+    
+    }
+}
+/*
 // File selector
-String fileselector(String dir,int mode)
+String OLDfileselector(String dir,int mode)
 {
     if(prefs.awtselector==1)
     {
@@ -153,7 +216,8 @@ String fileselector(String dir,int mode)
             fd.setFile(p.getFileName().toString());
         }
         else
-            fd=new FileDialog(frame, "Select a file", FileDialog.LOAD);
+            selectInput("Select a file", FileDialog.LOAD);
+            //fd=new FileDialog(frame, "Select a file", FileDialog.LOAD);
 
         fd.setDirectory(dir);        
         if(mode==LOADPIX) // Show image files
@@ -239,7 +303,7 @@ String fileselector(String dir,int mode)
             return null;
     }
 }
-
+*/
 class Filsu implements FilenameFilter // Had to hack something like this for the AWT FileDialog
 {
     String patt[];
