@@ -19,3 +19,5 @@ mac
 *.seq
 *.chars
 .DS_Store
+build/
+.idea/
