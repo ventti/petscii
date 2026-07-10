@@ -558,9 +558,14 @@ void mouseClicked()
     int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
         bloy=(mouseY-canvas_start)/machine.chary;
         
-    if(prefs.tablet && !tablethack)
+    // Only run when invoked from mouseReleased() (tablethack). The OS-generated
+    // mouseClicked() is unreliable: AWT fires it only when the pointer doesn't
+    // move between press and release, so the tiniest drag made toolbar buttons
+    // (and floodfill / char remap / frame clicks) silently miss their click.
+    // mouseReleased() always fires, so we route all click handling through it.
+    if(!tablethack)
         return;
-    
+
     // Load, save etc. button handling
     if(load_b.mouseover())
         fileselect=true;
@@ -776,13 +781,13 @@ void mousePressed()
 }
 void mouseReleased()
 {
-    if(prefs.tablet)
-    {
-        tablethack=true;
-        mouseClicked();
-        tablethack=false;
-    }
-    
+    // Drive click handling from here for ALL modes (not just tablet): a release
+    // always fires, whereas mouseClicked() is suppressed by any drag between
+    // press and release, which is what made buttons "not work on first click".
+    tablethack=true;
+    mouseClicked();
+    tablethack=false;
+
     repaint=true;
 }
 
