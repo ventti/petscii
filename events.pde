@@ -604,16 +604,13 @@ void mouseClicked()
       
         System.gc();
     }
-    if(charset_b.mouseover())  // load new charset
-    {
+    if(charset_b.mouseover()) // Pick a .png charset to load (handled in requesters())
         charsetselect=true;
+    if(charset_refresh_b.mouseover()) // Reload the current charset file from disk
+    {
         machine.init_charset();
         System.gc();
-
-    }
-    if(charset_b.mouseover()){  // load new charset
-        machine.init_charset();
-        System.gc();
+        message("Refreshed charset");
     }
     if(grid_b.mouseover())
         prefs.grid=!prefs.grid;

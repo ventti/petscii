@@ -534,8 +534,4 @@ class C64 extends Machine
         
         message("Written "+name);
     }
-    void load_charset(String fontfile){
-        this.fontfile = fontfile;
-        message("Loaded " + this.fontfile);
-    }
 }

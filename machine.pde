@@ -484,7 +484,23 @@ class Machine
     }
     void load_charset(String name)
     {
-        message(NOT_IMPLEMENTED);
+        PImage img=loadImage(name);
+        if(img==null)
+        {
+            message("Cannot open "+name);
+            return;
+        }
+
+        // Accept any .png that is 8px-aligned and splits into exactly 256 8x8 tiles.
+        if(img.width%8!=0 || img.height%8!=0 || (img.width/8)*(img.height/8)!=256)
+        {
+            message("Charset must be 8px-aligned and split into exactly 256 8x8 tiles");
+            return;
+        }
+
+        fontfile=name;
+        init_charset(); // reflows the tiles into the internal strip (see Charset.loadfont)
+        message("Loaded charset "+name);
     }
     void init_charset()
     {

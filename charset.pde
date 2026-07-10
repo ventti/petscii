@@ -105,14 +105,55 @@ class Charset
     {
         if(name==null)
             return true;
-        
-        bitmap=loadImage(name);
-        if(bitmap==null)
+
+        PImage img=loadImage(name);
+        if(img==null)
             return false;
-            
+
+        // The renderer expects a single-row strip of 256 chars (each 8x8), i.e.
+        // a 2048x8 image. Any image whose width and height are multiples of 8 and
+        // that holds exactly 256 tiles is reflowed here into that strip, reading
+        // tiles left-to-right then top-to-bottom. A 2048x8 file passes through
+        // unchanged.
+        PImage strip=tilestrip(img);
+        bitmap = (strip!=null) ? strip : img;
+
         ysize=bitmap.height;
-            
+
         return true;
+    }
+
+    // Rearrange an 8x8-tiled image into the internal single-row 256-char strip.
+    // Returns null if the image is not 8px-aligned or does not hold exactly 256 tiles.
+    PImage tilestrip(PImage img)
+    {
+        final int tw=8, th=8;
+
+        if(img.width%tw!=0 || img.height%th!=0)
+            return null;
+
+        int cols=img.width/tw,
+            rows=img.height/th;
+
+        if(cols*rows!=charactercount) // must be exactly 256 tiles
+            return null;
+
+        PImage strip=createImage(charactercount*tw, th, ARGB);
+        img.loadPixels();
+        strip.loadPixels();
+
+        for(int t=0;t<charactercount;t++)
+        {
+            int sx=(t%cols)*tw, // source tile origin, in reading order
+                sy=(t/cols)*th;
+
+            for(int y=0;y<th;y++)
+                for(int x=0;x<tw;x++)
+                    strip.pixels[t*tw+x +y*strip.width] = img.pixels[sx+x +(sy+y)*img.width];
+        }
+        strip.updatePixels();
+
+        return strip;
     }
     
     void initrender(int targetx,int targety)

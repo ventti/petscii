@@ -870,6 +870,13 @@ void requesters() // Various file selectors and dialogs that can't be called in 
         importselect=false;
         repaint=true;
     }
+    if(charsetselect) // Charsetselect "event" for Load charset
+    {
+        selectInput("Select a charset .png", "loadCharset");
+        charsetselect=false;
+        repaint=true;
+    }
+
 /*
     if(refselect) // Fileselect "event" for Reference image
     {

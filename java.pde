@@ -195,6 +195,12 @@ void importPrg(File selection)
     }
 }
 
+void loadCharset(File selection)
+{
+    if(selection!=null)
+        machine.load_charset(selection.getAbsolutePath());
+}
+
 void loadPic(File selection)
 {
     if (selection != null)
