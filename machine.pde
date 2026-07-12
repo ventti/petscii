@@ -156,7 +156,7 @@ class Machine
         if(lines==null)
             return false;
             
-        if(!lines[0].substring(0,13).equals("unsigned char")) // Not an image!
+        if(!lines[0].startsWith("unsigned char")) // Not an image! (bounds-safe on short lines)
         {
             message("Invalid image!");
             return false;
@@ -211,7 +211,7 @@ class Machine
         
         while(cont)
         {            
-            if(i<lines.length && lines[i].substring(0,13).equals("unsigned char")) // Another frame
+            if(i<lines.length && lines[i].startsWith("unsigned char")) // Another frame
             {
                 currentframe++;
                 if(currentframe!=0) // 1st one is there
