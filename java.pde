@@ -103,9 +103,16 @@ class Selector extends JPanel implements ActionListener
         }
     }
 }
+// Modal chooser: shows `title` with one button per comma-separated option in `opt`.
+// Returns the chosen option's index (0-based), or -1 if the dialog was dismissed.
+// Used for the startup platform picker and Yes/No confirmations.
 int selector(String title, String opt)
 {
-  return -1;
+    String[] options=splitTokens(opt, ",");
+    return JOptionPane.showOptionDialog(
+        null, title, "PETSCII",
+        JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+        null, options, options[0]);
 }
 /*// Select from a list
 int selector(String title,String opt)
