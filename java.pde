@@ -204,14 +204,19 @@ void importPrg(File selection)
 
 void loadCharset(File selection)
 {
+    // Rebuilds the charset (initrender); defer to the animation thread (requesters())
+    // so it can't race draw() while the glyph array is being rebuilt.
     if(selection!=null)
-        machine.load_charset(selection.getAbsolutePath());
+        pendingCharset=selection.getAbsolutePath();
 }
 
 void loadImageCharset(File selection)
 {
+    // This callback runs on the AWT event thread. Tracing an image rebuilds the
+    // charset and the whole canvas, so defer it to the animation thread (handled
+    // in requesters()) to avoid racing draw() while the charset is half-rebuilt.
     if(selection!=null)
-        machine.load_image_charset(selection.getAbsolutePath());
+        pendingImage=selection.getAbsolutePath();
 }
 
 // Modal integer prompt. Returns the entered value, `def` on invalid input,

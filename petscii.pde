@@ -73,7 +73,9 @@ float   avgms=0; // For profiling
 int     blink=0;
 
 String filename="",refname="",
-       curmessage="";
+       curmessage="",
+       pendingImage="",   // Image path chosen for "Image"; traced on the animation thread
+       pendingCharset=""; // Charset path chosen for "Charset"; loaded on the animation thread
 
 PImage reference;
 PFont  font;
@@ -1070,6 +1072,20 @@ void requesters() // Various file selectors and dialogs that can't be called in 
     {
         selectInput("Select an image .png (up to 320x200)", "loadImageCharset");
         imageselect=false;
+        repaint=true;
+    }
+    if(pendingCharset.length()>0) // Load the charset here, on the animation thread
+    {
+        String p=pendingCharset;
+        pendingCharset="";
+        machine.load_charset(p);
+        repaint=true;
+    }
+    if(pendingImage.length()>0) // Do the (heavy) tracing here, on the animation thread
+    {
+        String p=pendingImage;
+        pendingImage="";
+        machine.load_image_charset(p);
         repaint=true;
     }
     if(charsetsaveselect) // Save the current charset as a .png
