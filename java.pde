@@ -208,6 +208,48 @@ void loadCharset(File selection)
         machine.load_charset(selection.getAbsolutePath());
 }
 
+// Modal integer prompt. Returns the entered value, `def` on invalid input,
+// or -1 if the dialog was cancelled.
+int askInt(String prompt, int def)
+{
+    String s=JOptionPane.showInputDialog(null, prompt, ""+def);
+    if(s==null)
+        return -1; // cancelled
+    try { return Integer.parseInt(s.trim()); }
+    catch(Exception e){ return def; }
+}
+
+// Save the current charset (cset.bitmap, 256 chars of 8x8 b/w) as a .png,
+// laid out charsetSaveCPR characters per row.
+void saveCharsetPng(File selection)
+{
+    if(selection==null)
+        return;
+    String fn=selection.getAbsolutePath();
+    if(!fn.toLowerCase().endsWith(".png"))
+        fn+=".png";
+
+    int cpr=charsetSaveCPR;
+    int rows=(256+cpr-1)/cpr;
+
+    PImage out=createImage(cpr*8, rows*8, RGB);
+    out.loadPixels();
+    for(int i=0;i<out.pixels.length;i++)
+        out.pixels[i]=color(0);
+
+    cset.bitmap.loadPixels();
+    for(int c=0;c<256;c++)
+    {
+        int gx=(c%cpr)*8, gy=(c/cpr)*8;
+        for(int y=0;y<8;y++)
+            for(int x=0;x<8;x++)
+                out.pixels[(gx+x)+(gy+y)*out.width] = cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width];
+    }
+    out.updatePixels();
+    out.save(fn);
+    message("Saved charset ("+cpr+"/row) to "+fn);
+}
+
 void loadPic(File selection)
 {
     if (selection != null)

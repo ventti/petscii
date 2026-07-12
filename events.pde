@@ -605,6 +605,8 @@ void mouseClicked()
     }
     if(charset_b.mouseover()) // Pick a .png charset to load (handled in requesters())
         charsetselect=true;
+    if(charset_save_b.mouseover()) // Save current charset as .png (handled in requesters())
+        charsetsaveselect=true;
     if(machine_b.mouseover()) // Switch machine (confirmed + handled in requesters())
         machineselect=true;
     if(zoom_b.mouseover()) // Reset zoom to the configured default

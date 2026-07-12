@@ -532,7 +532,7 @@ class Machine
                 {
                     if(chars.size()>=256)
                     {
-                        message("Too many unique characters (>256) in the image");
+                        message("Cannot build charset: image has more than 256 unique characters");
                         return;
                     }
                     seen.put(sig, chars.size());

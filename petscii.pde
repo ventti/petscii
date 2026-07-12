@@ -63,7 +63,10 @@ boolean control=false,
         exitpressed=false,
         machineselect=false, // "Event" flag for switching machine
         resizing=false,      // A machine switch resized the window; wait for it to settle
-        charsetselect=false;
+        charsetselect=false,
+        charsetsaveselect=false; // "Event" flag for saving the charset as a .png
+
+int charsetSaveCPR=16; // Chars per row for the saved charset .png
         
 float   avgms=0; // For profiling
 int     blink=0;
@@ -95,7 +98,7 @@ int    col1_start,col1_end, // x
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        import_prg_b,export_prg_b,export_png_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
-       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,machine_b,zoom_b;
+       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,charset_save_b,machine_b,zoom_b;
 
 void settings() // Need to have this in Processing 3.x
 {
@@ -257,8 +260,9 @@ void create_buttons()
     case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
     charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png, or build one from a hires image (C64)");
     charset_refresh_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
-    machine_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3,"Machine", "Switch machine (discards unsaved work)");
-    zoom_b=new Button(buttons_start+205,canvas_start+prefs.UIROW*3,"Zoom", "Reset zoom to default; drag the window edge to zoom");
+    charset_save_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3, "Save CS", "Save the current charset as a .png");
+    machine_b=new Button(buttons_start+204,canvas_start+prefs.UIROW*3,"Machine", "Switch machine (discards unsaved work)");
+    zoom_b=new Button(buttons_start+272,canvas_start+prefs.UIROW*3,"Zoom", "Reset zoom to default; drag the window edge to zoom");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
     dupright_b=new Button(col1_end-152,canvas_start-26," >");
@@ -1057,6 +1061,19 @@ void requesters() // Various file selectors and dialogs that can't be called in 
     {
         selectInput("Select a charset or hires image .png", "loadCharset");
         charsetselect=false;
+        repaint=true;
+    }
+    if(charsetsaveselect) // Save the current charset as a .png
+    {
+        charsetsaveselect=false;
+        int cpr=askInt("Characters per row?", charsetSaveCPR);
+        if(cpr>=1 && cpr<=256)
+        {
+            charsetSaveCPR=cpr;
+            selectOutput("Save charset .png", "saveCharsetPng");
+        }
+        else if(cpr!=-1) // -1 = cancelled; anything else out of range
+            message("Characters per row must be 1..256");
         repaint=true;
     }
     if(machineselect) // Machineselect "event" for switching platform
