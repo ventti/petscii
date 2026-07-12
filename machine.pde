@@ -552,6 +552,8 @@ class Machine
         HashMap<Long,Integer> seen=new HashMap<Long,Integer>(); // block signature -> char index
         ArrayList<Long> chars=new ArrayList<Long>();            // unique 8x8 blocks as 64-bit bitmaps
         int blockchar[]=new int[cols*rows];                     // char index used by each image block
+        int blockfg[]=new int[cols*rows];                       // best-matching foreground colour per block
+        int bgpop[]=new int[rgb.length];                        // popularity of each paper colour (for global bg)
 
         for(int by=0;by<rows;by++)
             for(int bx=0;bx<cols;bx++)
@@ -568,7 +570,19 @@ class Machine
                     chars.add(sig);
                 }
                 blockchar[by*cols+bx]=seen.get(sig);
+
+                // Best-possible colours: ink = nearest palette colour to the block's
+                // lightest colour, paper = nearest to its darkest (voted into the bg).
+                int mm[]=block_minmax(img, bx*8, by*8);
+                blockfg[by*cols+bx]=nearest_pen(mm[1]);
+                bgpop[nearest_pen(mm[0])]++;
             }
+
+        // Global background = the most popular paper colour across the image
+        int globalbg=0;
+        for(int k=0;k<=maxbg && k<bgpop.length;k++)
+            if(bgpop[k]>bgpop[globalbg])
+                globalbg=k;
 
         // Render the unique blocks into the internal 2048x8 strip (black bg, white fg)
         PImage strip=createImage(256*8, 8, RGB);
@@ -591,20 +605,22 @@ class Machine
         fontfile=tmp;
         init_charset();
 
-        // Reconstruct the image on the canvas using the generated charset.
-        // Colours are omitted: ink is drawn in the current pen, over the background.
+        // Reconstruct the image on the canvas using the generated charset, giving
+        // each cell the palette colour that best matches its block's ink over the
+        // shared best-matching background colour.
         cf.undo_save();
+        cf.setbg(globalbg);
         int blank = seen.containsKey(0L) ? seen.get(0L) : cset.erasechar; // all-background char, if any
         for(int i=0;i<X*Y;i++)
         {
             cf.setchar(i, blank);
-            cf.setcolor(i, erasecolor);
+            cf.setcolor(i, globalbg);
         }
         for(int by=0;by<rows && by<Y;by++)
             for(int bx=0;bx<cols && bx<X;bx++)
             {
                 cf.setchar(bx,by, blockchar[by*cols+bx]);
-                cf.setcolor(bx,by, pen);
+                cf.setcolor(bx,by, blockfg[by*cols+bx]);
             }
         cf.updatethumb();
         repaint=true;
@@ -635,6 +651,35 @@ class Machine
                 sig=(sig<<1) | ((col==bgcol)?0L:1L);
             }
         return sig;
+    }
+
+    // Darkest (min luminance) and lightest (max luminance) colours in an 8x8 block,
+    // returned as {darkest, lightest}. Used to pick paper/ink colours.
+    int[] block_minmax(PImage img, int ox, int oy)
+    {
+        int minc=0, maxc=0;
+        float minl=1e9, maxl=-1;
+        for(int y=0;y<8;y++)
+            for(int x=0;x<8;x++)
+            {
+                int col=img.pixels[(ox+x)+(oy+y)*img.width];
+                float lum=0.299*red(col)+0.587*green(col)+0.114*blue(col);
+                if(lum<minl){ minl=lum; minc=col; }
+                if(lum>maxl){ maxl=lum; maxc=col; }
+            }
+        return new int[]{minc,maxc};
+    }
+
+    // Palette index (0..maxpen) whose colour is closest to the given RGB colour.
+    int nearest_pen(int col)
+    {
+        int best=0, bestd=Integer.MAX_VALUE;
+        for(int k=0;k<=maxpen && k<rgb.length;k++)
+        {
+            int d=rgbdistance(col, rgb[k]);
+            if(d<bestd){ bestd=d; best=k; }
+        }
+        return best;
     }
     void init_charset()
     {
