@@ -526,6 +526,9 @@ class Machine
     // reduce each block to black/white (colours omitted; the darkest colour in a
     // block becomes background, everything else foreground, so the pixel shape is
     // preserved), and collect the unique blocks (identical blocks are reused).
+    // The image is then reconstructed on the canvas with the generated charset
+    // (like loading the charset and running Shift-T for the same image), in a
+    // single foreground colour since colours are omitted.
     // Fails if there are more than 256 distinct characters.
     void charset_from_hires(PImage img)
     {
@@ -534,6 +537,7 @@ class Machine
 
         HashMap<Long,Integer> seen=new HashMap<Long,Integer>(); // block signature -> char index
         ArrayList<Long> chars=new ArrayList<Long>();            // unique 8x8 blocks as 64-bit bitmaps
+        int blockchar[]=new int[cols*rows];                     // char index used by each image block
 
         for(int by=0;by<rows;by++)
             for(int bx=0;bx<cols;bx++)
@@ -549,6 +553,7 @@ class Machine
                     seen.put(sig, chars.size());
                     chars.add(sig);
                 }
+                blockchar[by*cols+bx]=seen.get(sig);
             }
 
         // Render the unique blocks into the internal 2048x8 strip (black bg, white fg)
@@ -571,7 +576,26 @@ class Machine
         strip.save(tmp);
         fontfile=tmp;
         init_charset();
-        message("Generated "+chars.size()+" characters from the hires image");
+
+        // Reconstruct the image on the canvas using the generated charset.
+        // Colours are omitted: ink is drawn in the current pen, over the background.
+        cf.undo_save();
+        int blank = seen.containsKey(0L) ? seen.get(0L) : cset.erasechar; // all-background char, if any
+        for(int i=0;i<X*Y;i++)
+        {
+            cf.setchar(i, blank);
+            cf.setcolor(i, erasecolor);
+        }
+        for(int by=0;by<rows && by<Y;by++)
+            for(int bx=0;bx<cols && bx<X;bx++)
+            {
+                cf.setchar(bx,by, blockchar[by*cols+bx]);
+                cf.setcolor(bx,by, pen);
+            }
+        cf.updatethumb();
+        repaint=true;
+
+        message("Generated "+chars.size()+" chars and rendered the image");
     }
 
     // Reduce one 8x8 block to a black/white bitmap packed into a 64-bit signature
