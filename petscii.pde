@@ -255,7 +255,7 @@ void create_buttons()
     clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
     grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
     case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
-    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a custom charset (.png)");
+    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png, or build one from a hires image (C64)");
     charset_refresh_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
     machine_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3,"Machine", "Switch machine (discards unsaved work)");
     zoom_b=new Button(buttons_start+205,canvas_start+prefs.UIROW*3,"Zoom", "Reset zoom to default; drag the window edge to zoom");
@@ -1055,7 +1055,7 @@ void requesters() // Various file selectors and dialogs that can't be called in 
     }
     if(charsetselect) // Charsetselect "event" for Load charset
     {
-        selectInput("Select a charset .png", "loadCharset");
+        selectInput("Select a charset or hires image .png", "loadCharset");
         charsetselect=false;
         repaint=true;
     }

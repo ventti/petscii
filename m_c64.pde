@@ -53,6 +53,7 @@ class C64 extends Machine
 
         palettemode=true;
         lowercase=false;
+        hires=true;
         
         defaultborder=14;
         defaultbg=6;

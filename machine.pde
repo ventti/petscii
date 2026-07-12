@@ -39,7 +39,8 @@ class Machine
     final String NOT_IMPLEMENTED="Feature not implemented on this platform";
     
     boolean palettemode,
-            lowercase;
+            lowercase,
+            hires; // Can build a charset from an arbitrary hires image (C64/flicker)
     
     Machine()
     {
@@ -491,16 +492,100 @@ class Machine
             return;
         }
 
-        // Accept any .png that is 8px-aligned and splits into exactly 256 8x8 tiles.
-        if(img.width%8!=0 || img.height%8!=0 || (img.width/8)*(img.height/8)!=256)
+        // A ready-made charset: 8px-aligned and exactly 256 8x8 tiles.
+        if(img.width%8==0 && img.height%8==0 && (img.width/8)*(img.height/8)==256)
         {
-            message("Charset must be 8px-aligned and split into exactly 256 8x8 tiles");
+            fontfile=name;
+            init_charset(); // reflows the tiles into the internal strip (see Charset.loadfont)
+            message("Loaded charset "+name);
             return;
         }
 
-        fontfile=name;
-        init_charset(); // reflows the tiles into the internal strip (see Charset.loadfont)
-        message("Loaded charset "+name);
+        // On C64/C64 flicker, build a charset from an arbitrary hires image.
+        if(hires && img.width%8==0 && img.height%8==0 && img.width<=320 && img.height<=200)
+        {
+            charset_from_hires(img);
+            return;
+        }
+
+        message("Charset must be 256 8x8 tiles, or a hires image up to 320x200 (8px aligned)");
+    }
+
+    // Build a charset from an arbitrary hires image: split it into 8x8 blocks,
+    // reduce each block to black/white (colours omitted; the darkest colour in a
+    // block becomes background, everything else foreground, so the pixel shape is
+    // preserved), and collect the unique blocks (identical blocks are reused).
+    // Fails if there are more than 256 distinct characters.
+    void charset_from_hires(PImage img)
+    {
+        int cols=img.width/8, rows=img.height/8;
+        img.loadPixels();
+
+        HashMap<Long,Integer> seen=new HashMap<Long,Integer>(); // block signature -> char index
+        ArrayList<Long> chars=new ArrayList<Long>();            // unique 8x8 blocks as 64-bit bitmaps
+
+        for(int by=0;by<rows;by++)
+            for(int bx=0;bx<cols;bx++)
+            {
+                long sig=block_to_bw(img, bx*8, by*8);
+                if(!seen.containsKey(sig))
+                {
+                    if(chars.size()>=256)
+                    {
+                        message("Too many unique characters (>256) in the image");
+                        return;
+                    }
+                    seen.put(sig, chars.size());
+                    chars.add(sig);
+                }
+            }
+
+        // Render the unique blocks into the internal 2048x8 strip (black bg, white fg)
+        PImage strip=createImage(256*8, 8, RGB);
+        strip.loadPixels();
+        for(int i=0;i<strip.pixels.length;i++)
+            strip.pixels[i]=color(0);
+        for(int c=0;c<chars.size();c++)
+        {
+            long sig=chars.get(c);
+            for(int y=0;y<8;y++)
+                for(int x=0;x<8;x++)
+                    if(((sig>>(63-(y*8+x)))&1L)==1L)
+                        strip.pixels[(c*8+x)+y*strip.width]=color(255);
+        }
+        strip.updatePixels();
+
+        // Persist and load it through the normal charset path
+        String tmp=System.getProperty("java.io.tmpdir")+File.separator+"petscii-hirescharset.png";
+        strip.save(tmp);
+        fontfile=tmp;
+        init_charset();
+        message("Generated "+chars.size()+" characters from the hires image");
+    }
+
+    // Reduce one 8x8 block to a black/white bitmap packed into a 64-bit signature
+    // (bit 63 = top-left, row-major). The darkest colour present is background (0),
+    // any other colour is foreground (1); a single-colour block becomes all-0.
+    long block_to_bw(PImage img, int ox, int oy)
+    {
+        int bgcol=0;
+        float bglum=1e9;
+        for(int y=0;y<8;y++)
+            for(int x=0;x<8;x++)
+            {
+                int col=img.pixels[(ox+x)+(oy+y)*img.width];
+                float lum=0.299*red(col)+0.587*green(col)+0.114*blue(col);
+                if(lum<bglum){ bglum=lum; bgcol=col; }
+            }
+
+        long sig=0;
+        for(int y=0;y<8;y++)
+            for(int x=0;x<8;x++)
+            {
+                int col=img.pixels[(ox+x)+(oy+y)*img.width];
+                sig=(sig<<1) | ((col==bgcol)?0L:1L);
+            }
+        return sig;
     }
     void init_charset()
     {
