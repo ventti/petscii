@@ -124,7 +124,8 @@ class Charset
     }
 
     // Rearrange an 8x8-tiled image into the internal single-row 256-char strip.
-    // Returns null if the image is not 8px-aligned or does not hold exactly 256 tiles.
+    // Accepts up to 256 tiles (fewer than 256 leaves the remaining chars blank).
+    // Returns null if the image is not 8px-aligned or holds more than 256 tiles.
     PImage tilestrip(PImage img)
     {
         final int tw=8, th=8;
@@ -133,16 +134,21 @@ class Charset
             return null;
 
         int cols=img.width/tw,
-            rows=img.height/th;
+            rows=img.height/th,
+            tiles=cols*rows;
 
-        if(cols*rows!=charactercount) // must be exactly 256 tiles
+        if(tiles<1 || tiles>charactercount) // at most 256 tiles
             return null;
 
         PImage strip=createImage(charactercount*tw, th, ARGB);
         img.loadPixels();
         strip.loadPixels();
 
-        for(int t=0;t<charactercount;t++)
+        // Blank (black) background, so any chars beyond the supplied tiles are empty
+        for(int i=0;i<strip.pixels.length;i++)
+            strip.pixels[i]=0xff000000;
+
+        for(int t=0;t<tiles;t++)
         {
             int sx=(t%cols)*tw, // source tile origin, in reading order
                 sy=(t/cols)*th;

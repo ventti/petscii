@@ -492,23 +492,34 @@ class Machine
             return;
         }
 
-        // A ready-made charset: 8px-aligned and exactly 256 8x8 tiles.
-        if(img.width%8==0 && img.height%8==0 && (img.width/8)*(img.height/8)==256)
+        // Must be a grid of whole 8x8 tiles.
+        if(img.width%8!=0 || img.height%8!=0)
         {
-            fontfile=name;
-            init_charset(); // reflows the tiles into the internal strip (see Charset.loadfont)
-            message("Loaded charset "+name);
+            message("Charset image dimensions must be multiples of 8 pixels");
             return;
         }
 
-        // On C64/C64 flicker, build a charset from an arbitrary hires image.
-        if(hires && img.width%8==0 && img.height%8==0 && img.width<=320 && img.height<=200)
+        int tiles=(img.width/8)*(img.height/8);
+
+        // A ready-made charset grid: up to 256 tiles, loaded directly. Fewer than
+        // 256 tiles leaves the remaining characters blank (see Charset.tilestrip).
+        if(tiles<=256)
+        {
+            fontfile=name;
+            init_charset(); // reflows the tiles into the internal strip
+            message("Loaded charset "+name+" ("+tiles+" chars)");
+            return;
+        }
+
+        // More than 256 tiles. On C64/C64 flicker, build a charset from the image
+        // as a hires picture (identical 8x8 blocks are deduplicated to fit 256).
+        if(hires && img.width<=320 && img.height<=200)
         {
             charset_from_hires(img);
             return;
         }
 
-        message("Charset must be 256 8x8 tiles, or a hires image up to 320x200 (8px aligned)");
+        message("Charset has "+tiles+" tiles but the maximum is 256");
     }
 
     // Build a charset from an arbitrary hires image: split it into 8x8 blocks,
