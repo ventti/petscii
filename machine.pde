@@ -39,8 +39,7 @@ class Machine
     final String NOT_IMPLEMENTED="Feature not implemented on this platform";
     
     boolean palettemode,
-            lowercase,
-            hires; // Can build a charset from an arbitrary hires image (C64/flicker)
+            lowercase;
     
     Machine()
     {
@@ -501,8 +500,8 @@ class Machine
 
         int tiles=(img.width/8)*(img.height/8);
 
-        // A ready-made charset grid: up to 256 tiles, loaded directly. Fewer than
-        // 256 tiles leaves the remaining characters blank (see Charset.tilestrip).
+        // A charset grid: up to 256 tiles, loaded directly. Fewer than 256 tiles
+        // leaves the remaining characters blank (see Charset.tilestrip).
         if(tiles<=256)
         {
             fontfile=name;
@@ -511,15 +510,30 @@ class Machine
             return;
         }
 
-        // More than 256 tiles. On C64/C64 flicker, build a charset from the image
-        // as a hires picture (identical 8x8 blocks are deduplicated to fit 256).
-        if(hires && img.width<=320 && img.height<=200)
+        message("Charset has "+tiles+" tiles (max 256). Use \"Image\" to trace a picture.");
+    }
+
+    // Load an arbitrary image and trace it into a generated charset, reconstructing
+    // the image on the canvas (see charset_from_hires).
+    void load_image_charset(String name)
+    {
+        PImage img=loadImage(name);
+        if(img==null)
         {
-            charset_from_hires(img);
+            message("Cannot open "+name);
             return;
         }
-
-        message("Charset has "+tiles+" tiles but the maximum is 256");
+        if(img.width%8!=0 || img.height%8!=0)
+        {
+            message("Image dimensions must be multiples of 8 pixels");
+            return;
+        }
+        if(img.width>320 || img.height>200)
+        {
+            message("Image must be at most 320x200 pixels");
+            return;
+        }
+        charset_from_hires(img);
     }
 
     // Build a charset from an arbitrary hires image: split it into 8x8 blocks,

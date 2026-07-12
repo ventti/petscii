@@ -208,6 +208,12 @@ void loadCharset(File selection)
         machine.load_charset(selection.getAbsolutePath());
 }
 
+void loadImageCharset(File selection)
+{
+    if(selection!=null)
+        machine.load_image_charset(selection.getAbsolutePath());
+}
+
 // Modal integer prompt. Returns the entered value, `def` on invalid input,
 // or -1 if the dialog was cancelled.
 int askInt(String prompt, int def)

@@ -56,7 +56,6 @@ class C64flicker extends Machine
 
         palettemode=true;
         lowercase=false;
-        hires=true;
 
         // Calculate flicker colors
         flicker_rgb=new int[flicker_pairs.length/2];
