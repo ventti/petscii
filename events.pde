@@ -355,9 +355,8 @@ void keyPressed() // Keyboard commands
         
         if (control){
           int k = isKeyEventNumber(keyCode);
-          if (k > 0 && k < 5) {
-            prefs.zoom = k;
-            message("Zoom is set to " + k);
+          if (k > 0 && k <= prefs.MAXZOOM) {
+            apply_zoom(k); // Ctrl+<n> sets and applies the zoom level
           }
         }
         
@@ -580,7 +579,7 @@ void mouseClicked()
     if(merge_b.mouseover())
         mergeselect=true;
     if(preview_b.mouseover()) // Preview window in or out
-        prevWin.show();
+        showPreview();
     
     if(export_prg_b.mouseover())
         machine.save_prg(ext(filename,".prg"));
@@ -606,6 +605,10 @@ void mouseClicked()
     }
     if(charset_b.mouseover()) // Pick a .png charset to load (handled in requesters())
         charsetselect=true;
+    if(machine_b.mouseover()) // Switch machine (confirmed + handled in requesters())
+        machineselect=true;
+    if(zoom_b.mouseover()) // Reset zoom to the configured default
+        apply_zoom(defaultzoom);
     if(charset_refresh_b.mouseover()) // Reload the current charset file from disk
     {
         machine.init_charset();

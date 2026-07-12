@@ -35,7 +35,9 @@ class Preferences
               awtselector=-1, // Use AWT's file dialog instead of JFileChooser, -1 = platform default
               bwidth=12;      // Border width
 
-    final int UIWIDTH=265, // Approx total width for the UI buttons
+    final int BWIDTH=12,   // Base border width (scaled by zoom into bwidth)
+              MAXZOOM=8,   // Highest zoom the UI allows
+              UIWIDTH=265, // Approx total width for the UI buttons
               ANWIDTH=17*16, // Approx total width for the anim buttons plus frame counter
               UIROW=24,      // UI row size (text or button)
               PREBORDER_X=32, // Preview window border width

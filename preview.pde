@@ -44,6 +44,21 @@ public class PreviewWindow extends PApplet //<>// //<>//
       pWin.setVisible(false);
 //      surface.setVisible(false);
   }
+
+  // Tear down this preview window and its frame (used when rebuilding for a
+  // different machine resolution in switch_machine()).
+  void dispose()
+  {
+      noLoop();
+      try
+      {
+          processing.awt.PSurfaceAWT.SmoothCanvas c=(processing.awt.PSurfaceAWT.SmoothCanvas)pWin.getNative();
+          javax.swing.JFrame f=(javax.swing.JFrame)c.getFrame();
+          f.setVisible(false);
+          f.dispose();
+      }
+      catch(Exception e){}
+  }
   
   void drawsmallchar(int x,int y,int num,int fg,int bg)
   {

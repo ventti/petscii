@@ -61,6 +61,8 @@ boolean control=false,
         refselect=false,
         importselect=false,
         exitpressed=false,
+        machineselect=false, // "Event" flag for switching machine
+        resizing=false,      // A machine switch resized the window; wait for it to settle
         charsetselect=false;
         
 float   avgms=0; // For profiling
@@ -84,13 +86,16 @@ int    col1_start,col1_end, // x
        colorsel_start,
        charsel_start,charsel_end,
        anim_start, // Anim frames
-       anim_end;
+       anim_end,
+       winW,winH,  // Computed window size (for size() and runtime resize)
+       defaultzoom=2, // Zoom to restore with the "Zoom" button (set from prefs)
+       dragw,dragh,resizesettle=0; // Drag-to-zoom: track a settled user window resize
 
 // UI buttons
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        import_prg_b,export_prg_b,export_png_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
-       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b;
+       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,machine_b,zoom_b;
 
 void settings() // Need to have this in Processing 3.x
 {
@@ -98,14 +103,43 @@ void settings() // Need to have this in Processing 3.x
     prefs=new Preferences();
     prefs.readprefs(prefs.PREFSFILE);
     filename=prefs.FILENAME;
-    
+    defaultzoom=prefs.zoom; // Remember the configured zoom for the "Zoom" reset button
+
     javatheme(); // Choose look and feel for fileselectors and popups
     
     if(prefs.machine==-1)
         prefs.machine=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
     delay(200); // Superstition? 
     
-    switch(prefs.machine)
+    init_machine_instance(prefs.machine); // Builds machine + its charset
+
+    // Create an empty image
+    if(X==0 || Y==0)
+    {
+        X=machine.nativex;
+        Y=machine.nativey;
+    }
+
+    current=cset.remap[curidx];
+
+    cf=new Frame();
+    cf.setbg(machine.defaultbg);
+    cf.setborder(machine.defaultborder);
+    pen=machine.erasecolor;
+
+    clip_chars=new int[X*Y];
+    clip_colors=new int[X*Y];
+
+    prefs.bwidth=prefs.BWIDTH*prefs.zoom; // Border width scales with zoom
+    compute_layout();
+    size(winW, winH);
+    noSmooth();
+}
+
+// Instantiate the machine (and, via its constructor, the charset) for a platform id.
+void init_machine_instance(int m)
+{
+    switch(m)
     {
         case C64:   machine=new C64(); break;
         case C64FLICKER: machine=new C64flicker(); break;
@@ -118,29 +152,17 @@ void settings() // Need to have this in Processing 3.x
     }
     cset.shift=machine.shift; // Need to do this properly later
     cset.grow=machine.grow;
-        
-    // Create an empty image
-    if(X==0 || Y==0)
-    {
-        X=machine.nativex;
-        Y=machine.nativey;
-    }
-    
-    current=cset.remap[curidx];
-    
-    cf=new Frame();
-    cf.setbg(machine.defaultbg);
-    cf.setborder(machine.defaultborder);
-    pen=machine.erasecolor;
-        
-    clip_chars=new int[X*Y];
-    clip_colors=new int[X*Y];
+}
 
+// Compute all UI layout coordinates and the resulting window size (winW/winH)
+// from the current machine, X and Y. Does not resize the window (see size()
+// in settings() for startup and surface.setSize() in switch_machine()).
+void compute_layout()
+{
     // Various UI locations: x
-    prefs.bwidth*=prefs.zoom;
     col1_start=prefs.bwidth;
     col1_end=col1_start+max(X*machine.charx,prefs.ANWIDTH); // fit 2 frames at least
-    
+
     if(16*machine.charx>prefs.UIWIDTH) // Charsel wider than buttonbar
     {
         col2_start=col1_end+prefs.bwidth;
@@ -159,14 +181,14 @@ void settings() // Need to have this in Processing 3.x
     colorsel_start=canvas_start+4*prefs.UIROW+5;
     charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
     charsel_end=charsel_start+cset.charactercount/16*machine.chary;
-    
-    size(col2_end+prefs.bwidth, max(charsel_end+prefs.UIROW+prefs.bwidth, canvas_end+prefs.UIROW+prefs.bwidth));
-    noSmooth();
+
+    winW=col2_end+prefs.bwidth;
+    winH=max(charsel_end+prefs.UIROW+prefs.bwidth, canvas_end+prefs.UIROW+prefs.bwidth);
 
     // Anim frames' location
     anim_start=col1_start+70;
     anim_end=col1_end-216;
-    
+
     if((anim_end-anim_start)/X<6) // if we can't fit enough frames in the normal location
         if(anim_end-anim_start < col2_end-(col1_end+prefs.bwidth)) // And there is more space on the right...
         {
@@ -181,7 +203,9 @@ void setup()
     PSurfaceAWT.SmoothCanvas sur=(PSurfaceAWT.SmoothCanvas)surface.getNative();
     JFrame j=(JFrame)sur.getFrame();
     j.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    
+    surface.setResizable(true); // Allow drag-to-zoom (handled in draw())
+    dragw=winW; dragh=winH;
+
     frameRate(prefs.framerate);
     noStroke();
     
@@ -190,35 +214,8 @@ void setup()
     
     anim_init();
 
-    // Create the UI buttons
-    load_b=new Button(buttons_start,canvas_start,"Load");
-    merge_b=new Button(buttons_start+49,canvas_start,"Merge");
-    save_b=new Button(buttons_start+107,canvas_start,"Save");
-    saveas_b=new Button(buttons_start+156,canvas_start,"Save as");
-    ref_b=new Button(buttons_start+228,canvas_start,"Ref.");
-    
-    import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg");
-    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg");
-    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png");
-    preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview");
-    
-    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo");
-    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo");
-    clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
-    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
-    case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
-    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Load charset", "Load a custom charset");
-    charset_refresh_b=new Button(buttons_start+105,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
+    create_buttons();
 
-    dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
-    dupright_b=new Button(col1_end-152,canvas_start-26," >");
-    cut_b=new Button(col1_end-126,canvas_start-26,"Cut");
-    pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
-    pasteright_b=new Button(col1_end-22,canvas_start-26," >");
-    
-    // Disable and change not implemented buttons
-    machine.ownbuttons();
-    
     // autoload this image on startup
     if (prefs.inputfile != "")
     {
@@ -232,6 +229,147 @@ void setup()
     prevWin = new PreviewWindow(X,Y); // Build two, but show only one
     backupcounter=millis();
     loadPixels();
+}
+
+// (Re)create every UI button at the current layout coordinates. Buttons register
+// themselves in the global butts list, so clear it first to avoid duplicates when
+// switching machines. Fresh buttons are enabled; ownbuttons() re-disables the
+// features the current machine does not support.
+void create_buttons()
+{
+    butts.clear();
+
+    load_b=new Button(buttons_start,canvas_start,"Load");
+    merge_b=new Button(buttons_start+49,canvas_start,"Merge");
+    save_b=new Button(buttons_start+107,canvas_start,"Save");
+    saveas_b=new Button(buttons_start+156,canvas_start,"Save as");
+    ref_b=new Button(buttons_start+228,canvas_start,"Ref.");
+
+    import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg");
+    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg");
+    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png");
+    preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview");
+
+    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo");
+    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo");
+    clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
+    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
+    case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
+    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a custom charset (.png)");
+    charset_refresh_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
+    machine_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3,"Machine", "Switch machine (discards unsaved work)");
+    zoom_b=new Button(buttons_start+205,canvas_start+prefs.UIROW*3,"Zoom", "Reset zoom to default; drag the window edge to zoom");
+
+    dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
+    dupright_b=new Button(col1_end-152,canvas_start-26," >");
+    cut_b=new Button(col1_end-126,canvas_start-26,"Cut");
+    pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
+    pasteright_b=new Button(col1_end-22,canvas_start-26," >");
+
+    // Disable and change not implemented buttons
+    machine.ownbuttons();
+}
+
+// Switch to another machine at runtime. This is destructive: it starts a fresh,
+// native-sized document for the new platform (charset, colors, resolution, window
+// size, layout and buttons are all rebuilt). Confirmation for unsaved work is
+// handled by the caller (see requesters()).
+void switch_machine(int m)
+{
+    init_machine_instance(m);   // New machine + charset
+    prefs.machine=m;
+
+    // Fresh, native-sized document for the new platform
+    X=machine.nativex;
+    Y=machine.nativey;
+    current=cset.remap[curidx];
+
+    cf=new Frame();
+    cf.setbg(machine.defaultbg);
+    cf.setborder(machine.defaultborder);
+    pen=machine.erasecolor;
+
+    clip_chars=new int[X*Y];
+    clip_colors=new int[X*Y];
+    anim_init(); // Rebuild the frame list around the new cf
+
+    // Reset transient editing state that may reference the old geometry
+    selw=selh=0;
+    typing=0;
+    floodfill=0;
+    filename=prefs.FILENAME;
+    dirty=false;
+
+    compute_layout();
+    surface.setSize(winW, winH);
+    create_buttons();
+
+    // Freeze any open preview: its buffer is sized for the old resolution and
+    // references the now-resized frame. Stop it rendering; it is rebuilt at the
+    // correct size the next time the user opens it (see showPreview()). We must
+    // NOT dispose/recreate windows here: doing AWT window lifecycle work on the
+    // animation thread while the main window is resizing corrupts the render
+    // buffer strategy (IllegalStateException: Component must have a valid peer).
+    if(prevWin!=null)
+    {
+        prevWin.vis=false;
+        prevWin.noLoop();
+    }
+
+    surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
+    // surface.setSize() is asynchronous: width/height and pixels[] are not updated
+    // until the AWT resize is applied on a later frame. Defer touching pixels[]
+    // (see the resize-settle guard in draw()) to avoid writing past a stale buffer.
+    resizing=true;
+    message("Switched to "+machinenames[m]);
+    repaint=true;
+}
+
+// Open the 1:1 preview window, (re)creating it if its size no longer matches the
+// current machine's resolution. Done lazily here (never during a machine switch)
+// so window teardown/creation can't race the main window's resize.
+void showPreview()
+{
+    if(prevWin==null || prevWin.x!=X || prevWin.y!=Y)
+    {
+        if(prevWin!=null)
+            prevWin.dispose();
+        prevWin=new PreviewWindow(X,Y);
+    }
+    prevWin.show();
+}
+
+// Re-render the current machine at a new integer zoom. Non-destructive: the
+// artwork (frames), custom charset and case are all preserved; only the char
+// size, charset render, layout and window size change.
+void apply_zoom(int z)
+{
+    z=constrain(z,1,prefs.MAXZOOM);
+    if(z==prefs.zoom && width==winW && height==winH)
+        return; // nothing to do
+
+    prefs.zoom=z;
+    prefs.bwidth=prefs.BWIDTH*z;
+
+    // Preserve charset customisation and case across the machine re-init
+    String savedfont=machine.fontfile, savedremap=machine.remapfile, savedset=machine.setfile;
+    boolean savedcase=machine.lowercase;
+
+    init_machine_instance(prefs.machine); // Recomputes charx/chary for the new zoom
+
+    machine.fontfile=savedfont;
+    machine.remapfile=savedremap;
+    machine.setfile=savedset;
+    machine.lowercase=savedcase;
+    machine.init_charset(); // Re-render the (custom) charset at the new char size
+
+    compute_layout();
+    surface.setSize(winW,winH);
+    create_buttons();
+    // Preview is 1:1 (zoom-independent), so it needs no rebuild here.
+    resizing=true; // Wait for the async resize to settle before drawing (see draw())
+    repaint=true;
+    message("Zoom x"+z);
 }
 
 void draw()
@@ -256,7 +394,52 @@ void draw()
         System.gc();
     
     requesters(); // File open/save and other dialogs
-    
+
+    // Drag-to-zoom: the window is resizable. While the actual window size differs
+    // from our layout size the user is dragging its edge; we must NOT render then
+    // (pixels[] would be stale vs width*height). Once the size settles for a few
+    // frames, snap to the nearest integer zoom (or back to the exact layout size).
+    if(!resizing && (width!=winW || height!=winH))
+    {
+        if(width==dragw && height==dragh)
+            resizesettle++;
+        else
+        {
+            resizesettle=0;
+            dragw=width; dragh=height;
+        }
+        if(resizesettle>=4) // stable -> the drag has finished
+        {
+            resizesettle=0;
+            float ratio=((float)width/winW + (float)height/winH)/2.0;
+            int nz=constrain(round(prefs.zoom*ratio),1,prefs.MAXZOOM);
+            if(nz!=prefs.zoom)
+                apply_zoom(nz);             // rescale content to the new zoom
+            else
+            {
+                surface.setSize(winW,winH); // no zoom change: snap back to exact size
+                resizing=true;
+            }
+        }
+        return; // don't draw while the window size is inconsistent
+    }
+
+    // A programmatic resize (zoom or machine switch) is in flight. Don't render
+    // until the window and its pixel buffer are consistent at the target size,
+    // otherwise the layout writes past a stale pixels[] array. Placed BEFORE the
+    // repaint gate so it always runs while resizing (even if repaint is false).
+    if(resizing)
+    {
+        loadPixels(); // grab whatever the (possibly mid-resize) graphics buffer is now
+        if(width!=winW || height!=winH || pixels.length!=width*height)
+        {
+            surface.setSize(winW,winH); // re-assert target (a single setSize can be dropped)
+            return;                     // not settled yet; check again next frame
+        }
+        resizing=false;
+        repaint=true; // force a full redraw at the new size
+    }
+
     // Better remove modifiers when switching a window
     if(!focused)
     {
@@ -364,7 +547,7 @@ void draw()
         return;
     }
     repaint=false;
-    
+
     // Border
     //background(rgb[border]); // We don't need loadPixels (I hope)
     //loadPixels();
@@ -874,6 +1057,22 @@ void requesters() // Various file selectors and dialogs that can't be called in 
     {
         selectInput("Select a charset .png", "loadCharset");
         charsetselect=false;
+        repaint=true;
+    }
+    if(machineselect) // Machineselect "event" for switching platform
+    {
+        machineselect=false;
+
+        // Switching is destructive: confirm first if there is unsaved work
+        boolean proceed = !dirty || selector("Discard unsaved changes and switch machine?","Yes,No")==0;
+        if(proceed)
+        {
+            int m=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
+            if(m<0 || m==prefs.machine)
+                message(m==prefs.machine ? "Already on "+machinenames[m] : "Machine unchanged");
+            else
+                switch_machine(m);
+        }
         repaint=true;
     }
 
