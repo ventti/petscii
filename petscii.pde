@@ -65,7 +65,10 @@ boolean control=false,
         resizing=false,      // A machine switch resized the window; wait for it to settle
         charsetselect=false,
         charsetsaveselect=false, // "Event" flag for saving the charset as a .png
+        charsetprgselect=false,  // "Event" flag for saving the charset as a C64 .prg
         imageselect=false;       // "Event" flag for tracing an image into a charset
+
+int charsetPrgAddr=0x3800; // Load address for the exported charset .prg
 
 int charsetSaveCPR=16; // Chars per row for the saved charset .png
         
@@ -101,7 +104,7 @@ int    col1_start,col1_end, // x
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        import_prg_b,export_prg_b,export_png_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
-       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,charset_save_b,image_b,machine_b,zoom_b;
+       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,charset_save_b,charset_prg_b,image_b,machine_b,zoom_b;
 
 void settings() // Need to have this in Processing 3.x
 {
@@ -247,30 +250,32 @@ void create_buttons()
 
     load_b=new Button(buttons_start,canvas_start,"Load", "Load a PETSCII image (.c)");
     merge_b=new Button(buttons_start+49,canvas_start,"Merge", "Merge a PETSCII image (.c) into the current one");
-    save_b=new Button(buttons_start+107,canvas_start,"Save", "Save the image over the current file (.c)");
+    save_b=new Button(buttons_start+107,canvas_start,"Save", "Save the image over the current file (.c)  [s]");
     saveas_b=new Button(buttons_start+156,canvas_start,"Save as", "Save the image to a new file (.c)");
     ref_b=new Button(buttons_start+228,canvas_start,"Ref.", "Load a reference image to trace over");
 
     import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg", "Import a C64 .prg screen");
-    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg", "Export the image as a C64 .prg");
-    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png", "Export the image as a .png screenshot");
+    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg", "Export the image as a C64 .prg  [e]");
+    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png", "Export the image as a .png screenshot  [p]");
     preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview", "Toggle the 1:1 pixel preview window");
 
-    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo", "Undo the last change");
-    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo", "Redo the last undone change");
+    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo", "Undo the last change  [u]");
+    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo", "Redo the last undone change  [Shift-U]");
     clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear", "Clear the canvas");
-    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid", "Toggle the character grid");
+    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid", "Toggle the character grid  [g]");
     case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case", "Toggle upper/lower case charset");
+
     charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png (grid of up to 256 8x8 chars)");
     charset_refresh_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
-    charset_save_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3, "Save CS", "Save the current charset as a .png");
-    image_b=new Button(buttons_start+204,canvas_start+prefs.UIROW*3, "Image", "Trace an image into a generated charset and onto the canvas");
+    image_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3, "Image", "Trace an image into a generated charset and onto the canvas");
+    charset_save_b=new Button(buttons_start+188,canvas_start+prefs.UIROW*3, "PNG", "Save the current charset as a .png");
+    charset_prg_b=new Button(buttons_start+224,canvas_start+prefs.UIROW*3, "PRG", "Save the charset as a C64 .prg (load address + 2KB data)");
 
     machine_b=new Button(buttons_start,canvas_start+prefs.UIROW*4,"Machine", "Switch machine (discards unsaved work)");
-    zoom_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*4,"Zoom", "Reset zoom to default; drag the window edge to zoom");
+    zoom_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*4,"Zoom", "Reset zoom to default (Ctrl+1..8 to set); drag the window edge to zoom");
 
     dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup", "Duplicate this frame to the left");
-    dupright_b=new Button(col1_end-152,canvas_start-26," >", "Duplicate this frame to the right");
+    dupright_b=new Button(col1_end-152,canvas_start-26," >", "Duplicate this frame to the right  [d]");
     cut_b=new Button(col1_end-126,canvas_start-26,"Cut", "Cut this frame to the clipboard");
     pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste", "Paste the clipboard frame to the left");
     pasteright_b=new Button(col1_end-22,canvas_start-26," >", "Paste the clipboard frame to the right");
@@ -1099,6 +1104,19 @@ void requesters() // Various file selectors and dialogs that can't be called in 
         }
         else if(cpr!=-1) // -1 = cancelled; anything else out of range
             message("Characters per row must be 1..256");
+        repaint=true;
+    }
+    if(charsetprgselect) // Save the current charset as a C64 .prg
+    {
+        charsetprgselect=false;
+        int addr=askAddr("Load address? ($hex or decimal)", charsetPrgAddr);
+        if(addr>=0 && addr<=0xffff)
+        {
+            charsetPrgAddr=addr;
+            selectOutput("Save charset .prg", "saveCharsetPrg");
+        }
+        else if(addr!=-1) // -1 = cancelled
+            message("Load address must be 0..65535");
         repaint=true;
     }
     if(machineselect) // Machineselect "event" for switching platform

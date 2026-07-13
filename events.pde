@@ -607,6 +607,8 @@ void mouseClicked()
         charsetselect=true;
     if(charset_save_b.mouseover()) // Save current charset as .png (handled in requesters())
         charsetsaveselect=true;
+    if(charset_prg_b.mouseover()) // Save current charset as C64 .prg (handled in requesters())
+        charsetprgselect=true;
     if(image_b.mouseover()) // Trace an image into a charset + canvas (handled in requesters())
         imageselect=true;
     if(machine_b.mouseover()) // Switch machine (confirmed + handled in requesters())

@@ -261,6 +261,52 @@ void saveCharsetPng(File selection)
     message("Saved charset ("+cpr+"/row) to "+fn);
 }
 
+// Modal address prompt. Accepts $hex, 0xhex or decimal. Returns the value,
+// `def` on invalid input, or -1 if the dialog was cancelled.
+int askAddr(String prompt, int def)
+{
+    String s=JOptionPane.showInputDialog(null, prompt, "$"+hex(def,4));
+    if(s==null)
+        return -1;
+    s=s.trim();
+    try {
+        if(s.startsWith("$"))  return Integer.parseInt(s.substring(1),16);
+        if(s.startsWith("0x") || s.startsWith("0X")) return Integer.parseInt(s.substring(2),16);
+        return Integer.parseInt(s);
+    }
+    catch(Exception e){ return def; }
+}
+
+// Save the current charset (256 chars, 8 bytes each) as a C64 .prg: a 2-byte
+// little-endian load address followed by 2048 bytes of character bitmap data
+// (bit 7 = leftmost pixel; a foreground/non-black pixel sets the bit).
+void saveCharsetPrg(File selection)
+{
+    if(selection==null)
+        return;
+    String fn=selection.getAbsolutePath();
+    if(!fn.toLowerCase().endsWith(".prg"))
+        fn+=".prg";
+
+    int addr=charsetPrgAddr;
+    byte[] out=new byte[2+256*8];
+    out[0]=(byte)(addr&0xff);        // load address, low byte
+    out[1]=(byte)((addr>>8)&0xff);   // load address, high byte
+
+    cset.bitmap.loadPixels();
+    for(int c=0;c<256;c++)
+        for(int y=0;y<8;y++)
+        {
+            int b=0;
+            for(int x=0;x<8;x++)
+                if((cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width]&0xff)>20)
+                    b|=(1<<(7-x));
+            out[2+c*8+y]=(byte)b;
+        }
+    saveBytes(fn,out);
+    message("Saved charset .prg to "+fn+" ($"+hex(addr,4)+")");
+}
+
 void loadPic(File selection)
 {
     if (selection != null)
