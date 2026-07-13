@@ -245,22 +245,22 @@ void create_buttons()
 {
     butts.clear();
 
-    load_b=new Button(buttons_start,canvas_start,"Load");
-    merge_b=new Button(buttons_start+49,canvas_start,"Merge");
-    save_b=new Button(buttons_start+107,canvas_start,"Save");
-    saveas_b=new Button(buttons_start+156,canvas_start,"Save as");
-    ref_b=new Button(buttons_start+228,canvas_start,"Ref.");
+    load_b=new Button(buttons_start,canvas_start,"Load", "Load a PETSCII image (.c)");
+    merge_b=new Button(buttons_start+49,canvas_start,"Merge", "Merge a PETSCII image (.c) into the current one");
+    save_b=new Button(buttons_start+107,canvas_start,"Save", "Save the image over the current file (.c)");
+    saveas_b=new Button(buttons_start+156,canvas_start,"Save as", "Save the image to a new file (.c)");
+    ref_b=new Button(buttons_start+228,canvas_start,"Ref.", "Load a reference image to trace over");
 
-    import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg");
-    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg");
-    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png");
-    preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview");
+    import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg", "Import a C64 .prg screen");
+    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg", "Export the image as a C64 .prg");
+    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png", "Export the image as a .png screenshot");
+    preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview", "Toggle the 1:1 pixel preview window");
 
-    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo");
-    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo");
-    clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear");
-    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid");
-    case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case");
+    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo", "Undo the last change");
+    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo", "Redo the last undone change");
+    clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear", "Clear the canvas");
+    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid", "Toggle the character grid");
+    case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case", "Toggle upper/lower case charset");
     charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png (grid of up to 256 8x8 chars)");
     charset_refresh_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
     charset_save_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3, "Save CS", "Save the current charset as a .png");
@@ -269,11 +269,11 @@ void create_buttons()
     machine_b=new Button(buttons_start,canvas_start+prefs.UIROW*4,"Machine", "Switch machine (discards unsaved work)");
     zoom_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*4,"Zoom", "Reset zoom to default; drag the window edge to zoom");
 
-    dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup");
-    dupright_b=new Button(col1_end-152,canvas_start-26," >");
-    cut_b=new Button(col1_end-126,canvas_start-26,"Cut");
-    pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste");
-    pasteright_b=new Button(col1_end-22,canvas_start-26," >");
+    dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup", "Duplicate this frame to the left");
+    dupright_b=new Button(col1_end-152,canvas_start-26," >", "Duplicate this frame to the right");
+    cut_b=new Button(col1_end-126,canvas_start-26,"Cut", "Cut this frame to the clipboard");
+    pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste", "Paste the clipboard frame to the left");
+    pasteright_b=new Button(col1_end-22,canvas_start-26," >", "Paste the clipboard frame to the right");
 
     // Disable and change not implemented buttons
     machine.ownbuttons();
