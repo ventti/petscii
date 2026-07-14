@@ -541,35 +541,30 @@ class Machine
     // block becomes background, everything else foreground, so the pixel shape is
     // preserved), and collect the unique blocks (identical blocks are reused).
     // The image is then reconstructed on the canvas with the generated charset
-    // (like loading the charset and running Shift-T for the same image), in a
-    // single foreground colour since colours are omitted.
-    // Fails if there are more than 256 distinct characters.
+    // (like loading the charset and running Shift-T for the same image), each cell
+    // in its best-matching palette colour.
+    // If the image has more than 256 distinct characters it falls back to a
+    // best-effort result: the 256 most frequent glyphs are kept and every other
+    // block is drawn with its nearest kept glyph, producing an approximate image.
     void charset_from_hires(PImage img)
     {
         int cols=img.width/8, rows=img.height/8;
         img.loadPixels();
 
-        HashMap<Long,Integer> seen=new HashMap<Long,Integer>(); // block signature -> char index
-        ArrayList<Long> chars=new ArrayList<Long>();            // unique 8x8 blocks as 64-bit bitmaps
-        int blockchar[]=new int[cols*rows];                     // char index used by each image block
-        int blockfg[]=new int[cols*rows];                       // best-matching foreground colour per block
-        int bgpop[]=new int[rgb.length];                        // popularity of each paper colour (for global bg)
+        long blocksig[]=new long[cols*rows]; // b/w signature of each image block
+        int blockfg[]=new int[cols*rows];    // best-matching foreground colour per block
+        int bgpop[]=new int[rgb.length];     // popularity of each paper colour (for global bg)
+        HashMap<Long,Integer> freq=new HashMap<Long,Integer>(); // how often each glyph occurs
+        ArrayList<Long> uniq=new ArrayList<Long>();             // distinct glyphs (first-appearance order)
 
         for(int by=0;by<rows;by++)
             for(int bx=0;bx<cols;bx++)
             {
                 long sig=block_to_bw(img, bx*8, by*8);
-                if(!seen.containsKey(sig))
-                {
-                    if(chars.size()>=256)
-                    {
-                        message("Cannot build charset: image has more than 256 unique characters");
-                        return;
-                    }
-                    seen.put(sig, chars.size());
-                    chars.add(sig);
-                }
-                blockchar[by*cols+bx]=seen.get(sig);
+                blocksig[by*cols+bx]=sig;
+                if(!freq.containsKey(sig))
+                    uniq.add(sig);
+                freq.put(sig, (freq.containsKey(sig)?freq.get(sig):0)+1);
 
                 // Best-possible colours: ink = nearest palette colour to the block's
                 // lightest colour, paper = nearest to its darkest (voted into the bg).
@@ -578,20 +573,55 @@ class Machine
                 bgpop[nearest_pen(mm[0])]++;
             }
 
+        // Choose the character set: all distinct glyphs, or (best effort) the 256
+        // most frequent ones when there are more than 256.
+        boolean besteffort = uniq.size()>256;
+        ArrayList<Long> kept;
+        if(!besteffort)
+            kept=uniq;
+        else
+        {
+            ArrayList<Long> all=new ArrayList<Long>(uniq);
+            final HashMap<Long,Integer> f=freq;
+            Collections.sort(all, new Comparator<Long>(){
+                public int compare(Long a, Long b){ return f.get(b)-f.get(a); } // most frequent first
+            });
+            kept=new ArrayList<Long>(all.subList(0,256));
+        }
+
+        HashMap<Long,Integer> idx=new HashMap<Long,Integer>(); // glyph -> char index
+        for(int k=0;k<kept.size();k++)
+            idx.put(kept.get(k), k);
+
+        // Map every block to a kept char (its own, or the nearest kept glyph)
+        int blockchar[]=new int[cols*rows];
+        HashMap<Long,Integer> nearest=new HashMap<Long,Integer>(); // cache for dropped glyphs
+        for(int i=0;i<cols*rows;i++)
+        {
+            long sig=blocksig[i];
+            Integer ix=idx.get(sig);
+            if(ix==null)
+            {
+                ix=nearest.get(sig);
+                if(ix==null){ ix=nearest_kept_index(sig, kept); nearest.put(sig, ix); }
+            }
+            blockchar[i]=ix;
+        }
+
         // Global background = the most popular paper colour across the image
         int globalbg=0;
         for(int k=0;k<=maxbg && k<bgpop.length;k++)
             if(bgpop[k]>bgpop[globalbg])
                 globalbg=k;
 
-        // Render the unique blocks into the internal 2048x8 strip (black bg, white fg)
+        // Render the kept glyphs into the internal 2048x8 strip (black bg, white fg)
         PImage strip=createImage(256*8, 8, RGB);
         strip.loadPixels();
         for(int i=0;i<strip.pixels.length;i++)
             strip.pixels[i]=color(0);
-        for(int c=0;c<chars.size();c++)
+        for(int c=0;c<kept.size();c++)
         {
-            long sig=chars.get(c);
+            long sig=kept.get(c);
             for(int y=0;y<8;y++)
                 for(int x=0;x<8;x++)
                     if(((sig>>(63-(y*8+x)))&1L)==1L)
@@ -610,7 +640,7 @@ class Machine
         // shared best-matching background colour.
         cf.undo_save();
         cf.setbg(globalbg);
-        int blank = seen.containsKey(0L) ? seen.get(0L) : cset.erasechar; // all-background char, if any
+        int blank = idx.containsKey(0L) ? idx.get(0L) : cset.erasechar; // all-background char, if any
         for(int i=0;i<X*Y;i++)
         {
             cf.setchar(i, blank);
@@ -625,7 +655,26 @@ class Machine
         cf.updatethumb();
         repaint=true;
 
-        message("Generated "+chars.size()+" chars and rendered the image");
+        if(besteffort)
+        {
+            message("Best effort: "+uniq.size()+" unique chars reduced to 256");
+            popup("The image has "+uniq.size()+" unique characters (more than 256).\n\n"+
+                  "A best-effort 256-character set and an approximate image estimate were created.");
+        }
+        else
+            message("Generated "+kept.size()+" chars and rendered the image");
+    }
+
+    // Index of the kept glyph closest to sig (fewest differing pixels).
+    int nearest_kept_index(long sig, ArrayList<Long> kept)
+    {
+        int best=0, bestd=Integer.MAX_VALUE;
+        for(int k=0;k<kept.size();k++)
+        {
+            int d=Long.bitCount(sig ^ kept.get(k));
+            if(d<bestd){ bestd=d; best=k; }
+        }
+        return best;
     }
 
     // Reduce one 8x8 block to a black/white bitmap packed into a 64-bit signature

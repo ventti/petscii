@@ -9,6 +9,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
+import java.util.Collections;
+import java.util.Comparator;
 
 void javatheme()
 {
@@ -259,6 +261,12 @@ void saveCharsetPng(File selection)
     out.updatePixels();
     out.save(fn);
     message("Saved charset ("+cpr+"/row) to "+fn);
+}
+
+// Modal information popup.
+void popup(String msg)
+{
+    JOptionPane.showMessageDialog(null, msg, "PETSCII", JOptionPane.INFORMATION_MESSAGE);
 }
 
 // Modal address prompt. Accepts $hex, 0xhex or decimal. Returns the value,
