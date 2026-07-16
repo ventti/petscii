@@ -53,32 +53,25 @@ boolean control=false,
         repaint=true,
         infidel=true,
         selectadd=true,
-        dirty=false, // Unsaved work
-        
-        fileselect=false, // "Event" flags for file operations
-        mergeselect=false,
-        saveselect=false,
-        refselect=false,
-        importselect=false,
-        exitpressed=false,
-        machineselect=false, // "Event" flag for switching machine
-        resizing=false,      // A machine switch resized the window; wait for it to settle
-        charsetselect=false,
-        charsetsaveselect=false, // "Event" flag for saving the charset as a .png
-        charsetprgselect=false,  // "Event" flag for saving the charset as a C64 .prg
-        imageselect=false;       // "Event" flag for tracing an image into a charset
+        dirty=false,         // Unsaved work
+        exitpressed=false,   // Window close requested (handled in requesters())
+        resizing=false;      // A machine switch resized the window; wait for it to settle
+
+// Deferred UI commands. Buttons and file-dialog callbacks post() commands here;
+// runCommands() drains them on the animation thread (from requesters()), so all
+// dialogs and charset/canvas mutations happen off the AWT event thread, avoiding
+// races with draw(). Replaces the old pile of boolean "event" flags.
+java.util.ArrayList<Runnable> commandQueue=new java.util.ArrayList<Runnable>();
 
 int charsetPrgAddr=0x3800; // Load address for the exported charset .prg
 
 int charsetSaveCPR=16; // Chars per row for the saved charset .png
-        
+
 float   avgms=0; // For profiling
 int     blink=0;
 
 String filename="",refname="",
-       curmessage="",
-       pendingImage="",   // Image path chosen for "Image"; traced on the animation thread
-       pendingCharset=""; // Charset path chosen for "Charset"; loaded on the animation thread
+       curmessage="";
 
 PImage reference;
 PFont  font;
@@ -1034,148 +1027,36 @@ void draw()
 
 } // Draw end
 
-void requesters() // Various file selectors and dialogs that can't be called in event handlers
+// Queue a command to run on the animation thread. Safe to call from any thread
+// (e.g. AWT file-dialog callbacks).
+void post(Runnable c)
 {
-    // UI file operations
-    if(fileselect) // Fileselect "event" for Load
-    {
-        selectInput("Select a file", "loadPetscii");
-        fileselect=false;
-        repaint=true; 
-    }
-    if(mergeselect) // Fileselect "event" for Load
-    {
-        selectInput("Select a file", "loadPetscii");
-        mergeselect=false;
-        repaint=true;
-    }
-    if(saveselect) // Fileselect "event" for Save as
-    {
-        selectOutput("Save PETSCII .c", "savePetscii");
-        saveselect=false;
-        repaint=true;
-    }
-    if(refselect) // Fileselect "event" for Reference image
-    {
-        selectInput("Select a file", "loadPic");
-        refselect = false;
-        repaint = true;
-    }
-    if(importselect) // Fileselect "event" for Import (.prg)
-    {
-        selectInput("Select a .prg file", "importPrg");
-        importselect=false;
-        repaint=true;
-    }
-    if(charsetselect) // Charsetselect "event" for Load charset
-    {
-        selectInput("Select a charset .png", "loadCharset");
-        charsetselect=false;
-        repaint=true;
-    }
-    if(imageselect) // Trace an image into a generated charset + canvas
-    {
-        selectInput("Select an image .png (up to 320x200)", "loadImageCharset");
-        imageselect=false;
-        repaint=true;
-    }
-    if(pendingCharset.length()>0) // Load the charset here, on the animation thread
-    {
-        String p=pendingCharset;
-        pendingCharset="";
-        machine.load_charset(p);
-        repaint=true;
-    }
-    if(pendingImage.length()>0) // Do the (heavy) tracing here, on the animation thread
-    {
-        String p=pendingImage;
-        pendingImage="";
-        machine.load_image_charset(p);
-        repaint=true;
-    }
-    if(charsetsaveselect) // Save the current charset as a .png
-    {
-        charsetsaveselect=false;
-        int cpr=askInt("Characters per row?", charsetSaveCPR);
-        if(cpr>=1 && cpr<=256)
-        {
-            charsetSaveCPR=cpr;
-            selectOutput("Save charset .png", "saveCharsetPng");
-        }
-        else if(cpr!=-1) // -1 = cancelled; anything else out of range
-            message("Characters per row must be 1..256");
-        repaint=true;
-    }
-    if(charsetprgselect) // Save the current charset as a C64 .prg
-    {
-        charsetprgselect=false;
-        int addr=askAddr("Load address? ($hex or decimal)", charsetPrgAddr);
-        if(addr>=0 && addr<=0xffff)
-        {
-            charsetPrgAddr=addr;
-            selectOutput("Save charset .prg", "saveCharsetPrg");
-        }
-        else if(addr!=-1) // -1 = cancelled
-            message("Load address must be 0..65535");
-        repaint=true;
-    }
-    if(machineselect) // Machineselect "event" for switching platform
-    {
-        machineselect=false;
+    synchronized(commandQueue) { commandQueue.add(c); }
+}
 
-        // Switching is destructive: confirm first if there is unsaved work
-        boolean proceed = !dirty || selector("Discard unsaved changes and switch machine?","Yes,No")==0;
-        if(proceed)
-        {
-            int m=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
-            if(m<0 || m==prefs.machine)
-                message(m==prefs.machine ? "Already on "+machinenames[m] : "Machine unchanged");
-            else
-                switch_machine(m);
-        }
+// Run and clear all queued commands. Called from requesters() on the animation
+// thread, so commands never run concurrently with draw().
+void runCommands()
+{
+    java.util.ArrayList<Runnable> batch;
+    synchronized(commandQueue)
+    {
+        if(commandQueue.isEmpty())
+            return;
+        batch=new java.util.ArrayList<Runnable>(commandQueue);
+        commandQueue.clear();
+    }
+    for(Runnable c: batch)
+    {
+        c.run();
         repaint=true;
     }
+}
 
-/*
-    if(refselect) // Fileselect "event" for Reference image
-    {
-        String s=fileselector(prefs.refpath,LOADPIX);
-        if(s!=null)
-        {
-            if(loadreference(s))
-            {
-                refname=s;
-                ref=1;
-                reftime=timestamp(s);
-            }
-            else
-                message(s+" cannot be opened.");
-        }
-        refselect=false;
-        repaint=true;
-    }
-    if(importselect) // Fileselect "event" for Import (PRG)
-    {
-        String s=fileselector(prefs.path,LOADPRG);
-        if(s!=null)
-        {
-            machine.import_prg(s);
-        }
-        cf.updatethumb();
-        importselect=false;
-        repaint=true;
-    }
-    if(charsetselect) // Charsetselect "event" for Load
-    {
-        String s=fileselector(prefs.path,LOADPIX);
-        if(s!=null)
-        {
-            machine.load_charset(s);
-        }
-        charsetselect=false;
-        repaint=true;
-    }
-*/
+void requesters() // Runs deferred UI commands (dialogs / heavy work) on the animation thread
+{
+    runCommands();
+
     if(exitpressed) // Trying to close the window, huh?
     {
         if(dirty) // Unsaved work?

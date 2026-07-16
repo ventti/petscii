@@ -565,19 +565,20 @@ void mouseClicked()
     if(!tablethack)
         return;
 
-    // Load, save etc. button handling
+    // Load, save etc. button handling. Dialog-based actions are posted as commands
+    // and run from requesters() on the animation thread (see post()/runCommands()).
     if(load_b.mouseover())
-        fileselect=true;
+        post(() -> selectInput("Select a file", "loadPetscii"));
     if(save_b.mouseover())
         machine.save_c(filename,false);
     if(saveas_b.mouseover())
-        saveselect=true;
+        post(() -> selectOutput("Save PETSCII .c", "savePetscii"));
     if(ref_b.mouseover())
-        refselect=true;
+        post(() -> selectInput("Select a file", "loadPic"));
     if(import_prg_b.mouseover())
-        importselect=true;
+        post(() -> selectInput("Select a .prg file", "importPrg"));
     if(merge_b.mouseover())
-        mergeselect=true;
+        post(() -> selectInput("Select a file", "loadPetscii"));
     if(preview_b.mouseover()) // Preview window in or out
         showPreview();
     
@@ -603,16 +604,44 @@ void mouseClicked()
       
         System.gc();
     }
-    if(charset_b.mouseover()) // Pick a .png charset to load (handled in requesters())
-        charsetselect=true;
-    if(charset_save_b.mouseover()) // Save current charset as .png (handled in requesters())
-        charsetsaveselect=true;
-    if(charset_prg_b.mouseover()) // Save current charset as C64 .prg (handled in requesters())
-        charsetprgselect=true;
-    if(image_b.mouseover()) // Trace an image into a charset + canvas (handled in requesters())
-        imageselect=true;
-    if(machine_b.mouseover()) // Switch machine (confirmed + handled in requesters())
-        machineselect=true;
+    if(charset_b.mouseover()) // Pick a .png charset to load
+        post(() -> selectInput("Select a charset .png", "loadCharset"));
+    if(charset_save_b.mouseover()) // Save current charset as .png
+        post(() -> {
+            int cpr=askInt("Characters per row?", charsetSaveCPR);
+            if(cpr>=1 && cpr<=256)
+            {
+                charsetSaveCPR=cpr;
+                selectOutput("Save charset .png", "saveCharsetPng");
+            }
+            else if(cpr!=-1) // -1 = cancelled
+                message("Characters per row must be 1..256");
+        });
+    if(charset_prg_b.mouseover()) // Save current charset as C64 .prg
+        post(() -> {
+            int addr=askAddr("Load address? ($hex or decimal)", charsetPrgAddr);
+            if(addr>=0 && addr<=0xffff)
+            {
+                charsetPrgAddr=addr;
+                selectOutput("Save charset .prg", "saveCharsetPrg");
+            }
+            else if(addr!=-1) // -1 = cancelled
+                message("Load address must be 0..65535");
+        });
+    if(image_b.mouseover()) // Trace an image into a charset + canvas
+        post(() -> selectInput("Select an image .png (up to 320x200)", "loadImageCharset"));
+    if(machine_b.mouseover()) // Switch machine (destructive; confirm if unsaved)
+        post(() -> {
+            boolean proceed = !dirty || selector("Discard unsaved changes and switch machine?","Yes,No")==0;
+            if(proceed)
+            {
+                int m=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
+                if(m<0 || m==prefs.machine)
+                    message(m==prefs.machine ? "Already on "+machinenames[m] : "Machine unchanged");
+                else
+                    switch_machine(m);
+            }
+        });
     if(zoom_b.mouseover()) // Reset zoom to the configured default
         apply_zoom(defaultzoom);
     if(charset_refresh_b.mouseover()) // Reload the current charset file from disk

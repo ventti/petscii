@@ -161,10 +161,14 @@ void fileselector(String dir, int mode)
   selectInput("Select a file", "fileSelected");
 }
 
-void loadPetscii(File selection) 
+// The selectInput/selectOutput callbacks below run on the AWT event thread, so
+// they only queue the actual work via post(); it runs on the animation thread
+// (requesters()), where it can't race draw().
+
+void loadPetscii(File selection)
 {
-    if (selection != null)
-    {
+    if(selection==null) return;
+    post(() -> {
         String fn = selection.getAbsolutePath();
         if(machine.load_c(fn, false))
         {
@@ -173,52 +177,44 @@ void loadPetscii(File selection)
         }
         else
             message(selection.getName()+" cannot be opened.");
-    
-      }
+    });
 }
 
 void savePetscii(File selection)
 {
-    if(selection!=null)
-    {
+    if(selection==null) return;
+    post(() -> {
         filename = selection.getAbsolutePath();
         if (!filename.endsWith(".c") && !filename.endsWith(".C"))
             filename += ".c";
-        
+
         int i=0;
         if(selection.exists() && prefs.awtselector==0)
-        {
             i=selector("Overwrite file?","Yes,No");
-        }
         if(i==0)
             machine.save_c(filename,false);
-    }
+    });
 }
 
 void importPrg(File selection)
 {
-    if(selection!=null)
-    {
+    if(selection==null) return;
+    post(() -> {
         machine.import_prg(selection.getAbsolutePath());
         cf.updatethumb();
-    }
+    });
 }
 
 void loadCharset(File selection)
 {
-    // Rebuilds the charset (initrender); defer to the animation thread (requesters())
-    // so it can't race draw() while the glyph array is being rebuilt.
-    if(selection!=null)
-        pendingCharset=selection.getAbsolutePath();
+    if(selection==null) return;
+    post(() -> machine.load_charset(selection.getAbsolutePath()));
 }
 
 void loadImageCharset(File selection)
 {
-    // This callback runs on the AWT event thread. Tracing an image rebuilds the
-    // charset and the whole canvas, so defer it to the animation thread (handled
-    // in requesters()) to avoid racing draw() while the charset is half-rebuilt.
-    if(selection!=null)
-        pendingImage=selection.getAbsolutePath();
+    if(selection==null) return;
+    post(() -> machine.load_image_charset(selection.getAbsolutePath()));
 }
 
 // Modal integer prompt. Returns the entered value, `def` on invalid input,
@@ -238,29 +234,31 @@ void saveCharsetPng(File selection)
 {
     if(selection==null)
         return;
-    String fn=selection.getAbsolutePath();
-    if(!fn.toLowerCase().endsWith(".png"))
-        fn+=".png";
+    post(() -> {
+        String fn=selection.getAbsolutePath();
+        if(!fn.toLowerCase().endsWith(".png"))
+            fn+=".png";
 
-    int cpr=charsetSaveCPR;
-    int rows=(256+cpr-1)/cpr;
+        int cpr=charsetSaveCPR;
+        int rows=(256+cpr-1)/cpr;
 
-    PImage out=createImage(cpr*8, rows*8, RGB);
-    out.loadPixels();
-    for(int i=0;i<out.pixels.length;i++)
-        out.pixels[i]=color(0);
+        PImage out=createImage(cpr*8, rows*8, RGB);
+        out.loadPixels();
+        for(int i=0;i<out.pixels.length;i++)
+            out.pixels[i]=color(0);
 
-    cset.bitmap.loadPixels();
-    for(int c=0;c<256;c++)
-    {
-        int gx=(c%cpr)*8, gy=(c/cpr)*8;
-        for(int y=0;y<8;y++)
-            for(int x=0;x<8;x++)
-                out.pixels[(gx+x)+(gy+y)*out.width] = cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width];
-    }
-    out.updatePixels();
-    out.save(fn);
-    message("Saved charset ("+cpr+"/row) to "+fn);
+        cset.bitmap.loadPixels();
+        for(int c=0;c<256;c++)
+        {
+            int gx=(c%cpr)*8, gy=(c/cpr)*8;
+            for(int y=0;y<8;y++)
+                for(int x=0;x<8;x++)
+                    out.pixels[(gx+x)+(gy+y)*out.width] = cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width];
+        }
+        out.updatePixels();
+        out.save(fn);
+        message("Saved charset ("+cpr+"/row) to "+fn);
+    });
 }
 
 // Modal information popup.
@@ -292,44 +290,45 @@ void saveCharsetPrg(File selection)
 {
     if(selection==null)
         return;
-    String fn=selection.getAbsolutePath();
-    if(!fn.toLowerCase().endsWith(".prg"))
-        fn+=".prg";
+    post(() -> {
+        String fn=selection.getAbsolutePath();
+        if(!fn.toLowerCase().endsWith(".prg"))
+            fn+=".prg";
 
-    int addr=charsetPrgAddr;
-    byte[] out=new byte[2+256*8];
-    out[0]=(byte)(addr&0xff);        // load address, low byte
-    out[1]=(byte)((addr>>8)&0xff);   // load address, high byte
+        int addr=charsetPrgAddr;
+        byte[] out=new byte[2+256*8];
+        out[0]=(byte)(addr&0xff);        // load address, low byte
+        out[1]=(byte)((addr>>8)&0xff);   // load address, high byte
 
-    cset.bitmap.loadPixels();
-    for(int c=0;c<256;c++)
-        for(int y=0;y<8;y++)
-        {
-            int b=0;
-            for(int x=0;x<8;x++)
-                if((cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width]&0xff)>20)
-                    b|=(1<<(7-x));
-            out[2+c*8+y]=(byte)b;
-        }
-    saveBytes(fn,out);
-    message("Saved charset .prg to "+fn+" ($"+hex(addr,4)+")");
+        cset.bitmap.loadPixels();
+        for(int c=0;c<256;c++)
+            for(int y=0;y<8;y++)
+            {
+                int b=0;
+                for(int x=0;x<8;x++)
+                    if((cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width]&0xff)>20)
+                        b|=(1<<(7-x));
+                out[2+c*8+y]=(byte)b;
+            }
+        saveBytes(fn,out);
+        message("Saved charset .prg to "+fn+" ($"+hex(addr,4)+")");
+    });
 }
 
 void loadPic(File selection)
 {
-    if (selection != null)
-    {
-        String filename = selection.getAbsolutePath();
-        if (loadreference(filename))
+    if(selection==null) return;
+    post(() -> {
+        String fname = selection.getAbsolutePath();
+        if(loadreference(fname))
         {
-            refname = filename;  
+            refname = fname;
             ref = 1;
             reftime = selection.lastModified();
         }
         else
-            message(filename + " cannot be opened.");
-    
-    }
+            message(fname + " cannot be opened.");
+    });
 }
 /*
 // File selector
