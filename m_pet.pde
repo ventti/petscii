@@ -10,8 +10,8 @@ class Pet extends Machine
 
     Pet()
     {
-        machine=PET;
-        machinename=machinenames[machine];
+        id=PET;
+        machinename=machinenames[id];
         
         nativex=40;
         nativey=25;

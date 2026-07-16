@@ -2,13 +2,9 @@
 // Pure Java UI elements, such as a file selector
 // (this crap really makes me lose all my will to live, but it's needed now)
 
-import java.awt.event.*;
-import java.awt.GridLayout;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
-import java.nio.file.*;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -68,43 +64,6 @@ void setDefaultSize(int size){
     }
 }
 
-class Selector extends JPanel implements ActionListener
-{
-    int selection;
-    protected JButton b[];
-    
-    Selector(String title,String s) // Split string into options
-    {
-        Box box=Box.createVerticalBox();
-        
-        String splitz[]=splitTokens(s,",");
-        b=new JButton[splitz.length];
-        
-        setLayout(new GridLayout(splitz.length+1,1,1,1));
-        
-        add(new JLabel(title,SwingConstants.CENTER));
-        
-        for(int i=0;i<splitz.length;i++)
-        {
-            b[i]=new JButton(splitz[i]);
-            b[i].setActionCommand(str(i+'0'));
-            b[i].addActionListener(this);
-            b[i].setPreferredSize(new Dimension(140,26));
-            
-            add(b[i]);
-        }
-        
-        selection=-1;
-    }
-    public void actionPerformed(ActionEvent e)
-    {
-        for(int i=0;i<b.length;i++)
-        {
-            if(str(i+'0').equals(e.getActionCommand()))
-                selection=i;
-        }
-    }
-}
 // Modal chooser: shows `title` with one button per comma-separated option in `opt`.
 // Returns the chosen option's index (0-based), or -1 if the dialog was dismissed.
 // Used for the startup platform picker and Yes/No confirmations.
@@ -116,51 +75,6 @@ int selector(String title, String opt)
         JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
         null, options, options[0]);
 }
-/*// Select from a list
-int selector(String title,String opt)
-{
-    PSurfaceAWT awtSurface = (PSurfaceAWT) surface;
-    SmoothCanvas canvas = (SmoothCanvas) awtSurface.getNative();
-    JFrame frame = (JFrame) canvas.getFrame();
-    //Frame frame = (Frame) (surface.getNative());
-  //  JFrame frame=new JFrame("");
-    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    frame.setLocationRelativeTo(null);
-    
-    Selector s=new Selector(title,opt);
-    s.setOpaque(true);
-    frame.setContentPane(s);
- 
-    //Display the window.
-    frame.pack();
-    frame.setVisible(true);
-    frame.setLocationRelativeTo(null); // About in the middle
-    
-    while(s.selection==-1)
-    {
-        frame.toFront(); // A bit of a kludge to force the window on top
-        frame.repaint();
-        try { Thread.sleep(200); }
-        catch(Exception e){};
-    }
-    
-    frame.setVisible(false);
-    
-    System.gc(); // It'll leak anyway...
-    return(s.selection);
-}
-*/
-final int LOADPIX=0,
-          LOADPETSCII=1,
-          SAVEPETSCII=2,
-          MERGEPETSCII=3,
-          LOADPRG=4;
-
-void fileselector(String dir, int mode)
-{
-  selectInput("Select a file", "fileSelected");
-}
-
 // The selectInput/selectOutput callbacks below run on the AWT event thread, so
 // they only queue the actual work via post(); it runs on the animation thread
 // (requesters()), where it can't race draw().
@@ -329,123 +243,4 @@ void loadPic(File selection)
         else
             message(fname + " cannot be opened.");
     });
-}
-/*
-// File selector
-String OLDfileselector(String dir,int mode)
-{
-    if(prefs.awtselector==1)
-    {
-        FileDialog fd;
-        if(mode==SAVEPETSCII)
-        {
-            fd=new FileDialog(frame, "Select a file", FileDialog.SAVE);
-            Path p=Paths.get(filename); // Extract the actual filename from the path
-            fd.setFile(p.getFileName().toString());
-        }
-        else
-            selectInput("Select a file", FileDialog.LOAD);
-            //fd=new FileDialog(frame, "Select a file", FileDialog.LOAD);
-
-        fd.setDirectory(dir);        
-        if(mode==LOADPIX) // Show image files
-        {
-            fd.setFilenameFilter(new Filsu(new String[] {".png",".gif",".jpg",".jpeg"}));
-        }
-        else
-        {
-            if(mode==LOADPRG)
-                fd.setFilenameFilter(new Filsu(new String[] {".prg"})); // Show only .prg
-            else
-                fd.setFilenameFilter(new Filsu(new String[] {".c"})); // Show only .c
-        }
-    
-        delay(100); // Helps with clicks?
-
-        fd.setAlwaysOnTop(true);
-        fd.setSize(800,600);
-        fd.setLocationRelativeTo(null);
-        fd.pack();
-        fd.toFront();
-        fd.requestFocus();     
-        fd.setVisible(true); // Show it
-        
-        // Trying to get the window back to focus after selection, but this is just guessing
-        surface.setVisible(true);
-        frame.toFront();
-        frame.requestFocus();
-        
-        if(fd.getDirectory()==null || fd.getFile()==null)
-            return null;
-            
-        if(mode==LOADPIX)
-            prefs.refpath=fd.getDirectory();
-        else
-            prefs.path=fd.getDirectory();
-
-        return fd.getDirectory()+fd.getFile();
-    }
-    else
-    {
-        JFileChooser fc=new JFileChooser(dir);
-        
-        fc.setPreferredSize(new Dimension(480, 500));
-        fc.setDialogTitle("Select a File");
-        
-        if(mode==LOADPIX) // Show image files
-        {
-            fc.setFileFilter(new FileNameExtensionFilter("Images (*.png,*.gif,*.jpg)",
-                             "png","gif","jpg","jpeg"));
-        }
-        else
-        {
-            if(mode==LOADPRG)
-                fc.setFileFilter(new FileNameExtensionFilter("PRG files (*.prg)","prg")); // Show only .prg
-            else
-                fc.setFileFilter(new FileNameExtensionFilter("PETSCII Images (*.c)","c")); // Show only .c
-        }
-        
-        if(mode<=LOADPETSCII)
-            fc.setApproveButtonText("Load");
-        if(mode==SAVEPETSCII)
-            fc.setApproveButtonText("Save");
-        if(mode==MERGEPETSCII)
-            fc.setApproveButtonText("Merge");
-        if(mode==LOADPRG)
-            fc.setApproveButtonText("Import");
-        
-        int returnval=fc.showOpenDialog(null); // Should be showSaveDialog for SAVEPETSCII, but then the button text won't change... 
-        
-        if(returnval==JFileChooser.APPROVE_OPTION)
-        {
-            // Save cwd for next time
-            if(mode==LOADPIX)
-                prefs.refpath=fc.getCurrentDirectory().getPath();
-            else
-                prefs.path=fc.getCurrentDirectory().getPath();
-            
-            File file = fc.getSelectedFile();
-            return file.getPath();
-        }
-        else
-            return null;
-    }
-}
-*/
-class Filsu implements FilenameFilter // Had to hack something like this for the AWT FileDialog
-{
-    String patt[];
-    
-    Filsu(String s[])
-    {
-        patt=s;
-    }   
-    boolean accept(File dir,String name)
-    {
-        for(int i=0;i<patt.length;i++)
-            if(name.toLowerCase().endsWith(patt[i]))
-                return true;
-            
-        return false;
-    }
 }

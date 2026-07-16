@@ -23,8 +23,8 @@ class Dirart extends Machine
     
     Dirart()
     {
-        machine=DIRART;
-        machinename=machinenames[machine];
+        id=DIRART;
+        machinename=machinenames[id];
         
         nativex=16;
         nativey=25;

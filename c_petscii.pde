@@ -145,7 +145,7 @@ class Petscii extends Charset
         {
             int tp=-1000;
             
-            if(machine.machine==PLUS4) // Very different colors
+            if(machine.id==PLUS4) // Very different colors
             {
                 if(keycode==KeyEvent.VK_1) { if(shift) tp=0x48; else tp=0; }
                 if(keycode==KeyEvent.VK_2) { if(shift) tp=0x29; else tp=0x71; }

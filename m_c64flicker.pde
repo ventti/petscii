@@ -25,8 +25,8 @@ class C64flicker extends Machine
 
     C64flicker()
     {
-        machine=C64FLICKER;
-        machinename=machinenames[machine];
+        id=C64FLICKER;
+        machinename=machinenames[id];
         
         nativex=40;
         nativey=25;

@@ -17,16 +17,14 @@ class C64 extends Machine
                              
     C64()
     {
-        machine=C64;
-        machinename=machinenames[machine];
+        id=C64;
+        machinename=machinenames[id];
         
         nativex=40;
         nativey=25;
         
         // TODO load custom remap
         // TODO load custom setfile
-        // TODO if no remap exist, assume character order
-        // TODO fontfile could be any shape as long as x%8=0 and y%8=0 and x*y=8*256*8?
 
         fontfile="petscii-c64.png";
         remapfile="remap-c64.txt";

@@ -15,7 +15,7 @@ class Machine
         csheight,csrows,
         nativex,nativey,
         charx,chary,
-        machine;
+        id;
 
     String machinename,
            remapfile,
@@ -267,7 +267,7 @@ class Machine
                 }
                 i++;
 
-                if(machine!=sourcemachine.machine)
+                if(id!=sourcemachine.id)
                     remapcolors(sourcemachine);          
                    
                 cf.updatethumb();
@@ -277,7 +277,7 @@ class Machine
         }
         
         setframe(0);
-        if(lowercase!=lower || machine!=sourcemachine.machine)
+        if(lowercase!=lower || id!=sourcemachine.id)
         {
             setcase(lower);
             cset=new Petscii(fontfile,remapfile,setfile);
@@ -298,7 +298,7 @@ class Machine
     // Fix colors between machines
     void remapcolors(Machine other)
     {
-        if(machine==other.machine) // No need to do anything
+        if(id==other.id) // No need to do anything
             return;
         
         if(palettemode && !other.palettemode)

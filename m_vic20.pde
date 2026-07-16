@@ -11,8 +11,8 @@ class Vic20 extends Machine
 
     Vic20()
     {
-        machine=VIC20;
-        machinename=machinenames[machine];
+        id=VIC20;
+        machinename=machinenames[id];
         
         nativex=22;
         nativey=23;
@@ -74,7 +74,7 @@ class Vic20 extends Machine
     // VIC has asymmetric border/pen/bg color handling
     void remapcolors(Machine other)
     {
-        if(machine==other.machine) // No need to do anything
+        if(id==other.id) // No need to do anything
             return;
         
         if(other.palettemode)

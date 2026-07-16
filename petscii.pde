@@ -48,7 +48,7 @@ boolean control=false,
         firstsel=true,
         firstclick=true,
         repaint=true,
-        infidel=true,
+        wasInField=true,
         dirty=false,         // Unsaved work
         exitpressed=false,   // Window close requested (handled in requesters())
         resizing=false;      // A machine switch resized the window; wait for it to settle
@@ -476,15 +476,15 @@ void draw()
         oldblox=blox;
         oldbloy=bloy;
         
-        infidel=true;
+        wasInField=true;
     }
     else
     {
         // Moving out of the field
-        if(infidel)
+        if(wasInField)
         {
             repaint=true;
-            infidel=false;
+            wasInField=false;
         }
         
         // Handle these separately

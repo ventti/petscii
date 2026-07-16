@@ -33,8 +33,8 @@ class Plus4 extends Machine
 
     Plus4()
     {
-        machine=PLUS4;
-        machinename=machinenames[machine];
+        id=PLUS4;
+        machinename=machinenames[id];
         
         nativex=40;
         nativey=25;
@@ -144,7 +144,7 @@ class Plus4 extends Machine
     // Deal with C-64 differently
     void remapcolors(Machine other)
     {
-        if(other.machine==C64)
+        if(other.id==C64)
         {
             // This is no rocket science: let's just hand pick the best matches
             int remaptable[]={0,113,24,83, 36,69,14,103, 41,9,66,33, 65,101,70,81};

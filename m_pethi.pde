@@ -6,8 +6,8 @@ class Pethi extends Pet
     Pethi()
     {
         super();
-        machine=PETHI;
-        machinename=machinenames[machine];
+        id=PETHI;
+        machinename=machinenames[id];
         
         nativex=80;
         nativey=25;
