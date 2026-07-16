@@ -7,7 +7,7 @@
    26.11.2020: Enable case in dirart at least for now
    26.11.2020: Show illegal chars in red in dirart
    25.11.2020: Some more little fixes to advance the dirart mode
-   25.11.2020: Fixed a long-standing bug in PET modes, the editor would crash when exiting typing mode
+   25.11.2020: Fixed a long-standing bug in PET modes, the editor would crash when exiting cur.typing mode
    25.11.2020: Initial dirart class, disablebuttons() renamed to ownbuttons()
    25.11.2020: File and other dialogs moved to a separate requesters() function
    25.11.2020: Use more descriptive HOLE instead of -1 when there's a hole in the selection 
@@ -111,7 +111,7 @@
    24.4.2016: Fixed ctrl-click color remapping
    24.4.2016: Right shift for char-only painting, leaving color intact
    24.4.2016: Can now distinguish left and right shift (shift=1 or 2)
-   24.4.2016: Fixed a crashing bug when setting cursor place in the typing mode
+   24.4.2016: Fixed a crashing bug when setting cursor place in the cur.typing mode
    24.4.2016: Ctrl-click on the character selector remaps a certain char to another
    23.4.2016: New color handling for the loaders: generic color mapping between machines (remapcolors()) and cleaner load_c()
    22.4.2016: charx and chary moved under the Machine. Convenience functions canvasx() and canvasy() for char pixel locations.
@@ -125,7 +125,7 @@
    21.4.2016: Cleaned the main drawing logic from draw() a bit. More to come.
    21.4.2016: Clear doesn't restore border/bg anymore. Update thumbnail when clearing.
    21.4.2016: Less jumpy crosshair updates
-   21.4.2016: Improved typing mode and crosshair screen updates
+   21.4.2016: Improved cur.typing mode and crosshair screen updates
    21.4.2016: Improved 1/4 char screen updates, moved color selector click handling to Machine.colorselclicks(), improved UI updates
    20.4.2016: Update the UI buttons according to the new model
    20.4.2016: A dirty hack to catch very quick clicks on the char/color selector
@@ -138,7 +138,7 @@
    19.4.2016: Brand new prg exporters for C-64/Plus4: smaller size and lowercase works
    19.4.2016: Lowercase BAS and C viewer exporters work on both the C-64 and Plus/4
    19.4.2016: A remap table for lowercase too, thanks to Dr. TerrorZ
-   19.4.2016: Lowercase typing works better with shift for upper/lowercase
+   19.4.2016: Lowercase cur.typing works better with shift for upper/lowercase
    19.4.2016: Lowercase flip and rotate tables are there
    19.4.2016: Lowercase is back! Right mouse button on char selector. Upper/lowercase is also saved on the files. Exporters still lacking.
    19.4.2016: Rotate and flips now under the charset
@@ -161,7 +161,7 @@
    13.4.2016: Moved info display away from petscii.pde. Changed some index-based character handling to x/y-based.
    13.4.2016: Yet another utility function: infield() for checking the mouse against the canvas
    13.4.2016: Added undo_revoke() to kill the last save without the option to redo. Undo history should now work better
-              with typing even when switching frames in the middle.
+              with cur.typing even when switching frames in the middle.
    13.4.2016: Added setframe() to anim.pde to avoid errors and to do some checks automatically
    13.4.2016: Undo includes the border color from now on
    13.4.2016: Reworked the UI button system so that the parameters don't need to be repeated all the time
@@ -210,7 +210,7 @@
    29.3.2016: Read convertcommand (CONVERTER) from prefs if present
    29.3.2016: Some kind of hairy integration with ImageMagick for generating animated gifs (convertommand)
    26.3.2016: Line shifting works on C-64/Plus4 with chars 106 and 116 now. Largely changed the shifting code.
-   26.3.2016: Show text cursor location and char instead of mouse in typing mode
+   26.3.2016: Show text cursor location and char instead of mouse in cur.typing mode
    27.2.2016: Fixed a minor PET floodfill bug
    18.01.2016: Implemented PET 80 char mode, more border when zoom=1, disable preview for PET 80 (at least for now)
    25.10.2015: Errors opening a pic or ref produce error messages
@@ -248,20 +248,20 @@
    17.10.2013: Mini 1x1 pixel preview window added. Plus a button for it.
    17.10.2013: Remove modifiers when focus is lost
    16.10.2013: One more speedup, faster drawchar(), Insert bugfix
-   16.10.2013: Removed that Alt Gr support, coz it conflicts with the typing of some chars
+   16.10.2013: Removed that Alt Gr support, coz it conflicts with the cur.typing of some chars
    16.10.2013: PgUp/PgDn work in the text edit mode, Del, Backspace and Ins likewise
    16.10.2013: Bugfix for VIC initial screen
-   16.10.2013: Wrap in typing mode, Esc to exit typing mode, Enter for newline
-   16.10.2013: Timings based on clock (cursor blink, backup), not framerate
+   16.10.2013: Wrap in cur.typing mode, Esc to exit cur.typing mode, Enter for newline
+   16.10.2013: Timings based on clock (cursor cur.blink, backup), not framerate
    16.10.2013: Pixel-level perfection of grid and selection lines
-   16.10.2013: Disable unwanted drawing/selection in the typing mode, selection outline back to visible
+   16.10.2013: Disable unwanted drawing/selection in the cur.typing mode, selection outline back to visible
    16.10.2013: A bit lighter grid
    16.10.2013: KeyEvent not keyEvent for Processing 2, plus needed an import
    15.10.2013: Fixed a HUGE slowdown that followed from drawing blended lines for the grid
-   15.10.2013: Correct colors on Plus/4 in the typing mode, all the colors can be selected (shift)
+   15.10.2013: Correct colors on Plus/4 in the cur.typing mode, all the colors can be selected (shift)
    15.10.2013: Don't change pen color on PET, there's none...
-   15.10.2013: Home and End keys work in the typing mode
-   15.10.2013: Graphical typing mode, press alt (or alt gr) + shift in the typing mode
+   15.10.2013: Home and End keys work in the cur.typing mode
+   15.10.2013: Graphical cur.typing mode, press alt (or alt gr) + shift in the cur.typing mode
    15.10.2013: shifted, controlled, alted => shift, control, alt
    14.10.2013: Improved rotatemap, works better on VIC/PET (Dr. TerrorZ)
    14.10.2013: Redo (shift-u), cleaned undo code
@@ -277,7 +277,7 @@
    11.10.2013: More kludges to improve the functionality a bit with one-button-mouse: § and °/½ 
    11.10.2013: A small kludge for owners of one-button mouse: ,/. change bg/border color
    9.10.2013: Show screen memory offset (see showoff in settings)
-   9.10.2013: Inverted typing mode for situations where you want bg color text (shift-enter)
+   9.10.2013: Inverted cur.typing mode for situations where you want bg color text (shift-enter)
    7.10.2013: Fix VIC color selection again
    7.10.2013: Because of Mac the replace now works with all buttons
    7.10.2013: Color remapping: replace pen color by ctrl-lmb
@@ -304,7 +304,7 @@
    2.10.2013: One more kludge before useful stuff: +/- for shifting vertical and horizontal sticks
    2.10.2013: Hopefully final mapping fixes, little extra check for loading colors
    2.10.2013: Again a bit improved flip map for VIC, and again, plus fixed char flip
-   2.10.2013: Tab works in the typing mode, support for sets of chars (sets.txt) - jump with tab
+   2.10.2013: Tab works in the cur.typing mode, support for sets of chars (sets.txt) - jump with tab
    2.10.2013: Help no longer here, see the web page
    2.10.2013: ORIGOZERO define to show coordinates from (0,0) or (1,1)
    1.10.2013: Reorganized source file structure, somewhat complete undo

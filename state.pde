@@ -21,3 +21,22 @@ class View
         dragw,dragh,resizesettle=0; // drag-to-zoom: track a settled user resize
 }
 View view=new View();
+
+// Marquee selection + clipboard of chars/colours.
+class Sel
+{
+    int x,y,w,h,      // selection rectangle (was selx/sely/selw/selh)
+        mode;         // was selectmode
+    boolean add=true; // was selectadd
+    int[] clip_chars, clip_colors;
+}
+Sel sel=new Sel();
+
+// Text-entry cursor and typing/blink state.
+class Cur
+{
+    int x,y,          // was cursorx/cursory
+        typing,       // >0 = typing mode
+        blink;
+}
+Cur cur=new Cur();

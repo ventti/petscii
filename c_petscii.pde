@@ -133,12 +133,12 @@ class Petscii extends Charset
         if(keycode==KeyEvent.VK_9)
         {
             message("Reverse on");
-            typing=2;
+            cur.typing=2;
         }
         if(keycode==KeyEvent.VK_0)
         {
             message("Reverse off");
-            typing=1;
+            cur.typing=1;
         }
         
         if(machine.palettemode) // Change color in the typing mode

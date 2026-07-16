@@ -20,16 +20,15 @@ Machine machine;
 
 Charset cset;
 
-int clip_chars[],clip_colors[];
+// Selection + clipboard state lives in the Sel object; cursor/typing state in
+// the Cur object (see state.pde)
 
 int X=0,Y=0,                     // Picture size in chars
     pen=1,                       // Drawing colors
     current,curidx=0,            // Current character number and index in the selector
     backupcounter=0,
-    selx=0,sely=0,selw=0,selh=0,     // Selection params
-    cursorx=0,cursory=0,
     lastgrow=0,
-    
+
     messagecounter=0,
     focuscount=0,
     
@@ -38,8 +37,6 @@ int X=0,Y=0,                     // Picture size in chars
 
 int     ref=-1,                  // Various modes
         floodfill=0,
-        typing=0,
-        selectmode=0,
         shift=0;
         
 long reftime=-1;
@@ -52,7 +49,6 @@ boolean control=false,
         firstclick=true,
         repaint=true,
         infidel=true,
-        selectadd=true,
         dirty=false,         // Unsaved work
         exitpressed=false,   // Window close requested (handled in requesters())
         resizing=false;      // A machine switch resized the window; wait for it to settle
@@ -68,7 +64,6 @@ int charsetPrgAddr=0x3800; // Load address for the exported charset .prg
 int charsetSaveCPR=16; // Chars per row for the saved charset .png
 
 float   avgms=0; // For profiling
-int     blink=0;
 
 String filename="",refname="",
        curmessage="";
@@ -118,8 +113,8 @@ void settings() // Need to have this in Processing 3.x
     cf.setborder(machine.defaultborder);
     pen=machine.erasecolor;
 
-    clip_chars=new int[X*Y];
-    clip_colors=new int[X*Y];
+    sel.clip_chars=new int[X*Y];
+    sel.clip_colors=new int[X*Y];
 
     prefs.bwidth=prefs.BWIDTH*prefs.zoom; // Border width scales with zoom
     compute_layout();
@@ -285,13 +280,13 @@ void switch_machine(int m)
     cf.setborder(machine.defaultborder);
     pen=machine.erasecolor;
 
-    clip_chars=new int[X*Y];
-    clip_colors=new int[X*Y];
+    sel.clip_chars=new int[X*Y];
+    sel.clip_colors=new int[X*Y];
     anim_init(); // Rebuild the frame list around the new cf
 
     // Reset transient editing state that may reference the old geometry
-    selw=selh=0;
-    typing=0;
+    sel.w=sel.h=0;
+    cur.typing=0;
     floodfill=0;
     filename=prefs.FILENAME;
     dirty=false;
@@ -511,10 +506,10 @@ void draw()
     }
     
     // Cursor needs repainting
-    if(typing>0 && (millis()/250&1)!=blink)
+    if(cur.typing>0 && (millis()/250&1)!=cur.blink)
     {
         repaint=true;
-        blink=1-blink;
+        cur.blink=1-cur.blink;
     }
     
     if(prefs.crosshair && (mouseX!=oldx || mouseY!=oldy)) // Try to avoid excessive repainting
@@ -581,7 +576,7 @@ void draw()
     boolean erasing=false;
     
     // User interaction(!)
-    if(shadowPressed && infield() && typing==0 && floodfill==0)
+    if(shadowPressed && infield() && cur.typing==0 && floodfill==0)
     {       
         if(firstclick)
         {
@@ -615,81 +610,81 @@ void draw()
             {
                 if(shadowButton==LEFT) // Mark an area
                 {
-                    if(firstsel || selectmode==2)
+                    if(firstsel || sel.mode==2)
                     {
                         firstsel=false;
-                        selx=blox;
-                        sely=bloy;
+                        sel.x=blox;
+                        sel.y=bloy;
                     }
-                    selw=blox-selx+1;
-                    selh=bloy-sely+1;
-                    if(selw<0)
-                        selw=0;
-                    if(selh<0)
-                        selh=0;
+                    sel.w=blox-sel.x+1;
+                    sel.h=bloy-sel.y+1;
+                    if(sel.w<0)
+                        sel.w=0;
+                    if(sel.h<0)
+                        sel.h=0;
                     
-                    if(selx==-1 || sely==-1) // Dunno when exactly this happens, but it does
-                        selw=selh=0;
+                    if(sel.x==-1 || sel.y==-1) // Dunno when exactly this happens, but it does
+                        sel.w=sel.h=0;
                      
                     // Copy automatically
-                    for(int i=0,k=0;i<selh;i++)
-                        for(int j=0;j<selw;j++,k++)
+                    for(int i=0,k=0;i<sel.h;i++)
+                        for(int j=0;j<sel.w;j++,k++)
                         {
-                            clip_chars[k]=cf.getchar(j+selx,i+sely);
-                            clip_colors[k]=cf.getcolor(j+selx,i+sely);
+                            sel.clip_chars[k]=cf.getchar(j+sel.x,i+sel.y);
+                            sel.clip_colors[k]=cf.getcolor(j+sel.x,i+sel.y);
                         }
                         
-                    selectmode=1;
+                    sel.mode=1;
                 }
                 else // Pick individual characters
                 {
-                    if(firstsel || selectmode==1)
+                    if(firstsel || sel.mode==1)
                     {
                         firstsel=false;
                         
-                        if(selectmode!=2)
+                        if(sel.mode!=2)
                         {
                             for(int i=0;i<X*Y;i++)
-                                clip_chars[i]=HOLE;
-                            selw=X;
-                            selh=Y;
-                            selx=sely=-1;
+                                sel.clip_chars[i]=HOLE;
+                            sel.w=X;
+                            sel.h=Y;
+                            sel.x=sel.y=-1;
                         }
                         
-                        if(clip_chars[blox+bloy*X]==HOLE)
-                            selectadd=true;
+                        if(sel.clip_chars[blox+bloy*X]==HOLE)
+                            sel.add=true;
                         else
-                            selectadd=false;
+                            sel.add=false;
                     }
                     
-                    if(selectadd)
+                    if(sel.add)
                     {
-                        clip_chars[blox+bloy*X]=cf.getchar(blox,bloy);
-                        clip_colors[blox+bloy*X]=cf.getcolor(blox,bloy);
+                        sel.clip_chars[blox+bloy*X]=cf.getchar(blox,bloy);
+                        sel.clip_colors[blox+bloy*X]=cf.getcolor(blox,bloy);
                     }
                     else
-                        clip_chars[blox+bloy*X]=HOLE;
+                        sel.clip_chars[blox+bloy*X]=HOLE;
                     
-                    selectmode=2;
+                    sel.mode=2;
                 }
             }
             else // Normal operation
             {
-                cursorx=blox; // Let's set this, too
-                cursory=bloy;
+                cur.x=blox; // Let's set this, too
+                cur.y=bloy;
                 
                 if(shadowButton==LEFT && !oldcontrol)
                 {
-                    if(selw>0 && selh>0) // Draw with selection
+                    if(sel.w>0 && sel.h>0) // Draw with selection
                     {
-                        for(int i=0,k=0;i<selh;i++)
+                        for(int i=0,k=0;i<sel.h;i++)
                         {
-                            for(int j=0;j<selw;j++,k++)
+                            for(int j=0;j<sel.w;j++,k++)
                             {
-                                int x=blox-selw/2+j,
-                                    y=bloy-selh/2+i;
+                                int x=blox-sel.w/2+j,
+                                    y=bloy-sel.h/2+i;
 
-                                if(x>=0 && y>=0 && x<X & y<Y && clip_chars[k]!=-1)
+                                if(x>=0 && y>=0 && x<X & y<Y && sel.clip_chars[k]!=-1)
                                 {
                                     if(shift==1) // Just color
                                     {
@@ -697,9 +692,9 @@ void draw()
                                     }
                                     else
                                     {
-                                        cf.setchar(x,y,clip_chars[k]);
+                                        cf.setchar(x,y,sel.clip_chars[k]);
                                         if(shift!=2)
-                                            cf.setcolor(x,y,clip_colors[k]);
+                                            cf.setcolor(x,y,sel.clip_colors[k]);
                                     }
                                }
                             }
@@ -727,16 +722,16 @@ void draw()
                 }
                 if(shadowButton==prefs.ERASEBUTTON && !oldcontrol) // Erase
                 {
-                    if(selw>0 && selh>0) // Erase with selection
+                    if(sel.w>0 && sel.h>0) // Erase with selection
                     {
-                        for(int i=0;i<selh;i++)
+                        for(int i=0;i<sel.h;i++)
                         {
-                            for(int j=0;j<selw;j++)
+                            for(int j=0;j<sel.w;j++)
                             {
-                                int x=blox-selw/2+j,
-                                    y=bloy-selh/2+i;
+                                int x=blox-sel.w/2+j,
+                                    y=bloy-sel.h/2+i;
                                     
-                                if(x>=0 && y>=0 && x<X & y<Y && clip_chars[i*selw+j]!=-1)
+                                if(x>=0 && y>=0 && x<X & y<Y && sel.clip_chars[i*sel.w+j]!=-1)
                                 {
                                     cf.setchar(x,y,cset.erasechar);
                                     cf.setcolor(x,y,machine.erasecolor);
@@ -757,7 +752,7 @@ void draw()
     }
     else
     {
-        if(!control || selectmode==2) // Let's not lose the selection
+        if(!control || sel.mode==2) // Let's not lose the selection
         {
             firstsel=true;
             firstclick=true;
@@ -775,14 +770,14 @@ void draw()
         curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
         
-        if(selw>0 && selh>0) // Make holes to selected char
+        if(sel.w>0 && sel.h>0) // Make holes to selected char
         {
             boolean found=false;
-            for(int i=0;i<selw*selh;i++)
+            for(int i=0;i<sel.w*sel.h;i++)
             {
-                if(clip_chars[i]==current)
+                if(sel.clip_chars[i]==current)
                 {
-                    clip_chars[i]=HOLE;
+                    sel.clip_chars[i]=HOLE;
                     found=true;
                 }
             }
@@ -791,36 +786,36 @@ void draw()
         }
     }
     
-    if(shadowPressed && typing>0) // Only move the cursor
+    if(shadowPressed && cur.typing>0) // Only move the cursor
     {
         if(shadowButton==LEFT && infield())
         {
-            cursorx=blox;
-            cursory=bloy;
+            cur.x=blox;
+            cur.y=bloy;
         }
     }
     
     if(!control) // Hide the original selection
     {
-        selx=-1;
-        sely=-1;
+        sel.x=-1;
+        sel.y=-1;
         
-        if(selectmode==2)
+        if(sel.mode==2)
         {
-            selw=X;
-            selh=Y;
+            sel.w=X;
+            sel.h=Y;
             optimize_clip(); 
         }
-        selectmode=0;
+        sel.mode=0;
     }
     else
         oldcontrol=true;
     
     // Show what's coming if you click
-    if(typing==0 && infield() && !prefs.tablet)
+    if(cur.typing==0 && infield() && !prefs.tablet)
     {
         // Show the upcoming character
-        if(!control && (selw<=0 || selh<=0))
+        if(!control && (sel.w<=0 || sel.h<=0))
         {
             if(shift==1)
             {
@@ -849,19 +844,19 @@ void draw()
         }
         
         // Show selection
-        if(selw>0 && selh>0 && !control)
+        if(sel.w>0 && sel.h>0 && !control)
         {
-            int halfx=blox-selw/2,
-                halfy=bloy-selh/2;
+            int halfx=blox-sel.w/2,
+                halfy=bloy-sel.h/2;
             
-            for(int i=0,k=0;i<selh;i++)
+            for(int i=0,k=0;i<sel.h;i++)
             {
-                for(int j=0;j<selw;j++,k++)
+                for(int j=0;j<sel.w;j++,k++)
                 {
                     int x=halfx+j,
                         y=halfy+i;
                         
-                    if(x>=0 && y>=0 && x<X & y<Y && clip_chars[k]!=-1)
+                    if(x>=0 && y>=0 && x<X & y<Y && sel.clip_chars[k]!=-1)
                     {   
                         if(shift==1) // Color with selection
                         {
@@ -874,9 +869,9 @@ void draw()
                             else
                             {
                                 if(shift==2)
-                                    cset.drawchar(canvasx(x),canvasy(y), clip_chars[k],cf.getcolor(x,y),cf.bg);
+                                    cset.drawchar(canvasx(x),canvasy(y), sel.clip_chars[k],cf.getcolor(x,y),cf.bg);
                                 else
-                                    cset.drawchar(canvasx(x),canvasy(y), clip_chars[k],clip_colors[k],cf.bg);
+                                    cset.drawchar(canvasx(x),canvasy(y), sel.clip_chars[k],sel.clip_colors[k],cf.bg);
                                     
                             }
                         }
@@ -900,37 +895,37 @@ void draw()
     
     updatePixels();
     
-    if(typing>0) // Show the cursor
+    if(cur.typing>0) // Show the cursor
     {
         if((millis()/250&1)==0)
         {
             fill(0x90ff0000);
-            rect(canvasx(cursorx),canvasy(cursory), machine.charx,machine.chary);
+            rect(canvasx(cur.x),canvasy(cur.y), machine.charx,machine.chary);
         }
     }
     else
     {
         // Show selection
-        if(selw>0 && selh>0)
+        if(sel.w>0 && sel.h>0)
         {
             if(control)
             {
-                if(selectmode==1) // Normal selection
+                if(sel.mode==1) // Normal selection
                 {
                     noFill();
                     if(shadowPressed)
                         stroke(255,30,30,160);
                     else
                         stroke(0,255,0,120);
-                    rect(canvasx(selx)-1,canvasy(sely)-1, selw*machine.charx,selh*machine.chary);
+                    rect(canvasx(sel.x)-1,canvasy(sel.y)-1, sel.w*machine.charx,sel.h*machine.chary);
                     noStroke();
                 }
-                if(selectmode==2) // Individual characters
+                if(sel.mode==2) // Individual characters
                 {
                     fill(0x80ff0000);
                     for(int y=0,i=0;y<Y;y++)
                         for(int x=0;x<X;x++,i++)
-                            if(clip_chars[i]!=-1)
+                            if(sel.clip_chars[i]!=-1)
                                 rect(canvasx(x),canvasy(y), machine.charx,machine.chary);
                 }
             }
@@ -938,13 +933,13 @@ void draw()
             // Show paste target
             if(infield() && !control && !prefs.tablet)
             {
-                int halfx=blox-selw/2,
-                    halfy=bloy-selh/2;
+                int halfx=blox-sel.w/2,
+                    halfy=bloy-sel.h/2;
                     
                 int left=  max(canvasx(halfx)-1,    view.col1_start),
                     top=   max(canvasy(halfy)-1,    view.canvas_start),
-                    right= min(canvasx(halfx+selw), view.col1_end),
-                    bottom=min(canvasy(halfy+selh), view.canvas_end);
+                    right= min(canvasx(halfx+sel.w), view.col1_end),
+                    bottom=min(canvasy(halfy+sel.h), view.canvas_end);
                 
                 noFill();
                 stroke(0,255,0,160);

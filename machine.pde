@@ -104,11 +104,11 @@ class Machine
             if(cindex<=maxpen && pen!=cindex)
             {
                 cf.undo_save();
-                if(selw>0 && selh>0) // Selection
+                if(sel.w>0 && sel.h>0) // Selection
                 {
-                    for(int i=0;i<selw*selh;i++)
-                        if(clip_colors[i]==pen)
-                            clip_colors[i]=cindex;
+                    for(int i=0;i<sel.w*sel.h;i++)
+                        if(sel.clip_colors[i]==pen)
+                            sel.clip_colors[i]=cindex;
                 }
                 else // Whole piccy
                 {

@@ -39,83 +39,83 @@ void keyPressed() // Keyboard commands
             shift=2;
     }
     
-    if(typing>0) // A special mode where you can type
+    if(cur.typing>0) // A special mode where you can type
     {
         int petsciinum=-1;
 
         if(key==ESC)
         {
-            typing=0;
+            cur.typing=0;
             if(!cf.changed()) // Remove the unnecessary undo step
                 cf.undo_revoke();
         }
 
         if(key==ENTER)
         {
-            cursorx=0;
-            cursory++;
+            cur.x=0;
+            cur.y++;
         }
         if(key==TAB) // Align to 4 char columns
-            cursorx=(cursorx+4)/4*4;
-        if(keyCode==UP) cursory--;
-        if(keyCode==DOWN) cursory++;
-        if(keyCode==LEFT) cursorx--;
-        if(keyCode==RIGHT) cursorx++;
+            cur.x=(cur.x+4)/4*4;
+        if(keyCode==UP) cur.y--;
+        if(keyCode==DOWN) cur.y++;
+        if(keyCode==LEFT) cur.x--;
+        if(keyCode==RIGHT) cur.x++;
 
-        if(cursorx>=X) // Wrap the cursor
+        if(cur.x>=X) // Wrap the cursor
         {
-            cursorx=0;
-            cursory++;
+            cur.x=0;
+            cur.y++;
         }
-        if(cursorx<0)
+        if(cur.x<0)
         {
-            cursorx=X-1;
-            cursory--;
+            cur.x=X-1;
+            cur.y--;
         }
-        cursory=(cursory+Y)%Y;
+        cur.y=(cur.y+Y)%Y;
 
         if(keyCode==KeyEvent.VK_HOME)
-            cursorx=0;
+            cur.x=0;
         if(keyCode==KeyEvent.VK_END)
-            cursorx=X-1;
+            cur.x=X-1;
         if(keyCode==KeyEvent.VK_PAGE_UP)
-            cursory=0;
+            cur.y=0;
         if(keyCode==KeyEvent.VK_PAGE_DOWN)
-            cursory=Y-1;
+            cur.y=Y-1;
             
         if(key==DELETE || key==BACKSPACE) // Forward/backward delete
         {
             if(key==BACKSPACE)
             {
-                cursorx--;
-                if(cursorx<0)
+                cur.x--;
+                if(cur.x<0)
                 {
-                    cursorx=X-1;
-                    cursory--;
-                    cursory=(cursory+Y)%Y;
+                    cur.x=X-1;
+                    cur.y--;
+                    cur.y=(cur.y+Y)%Y;
                 }
             }
             
-            for(int i=cursorx;i<X-1;i++)
+            for(int i=cur.x;i<X-1;i++)
             {
-                cf.setchar(i,cursory,cf.getchar(i+1,cursory));
-                cf.setcolor(i,cursory,cf.getcolor(i+1,cursory));
+                cf.setchar(i,cur.y,cf.getchar(i+1,cur.y));
+                cf.setcolor(i,cur.y,cf.getcolor(i+1,cur.y));
             }
             
-            cf.setchar(X-1,cursory,cset.erasechar);
-            cf.setcolor(X-1,cursory,machine.erasecolor);
+            cf.setchar(X-1,cur.y,cset.erasechar);
+            cf.setcolor(X-1,cur.y,machine.erasecolor);
         }
         
         if(keyCode==KeyEvent.VK_INSERT) // Insert space here. This is how it works on a C64 :)
         {
-            for(int i=X-1;i>cursorx;i--)
+            for(int i=X-1;i>cur.x;i--)
             {
-                cf.setchar(i,cursory,cf.getchar(i-1,cursory));
-                cf.setcolor(i,cursory,cf.getcolor(i-1,cursory));
+                cf.setchar(i,cur.y,cf.getchar(i-1,cur.y));
+                cf.setcolor(i,cur.y,cf.getcolor(i-1,cur.y));
             }
             
-            cf.setchar(cursorx,cursory,cset.erasechar);
-            cf.setcolor(cursorx,cursory,machine.erasecolor);
+            cf.setchar(cur.x,cur.y,cset.erasechar);
+            cf.setcolor(cur.x,cur.y,machine.erasecolor);
         }
 
         if(!alt)
@@ -142,19 +142,19 @@ void keyPressed() // Keyboard commands
         
         if(petsciinum>=0) // Found a char!
         {
-            if(typing==1)
-                cf.setchar(cursorx,cursory,petsciinum);
+            if(cur.typing==1)
+                cf.setchar(cur.x,cur.y,petsciinum);
             else
-                cf.setchar(cursorx,cursory,petsciinum^128);
-            cf.setcolor(cursorx,cursory,pen);
+                cf.setchar(cur.x,cur.y,petsciinum^128);
+            cf.setcolor(cur.x,cur.y,pen);
             
-            cursorx++;
-            if(cursorx>=X)
+            cur.x++;
+            if(cur.x>=X)
             {
-                cursorx=0;
-                cursory++;
+                cur.x=0;
+                cur.y++;
             }
-            cursory=(cursory+Y)%Y;
+            cur.y=(cur.y+Y)%Y;
         }
     }
     else // Normal drawing mode
@@ -167,11 +167,11 @@ void keyPressed() // Keyboard commands
         // Keyboard drawing commands
         if(key=='x') // Invert char
         {
-            if(selw>0 && selh>0)
+            if(sel.w>0 && sel.h>0)
             {
-                for(int i=0;i<selw*selh;i++)
-                    if(clip_chars[i]!=HOLE)
-                        clip_chars[i]=cset.invertchar(clip_chars[i]);
+                for(int i=0;i<sel.w*sel.h;i++)
+                    if(sel.clip_chars[i]!=HOLE)
+                        sel.clip_chars[i]=cset.invertchar(sel.clip_chars[i]);
             }
             else
             {
@@ -190,7 +190,7 @@ void keyPressed() // Keyboard commands
         // H/V flips    
         if(key=='h')
         {
-            if(selw>0 && selh>0) // Horizontal flip for selection
+            if(sel.w>0 && sel.h>0) // Horizontal flip for selection
                 hflip();
             else
             {
@@ -207,7 +207,7 @@ void keyPressed() // Keyboard commands
         }  
         if(key=='v')
         {
-            if(selw>0 && selh>0) // Vertical flip for selection
+            if(sel.w>0 && sel.h>0) // Vertical flip for selection
                 vflip();
             else
             {
@@ -226,7 +226,7 @@ void keyPressed() // Keyboard commands
         // Rotate
         if(key=='r')
         {
-            if(selw>0 && selh>0) // Rotate selection
+            if(sel.w>0 && sel.h>0) // Rotate selection
                 rrotate();
             else
             {
@@ -244,24 +244,24 @@ void keyPressed() // Keyboard commands
         
         if(key==' ') // Unselect
         {
-            selw=-selw;
-            selh=-selh;
+            sel.w=-sel.w;
+            sel.h=-sel.h;
         }
         if(key==ESC)
         {
-            selw=selh=0;
+            sel.w=sel.h=0;
         }
         
         if(keyCode==KeyEvent.VK_A && control) // Select all
         {
-            selectmode=1;
-            selx=sely=0;
-            selw=X;
-            selh=Y;
+            sel.mode=1;
+            sel.x=sel.y=0;
+            sel.w=X;
+            sel.h=Y;
             for(int i=0;i<X*Y;i++)
             {
-                clip_chars[i]=cf.getchar(i);
-                clip_colors[i]=cf.getcolor(i);
+                sel.clip_chars[i]=cf.getchar(i);
+                sel.clip_colors[i]=cf.getcolor(i);
             }
         }
 
@@ -272,15 +272,15 @@ void keyPressed() // Keyboard commands
 
         if(key==TAB) // Walk through sets if any
         {
-            if(selw>0 && selh>0)
+            if(sel.w>0 && sel.h>0)
             {
-                for(int i=0;i<selw*selh;i++)
-                    if(clip_chars[i]!=HOLE && cset.findset(clip_chars[i],true)!=-1) // Remap all the chars from a selection
+                for(int i=0;i<sel.w*sel.h;i++)
+                    if(sel.clip_chars[i]!=HOLE && cset.findset(sel.clip_chars[i],true)!=-1) // Remap all the chars from a selection
                     {
-                        int tmp=cset.findset(clip_chars[i],true);
+                        int tmp=cset.findset(sel.clip_chars[i],true);
                         for(int j=0;j<cset.charactercount;j++)
                             if(cset.remap[j]==tmp)
-                                clip_chars[i]=tmp;
+                                sel.clip_chars[i]=tmp;
                     }
             }
             else // Current char
@@ -303,9 +303,9 @@ void keyPressed() // Keyboard commands
         if(key==ENTER)
         {
             if(shift>0)
-                typing=2; // inv. mode
+                cur.typing=2; // inv. mode
             else
-                typing=1;
+                cur.typing=1;
             cf.undo_save();
         }
         if(key=='i')
@@ -556,7 +556,7 @@ void mouseClicked()
     if(pasteright_b.mouseover())     cmd_paste_right();
 
 
-    if(floodfill>0 && typing==0 && infield()) // Floodfill
+    if(floodfill>0 && cur.typing==0 && infield()) // Floodfill
     {
         int targetc=current,
             targetcol=pen;
@@ -610,11 +610,11 @@ void mouseClicked()
 
         if(oldie!=current)
         {        
-            if(selw>0 && selh>0)
+            if(sel.w>0 && sel.h>0)
             {
-                for(int i=0;i<selw*selh;i++)
-                    if(clip_chars[i]==oldie)
-                        clip_chars[i]=current;
+                for(int i=0;i<sel.w*sel.h;i++)
+                    if(sel.clip_chars[i]==oldie)
+                        sel.clip_chars[i]=current;
             }
             else
             {
@@ -647,14 +647,14 @@ void mousePressed()
         curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
         
-        if(selw>0 && selh>0) // Make holes to selected char
+        if(sel.w>0 && sel.h>0) // Make holes to selected char
         {
             boolean found=false;
-            for(int i=0;i<selw*selh;i++)
+            for(int i=0;i<sel.w*sel.h;i++)
             {
-                if(clip_chars[i]==current)
+                if(sel.clip_chars[i]==current)
                 {
-                    clip_chars[i]=HOLE;
+                    sel.clip_chars[i]=HOLE;
                     found=true;
                 }
             }

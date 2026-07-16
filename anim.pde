@@ -263,14 +263,14 @@ void setframe(int frame)
         return;
     
     // Check some modes because they don't make sense when changing a frame
-    if(typing>0 && !cf.changed()) // Trying to switch frame when typing
+    if(cur.typing>0 && !cf.changed()) // Trying to switch frame when typing
         cf.undo_revoke();
     
     currentframe=frame;
     cf=frames.get(frame);
 
     // More frame stuff
-    if(typing>0)
+    if(cur.typing>0)
         cf.undo_save();
     if(mousePressed && infield()) // Try to fix inter-frame drawing
       firstclick=true;

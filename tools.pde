@@ -6,28 +6,28 @@ void rrotate()
 {
     int tmp[]=new int[X*Y];
     
-    for(int i=0;i<selw*selh;i++) // Remap
+    for(int i=0;i<sel.w*sel.h;i++) // Remap
     {
-        if(clip_chars[i]!=HOLE)
-            clip_chars[i]=cset.rotate(clip_chars[i]);
+        if(sel.clip_chars[i]!=HOLE)
+            sel.clip_chars[i]=cset.rotate(sel.clip_chars[i]);
     }
     
-    arrayCopy(clip_chars,tmp);
-    for(int y=0;y<selh;y++) // Rotate right
+    arrayCopy(sel.clip_chars,tmp);
+    for(int y=0;y<sel.h;y++) // Rotate right
     {
-        for(int x=0;x<selw;x++)
-            clip_chars[(selh-y-1)+x*selh]=tmp[y*selw+x];
+        for(int x=0;x<sel.w;x++)
+            sel.clip_chars[(sel.h-y-1)+x*sel.h]=tmp[y*sel.w+x];
     }
-    arrayCopy(clip_colors,tmp);
-    for(int y=0;y<selh;y++) // Colors, too
+    arrayCopy(sel.clip_colors,tmp);
+    for(int y=0;y<sel.h;y++) // Colors, too
     {
-        for(int x=0;x<selw;x++)
-            clip_colors[(selh-y-1)+x*selh]=tmp[y*selw+x];
+        for(int x=0;x<sel.w;x++)
+            sel.clip_colors[(sel.h-y-1)+x*sel.h]=tmp[y*sel.w+x];
     }
     
-    int t=selw;
-    selw=selh;
-    selh=t;
+    int t=sel.w;
+    sel.w=sel.h;
+    sel.h=t;
     
     System.gc(); // This damn Java
 }
@@ -35,26 +35,26 @@ void rrotate()
 // Flip the selection horizontally + remap chars
 void hflip()
 {
-    for(int i=0;i<selw*selh;i++) // Remap
+    for(int i=0;i<sel.w*sel.h;i++) // Remap
     {
-        if(clip_chars[i]!=HOLE)
-            clip_chars[i]=cset.hflip(clip_chars[i]);
+        if(sel.clip_chars[i]!=HOLE)
+            sel.clip_chars[i]=cset.hflip(sel.clip_chars[i]);
     }
     
-    for(int y=0;y<selh;y++) // Swap chars & colors
+    for(int y=0;y<sel.h;y++) // Swap chars & colors
     {
-        for(int x=0;x<selw/2;x++)
+        for(int x=0;x<sel.w/2;x++)
         {
-            int i1=y*selw+x,
-                i2=y*selw+(selw-x-1);
+            int i1=y*sel.w+x,
+                i2=y*sel.w+(sel.w-x-1);
             
-            int tmp=clip_chars[i1];
-            clip_chars[i1]=clip_chars[i2];
-            clip_chars[i2]=tmp;
+            int tmp=sel.clip_chars[i1];
+            sel.clip_chars[i1]=sel.clip_chars[i2];
+            sel.clip_chars[i2]=tmp;
             
-            tmp=clip_colors[i1];
-            clip_colors[i1]=clip_colors[i2];
-            clip_colors[i2]=tmp;
+            tmp=sel.clip_colors[i1];
+            sel.clip_colors[i1]=sel.clip_colors[i2];
+            sel.clip_colors[i2]=tmp;
         }
     }
 }
@@ -62,26 +62,26 @@ void hflip()
 // Flip the selection vertically + remap chars
 void vflip()
 {
-    for(int i=0;i<selw*selh;i++) // Remap
+    for(int i=0;i<sel.w*sel.h;i++) // Remap
     {
-        if(clip_chars[i]!=HOLE)
-            clip_chars[i]=cset.vflip(clip_chars[i]);
+        if(sel.clip_chars[i]!=HOLE)
+            sel.clip_chars[i]=cset.vflip(sel.clip_chars[i]);
     }
     
-    for(int y=0;y<selh/2;y++) // Swap chars & colors
+    for(int y=0;y<sel.h/2;y++) // Swap chars & colors
     {
-        for(int x=0;x<selw;x++)
+        for(int x=0;x<sel.w;x++)
         {
-            int i1=y*selw+x,
-                i2=(selh-1-y)*selw+x;
+            int i1=y*sel.w+x,
+                i2=(sel.h-1-y)*sel.w+x;
             
-            int tmp=clip_chars[i1];
-            clip_chars[i1]=clip_chars[i2];
-            clip_chars[i2]=tmp;
+            int tmp=sel.clip_chars[i1];
+            sel.clip_chars[i1]=sel.clip_chars[i2];
+            sel.clip_chars[i2]=tmp;
             
-            tmp=clip_colors[i1];
-            clip_colors[i1]=clip_colors[i2];
-            clip_colors[i2]=tmp;
+            tmp=sel.clip_colors[i1];
+            sel.clip_colors[i1]=sel.clip_colors[i2];
+            sel.clip_colors[i2]=tmp;
         }
     }
 }
@@ -378,10 +378,10 @@ void showinfo()
     
     int infox=0,infoy=0;
     
-    if(typing>0)
+    if(cur.typing>0)
     {
-        infox=cursorx;
-        infoy=cursory;
+        infox=cur.x;
+        infoy=cur.y;
     }
     else
     {
@@ -389,7 +389,7 @@ void showinfo()
         infoy=(mouseY-view.canvas_start)/machine.chary;
     }
     
-    if(typing>0 || infield())
+    if(cur.typing>0 || infield())
     {
         if(prefs.ORIGOZERO)
             s+="("+str(infox)+","+str(infoy)+") ";
@@ -425,20 +425,20 @@ void showinfo()
         textAlign(LEFT);
     }
     
-    if(selh>0 && selw>0) // Selection size
+    if(sel.h>0 && sel.w>0) // Selection size
     {
         textAlign(RIGHT);
-        if(selectmode==2)
+        if(sel.mode==2)
         {
             int cnt=0;
             for(int i=0;i<X*Y;i++)
-                if(clip_chars[i]!=HOLE)
+                if(sel.clip_chars[i]!=HOLE)
                     cnt++;
             text(str(cnt)+" chars",view.col1_end,view.canvas_end+16);
         }
         else
         {
-            text(str(selw)+"x"+str(selh),view.col1_end,view.canvas_end+16);
+            text(str(sel.w)+"x"+str(sel.h),view.col1_end,view.canvas_end+16);
         }
 
         textAlign(LEFT);
@@ -621,20 +621,20 @@ String ext(String name,String newext)
 // Optimize the clipboard
 void optimize_clip()
 {
-    if(selw<1 || selh<1)
+    if(sel.w<1 || sel.h<1)
         return;
     
-    int tchar[]=new int[selw*selh],
-        tcol[]=new int[selw*selh],
+    int tchar[]=new int[sel.w*sel.h],
+        tcol[]=new int[sel.w*sel.h],
         first=-1,
         last=-1;
 
     // Find y bounds
-    for(int y=0;y<selh;y++)
+    for(int y=0;y<sel.h;y++)
     {
-        for(int x=0;x<selw;x++)
+        for(int x=0;x<sel.w;x++)
         {
-            if(clip_chars[y*selw+x]!=HOLE)
+            if(sel.clip_chars[y*sel.w+x]!=HOLE)
             {
                 last=y;
                 if(first==-1)
@@ -644,25 +644,25 @@ void optimize_clip()
     }
     if(last==-1) // None
     {
-        selw=selh=0;
+        sel.w=sel.h=0;
         return;
     }
     
     for(int y=first,i=0;y<=last;y++)
-        for(int x=0;x<selw;x++,i++)
+        for(int x=0;x<sel.w;x++,i++)
         {
-            clip_chars[i]=clip_chars[y*selw+x];
-            clip_colors[i]=clip_colors[y*selw+x];
+            sel.clip_chars[i]=sel.clip_chars[y*sel.w+x];
+            sel.clip_colors[i]=sel.clip_colors[y*sel.w+x];
         }
-    selh=last-first+1;
+    sel.h=last-first+1;
 
     // Find x bounds
     last=first=-1;
-    for(int x=0;x<selw;x++)
+    for(int x=0;x<sel.w;x++)
     {
-        for(int y=0;y<selh;y++)
+        for(int y=0;y<sel.h;y++)
         {
-            if(clip_chars[y*selw+x]!=HOLE)
+            if(sel.clip_chars[y*sel.w+x]!=HOLE)
             {
                 last=x;
                 if(first==-1)
@@ -671,13 +671,13 @@ void optimize_clip()
         }
     }
     
-    for(int y=0,i=0;y<selh;y++)
+    for(int y=0,i=0;y<sel.h;y++)
         for(int x=first;x<=last;x++,i++)
         {
-            clip_chars[i]=clip_chars[y*selw+x];
-            clip_colors[i]=clip_colors[y*selw+x];
+            sel.clip_chars[i]=sel.clip_chars[y*sel.w+x];
+            sel.clip_colors[i]=sel.clip_colors[y*sel.w+x];
         }
-    selw=last-first+1;
+    sel.w=last-first+1;
 }
 
 // Shortcuts for canvas character positions

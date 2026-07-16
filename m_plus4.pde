@@ -74,29 +74,29 @@ class Plus4 extends Machine
     {
         // Plus4 has something here! Let's inc/dec color brightness
         
-        if(selw>0 && selh>0) // Do the whole selection
+        if(sel.w>0 && sel.h>0) // Do the whole selection
         {
             if(e>0) // Brighter
             {
-                for(int i=0;i<selw*selh;i++)
+                for(int i=0;i<sel.w*sel.h;i++)
                 {
-                    if(clip_colors[i]!=HOLE)
+                    if(sel.clip_colors[i]!=HOLE)
                     {
-                        clip_colors[i]+=16;
-                        if(clip_colors[i]>=128)
-                            clip_colors[i]-=16;
+                        sel.clip_colors[i]+=16;
+                        if(sel.clip_colors[i]>=128)
+                            sel.clip_colors[i]-=16;
                     }
                 }
             }
             else // Darker
             {
-                for(int i=0;i<selw*selh;i++)
+                for(int i=0;i<sel.w*sel.h;i++)
                 {
-                    if(clip_colors[i]!=HOLE)
+                    if(sel.clip_colors[i]!=HOLE)
                     {
-                        clip_colors[i]-=16;
-                        if(clip_colors[i]<0)
-                            clip_colors[i]+=16;
+                        sel.clip_colors[i]-=16;
+                        if(sel.clip_colors[i]<0)
+                            sel.clip_colors[i]+=16;
                     }
                 }
             }
