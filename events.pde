@@ -266,9 +266,9 @@ void keyPressed() // Keyboard commands
         }
 
         if(key=='u' && !mousePressed)
-            cf.undo();
+            cmd_undo();
         if(key=='U')
-            cf.redo();
+            cmd_redo();
 
         if(key==TAB) // Walk through sets if any
         {
@@ -297,7 +297,7 @@ void keyPressed() // Keyboard commands
 
         // UI toggles
         if(key=='g')
-            prefs.grid=!prefs.grid;
+            cmd_grid();
         if(key=='c')
             prefs.crosshair=!prefs.crosshair;
         if(key==ENTER)
@@ -454,15 +454,11 @@ void keyPressed() // Keyboard commands
                 message("Frame unlocked");
         }
         if(key=='d') // Dup
-        {
-            addframe(currentframe+1);
-            copyframe(cf,frames.get(currentframe+1));
-            setframe(currentframe+1);
-        }
+            cmd_dup_right();
 
         // Save & export keys
         if(key=='s')
-            machine.save_c(filename,false);
+            cmd_save();
         if(key=='S')
             machine.save_c(ext(filename,"_export.c"),true);
         if(key=='b')
@@ -474,46 +470,12 @@ void keyPressed() // Keyboard commands
         // Only relevant/implemented for the C-64
         if(key=='q' && !control)
             machine.save_seq(ext(filename,".seq"));
-        if(key=='p' || key=='P')
-        {
-            if(framecount==1) // Simple piccy
-            {
-                if(key=='p')
-                    machine.save_png(ext(filename,".png"),cf,false);
-                if(key=='P')
-                    machine.save_png(ext(filename,".png"),cf,true);
-            }
-            else // Multiple frames
-            {
-                for(int i=0;i<framecount;i++)
-                {
-                    if(key=='p')
-                        machine.save_png(ext(filename,"_"+nf(i,3)+".png"),frames.get(i),false);
-                    if(key=='P')
-                        machine.save_png(ext(filename,"_"+nf(i,3)+".png"),frames.get(i),true);
-                }
-            
-                // Run a command for the image sequence if set in the prefs (make animgif or something)
-                if(!prefs.convertcommand.equals(""))
-                {
-                    try
-                    {
-                        String pathi="";
-                        if(prefs.path.equals(""))
-                            pathi=sketchPath(""); // Must have some path or the command will fail
-                        
-                        String kommand=prefs.convertcommand+" "+pathi+ext(filename,"_*.png")+" "+pathi+ext(filename,".gif");
-                        Runtime.getRuntime().exec(kommand);
-                    }
-                    catch (IOException e)
-                    {
-                        message("Problem with command execution.");
-                    }
-                }
-            }
-        }
+        if(key=='p')
+            cmd_export_png(false);
+        if(key=='P')
+            cmd_export_png(true);
         if(key=='e')
-            machine.save_prg(ext(filename,".prg"));
+            cmd_export_prg();
         if(key=='E')
             machine.save_pet(ext(filename,".pet"));
             
@@ -565,146 +527,35 @@ void mouseClicked()
     if(!tablethack)
         return;
 
-    // Load, save etc. button handling. Dialog-based actions are posted as commands
-    // and run from requesters() on the animation thread (see post()/runCommands()).
-    if(load_b.mouseover())
-        post(() -> selectInput("Select a file", "loadPetscii"));
-    if(save_b.mouseover())
-        machine.save_c(filename,false);
-    if(saveas_b.mouseover())
-        post(() -> selectOutput("Save PETSCII .c", "savePetscii"));
-    if(ref_b.mouseover())
-        post(() -> selectInput("Select a file", "loadPic"));
-    if(import_prg_b.mouseover())
-        post(() -> selectInput("Select a .prg file", "importPrg"));
-    if(merge_b.mouseover())
-        post(() -> selectInput("Select a file", "loadPetscii"));
-    if(preview_b.mouseover()) // Preview window in or out
-        showPreview();
-    
-    if(export_prg_b.mouseover())
-        machine.save_prg(ext(filename,".prg"));
-    if(export_png_b.mouseover())
-        machine.save_png(ext(filename,".png"),cf,true);
-    
-    if(undo_b.mouseover())
-    {
-        cf.undo();
-        cf.updatethumb();
-    }
-    if(redo_b.mouseover())
-    {
-        cf.redo();
-        cf.updatethumb();
-    }
-    if(case_b.mouseover()) // Case switch
-    {
-        machine.setcase(!machine.lowercase);
-        machine.init_charset();
-      
-        System.gc();
-    }
-    if(charset_b.mouseover()) // Pick a .png charset to load
-        post(() -> selectInput("Select a charset .png", "loadCharset"));
-    if(charset_save_b.mouseover()) // Save current charset as .png
-        post(() -> {
-            int cpr=askInt("Characters per row?", charsetSaveCPR);
-            if(cpr>=1 && cpr<=256)
-            {
-                charsetSaveCPR=cpr;
-                selectOutput("Save charset .png", "saveCharsetPng");
-            }
-            else if(cpr!=-1) // -1 = cancelled
-                message("Characters per row must be 1..256");
-        });
-    if(charset_prg_b.mouseover()) // Save current charset as C64 .prg
-        post(() -> {
-            int addr=askAddr("Load address? ($hex or decimal)", charsetPrgAddr);
-            if(addr>=0 && addr<=0xffff)
-            {
-                charsetPrgAddr=addr;
-                selectOutput("Save charset .prg", "saveCharsetPrg");
-            }
-            else if(addr!=-1) // -1 = cancelled
-                message("Load address must be 0..65535");
-        });
-    if(image_b.mouseover()) // Trace an image into a charset + canvas
-        post(() -> selectInput("Select an image .png (up to 320x200)", "loadImageCharset"));
-    if(machine_b.mouseover()) // Switch machine (destructive; confirm if unsaved)
-        post(() -> {
-            boolean proceed = !dirty || selector("Discard unsaved changes and switch machine?","Yes,No")==0;
-            if(proceed)
-            {
-                int m=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
-                if(m<0 || m==prefs.machine)
-                    message(m==prefs.machine ? "Already on "+machinenames[m] : "Machine unchanged");
-                else
-                    switch_machine(m);
-            }
-        });
-    if(zoom_b.mouseover()) // Reset zoom to the configured default
-        apply_zoom(defaultzoom);
-    if(charset_refresh_b.mouseover()) // Reload the current charset file from disk
-    {
-        machine.init_charset();
-        System.gc();
-        message("Refreshed charset");
-    }
-    if(grid_b.mouseover())
-        prefs.grid=!prefs.grid;
-    
-    if(clear_b.mouseover())
-    {
-        cf.undo_save();
-        
-        for(int i=0;i<X*Y;i++)
-        {
-            cf.setchar(i,cset.erasechar);
-            cf.setcolor(i,machine.erasecolor);
-        }
-        cf.updatethumb();
-    }
-    
-    // Animation related items
-    if(dupleft_b.mouseover())
-    {
-        addframe(currentframe);
-        copyframe(cf,frames.get(currentframe));
-        setframe(currentframe);
-    }
-    if(dupright_b.mouseover())
-    {
-        addframe(currentframe+1);
-        copyframe(cf,frames.get(currentframe+1));
-        setframe(currentframe+1);
-    }
-    if(cut_b.mouseover())
-    {
-        if(framecount==1 || cf.locked)
-        {
-            cutframe(true);
-        }
-        else
-        {
-            cutframe(false);
-            setframe(currentframe);
-        }
-    }
-    if(pasteleft_b.mouseover())
-    {
-        if(scratch.bg!=-1)
-            pasteframe(currentframe);
-        setframe(currentframe);
-    }
-    if(pasteright_b.mouseover())
-    {
-        if(scratch.bg!=-1)
-        {
-            pasteframe(currentframe+1);
-            setframe(currentframe+1);
-        }
-    }
-    
+    // Button handling: thin dispatch to the shared commands (see commands.pde).
+    if(load_b.mouseover())           cmd_load();
+    if(merge_b.mouseover())          cmd_merge();
+    if(save_b.mouseover())           cmd_save();
+    if(saveas_b.mouseover())         cmd_saveas();
+    if(ref_b.mouseover())            cmd_ref();
+    if(import_prg_b.mouseover())     cmd_import_prg();
+    if(export_prg_b.mouseover())     cmd_export_prg();
+    if(export_png_b.mouseover())     cmd_export_png(true);
+    if(preview_b.mouseover())        cmd_preview();
+    if(undo_b.mouseover())           cmd_undo();
+    if(redo_b.mouseover())           cmd_redo();
+    if(clear_b.mouseover())          cmd_clear();
+    if(grid_b.mouseover())           cmd_grid();
+    if(case_b.mouseover())           cmd_case();
+    if(charset_b.mouseover())        cmd_charset_load();
+    if(charset_refresh_b.mouseover())cmd_charset_refresh();
+    if(charset_save_b.mouseover())   cmd_charset_png();
+    if(charset_prg_b.mouseover())    cmd_charset_prg();
+    if(image_b.mouseover())          cmd_image();
+    if(machine_b.mouseover())        cmd_machine();
+    if(zoom_b.mouseover())           cmd_zoom_reset();
+    if(dupleft_b.mouseover())        cmd_dup_left();
+    if(dupright_b.mouseover())       cmd_dup_right();
+    if(cut_b.mouseover())            cmd_cut();
+    if(pasteleft_b.mouseover())      cmd_paste_left();
+    if(pasteright_b.mouseover())     cmd_paste_right();
+
+
     if(floodfill>0 && typing==0 && infield()) // Floodfill
     {
         int targetc=current,
