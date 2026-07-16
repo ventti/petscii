@@ -12,8 +12,8 @@ void keyPressed() // Keyboard commands
     // Some typical special characters for the typing mode
     final int keytopetscii[]={'[',0x1b, ']',0x1d, '@',0};
     
-    int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
-        bloy=(mouseY-canvas_start)/machine.chary;
+    int blox=(mouseX-view.col1_start)/machine.charx, // Mouse coordinates in character blocks
+        bloy=(mouseY-view.canvas_start)/machine.chary;
 
     if(platform==MACOSX)
     {
@@ -516,8 +516,8 @@ void keyReleased()
 
 void mouseClicked()
 {
-    int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
-        bloy=(mouseY-canvas_start)/machine.chary;
+    int blox=(mouseX-view.col1_start)/machine.charx, // Mouse coordinates in character blocks
+        bloy=(mouseY-view.canvas_start)/machine.chary;
         
     // Only run when invoked from mouseReleased() (tablethack). The OS-generated
     // mouseClicked() is unreliable: AWT fires it only when the pointer doesn't
@@ -605,7 +605,7 @@ void mouseClicked()
     {
         int oldie=current;
 
-        curidx=(mouseX-col2_start)/machine.charx+(mouseY-charsel_start)/machine.chary*16;
+        curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
 
         if(oldie!=current)
@@ -627,7 +627,7 @@ void mouseClicked()
     }
     
     // Check if frame clicked
-    anim_clicks(anim_start,anim_end);
+    anim_clicks(view.anim_start,view.anim_end);
 
     repaint=true;
 }
@@ -644,7 +644,7 @@ void mousePressed()
     // Catch quick presses on the char selector
     if(incharsel() && (mouseButton==LEFT || mouseButton==prefs.PICKERBUTTON) && !control)
     {
-        curidx=(mouseX-col2_start)/machine.charx+(mouseY-charsel_start)/machine.chary*16;
+        curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
         
         if(selw>0 && selh>0) // Make holes to selected char

@@ -39,8 +39,8 @@ class Petscii extends Charset
             fourths[]={0x20,0x7e,0x7c,0xe2,0x7b,0x61,0xff,0xec,
                        0x6c,0x7f,0xe1,0xfb,0x62,0xfc,0xfe,0xe0};
         
-        x-=col1_start;
-        y-=canvas_start;
+        x-=view.col1_start;
+        y-=view.canvas_start;
         
         if(c==0xa0) // Another full char
             c=0xe0;

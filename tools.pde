@@ -385,8 +385,8 @@ void showinfo()
     }
     else
     {
-        infox=(mouseX-col1_start)/machine.charx;
-        infoy=(mouseY-canvas_start)/machine.chary;
+        infox=(mouseX-view.col1_start)/machine.charx;
+        infoy=(mouseY-view.canvas_start)/machine.chary;
     }
     
     if(typing>0 || infield())
@@ -399,29 +399,29 @@ void showinfo()
         s+=str(cf.getchar(infox,infoy))+"/$"+hex(cf.getchar(infox,infoy),2);
         
         if(prefs.showoff)
-            text(str(infox+infoy*X)+"/$"+hex(infox+infoy*X,4),col1_start+128,canvas_end+16);
+            text(str(infox+infoy*X)+"/$"+hex(infox+infoy*X,4),view.col1_start+128,view.canvas_end+16);
     }
-    text(s,col1_start,canvas_end+16);
+    text(s,view.col1_start,view.canvas_end+16);
     
     s=str(current)+"/$"+hex(current,2);
-    text(s,col2_start,charsel_end+16);
+    text(s,view.col2_start,view.charsel_end+16);
     
     if(machine.palettemode) // Color numbers
     {
         s="pen:"+str(pen)+"  bg:"+str(cf.bg)+"  border:"+str(cf.border);
         if(machine.rgb.length%16==0)
-            text(s,col2_start,colorsel_start+machine.rgb.length/16*machine.csheight+18);
+            text(s,view.col2_start,view.colorsel_start+machine.rgb.length/16*machine.csheight+18);
         else
-            text(s,col2_start,colorsel_start+(machine.rgb.length/16+1)*machine.csheight+18);
+            text(s,view.col2_start,view.colorsel_start+(machine.rgb.length/16+1)*machine.csheight+18);
     }
     
     if(cset.findset(current,false)!=-1) // Set if any
     {
         textAlign(RIGHT);
         if(prefs.zoom==1)
-            text(cset.setnames[cset.findset(current,false)],col2_end,charsel_end+16);
+            text(cset.setnames[cset.findset(current,false)],view.col2_end,view.charsel_end+16);
         else
-            text(cset.setnames[cset.findset(current,false)],col2_start+16*machine.charx,charsel_end+16);
+            text(cset.setnames[cset.findset(current,false)],view.col2_start+16*machine.charx,view.charsel_end+16);
         textAlign(LEFT);
     }
     
@@ -434,20 +434,20 @@ void showinfo()
             for(int i=0;i<X*Y;i++)
                 if(clip_chars[i]!=HOLE)
                     cnt++;
-            text(str(cnt)+" chars",col1_end,canvas_end+16);
+            text(str(cnt)+" chars",view.col1_end,view.canvas_end+16);
         }
         else
         {
-            text(str(selw)+"x"+str(selh),col1_end,canvas_end+16);
+            text(str(selw)+"x"+str(selh),view.col1_end,view.canvas_end+16);
         }
 
         textAlign(LEFT);
     }
     
-    int y=canvas_end+16;
+    int y=view.canvas_end+16;
         
     // Modifier keys
-    int base=(col1_start+col2_start)/2+58;
+    int base=(view.col1_start+view.col2_start)/2+58;
     if(shift==1) text("S",base,y);
     if(shift==2) text("s",base,y);
     if(alt) text("A",base+12,y);
@@ -466,23 +466,23 @@ void showinfo()
     String raami=str(currentframe+1)+"/"+str(framecount);
     if(cf.locked)
         raami+="*";
-    text(raami,col1_start,canvas_start-4);
+    text(raami,view.col1_start,view.canvas_start-4);
 }
 
 // Check whether the mouse cursor is inside the canvas
 boolean infield()
 {
-    return inside(col1_start,canvas_start, canvasx(X),canvasy(Y));
+    return inside(view.col1_start,view.canvas_start, canvasx(X),canvasy(Y));
 }
 // ... or the color selector
 boolean incolorsel()
 {
-    return inside(col2_start,colorsel_start, col2_start+16*machine.charx,colorsel_start+machine.csrows*machine.csheight);
+    return inside(view.col2_start,view.colorsel_start, view.col2_start+16*machine.charx,view.colorsel_start+machine.csrows*machine.csheight);
 }
 // ... or the char selector
 boolean incharsel()
 {
-    return inside(col2_start,charsel_start, col2_start+16*machine.charx,charsel_end);
+    return inside(view.col2_start,view.charsel_start, view.col2_start+16*machine.charx,view.charsel_end);
 }
 
 // Mouse inside this rect?
@@ -683,11 +683,11 @@ void optimize_clip()
 // Shortcuts for canvas character positions
 int canvasx(int x)
 {
-    return col1_start+x*machine.charx;
+    return view.col1_start+x*machine.charx;
 }
 int canvasy(int y)
 {
-    return canvas_start+y*machine.chary;
+    return view.canvas_start+y*machine.chary;
 }
 
 // Open a file for writing without dying if it can't be opened

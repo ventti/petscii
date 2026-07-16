@@ -80,18 +80,7 @@ PFont  font;
 boolean shadowPressed=false;
 int shadowButton=0;
 
-// UI parameters
-int    col1_start,col1_end, // x
-       col2_start,col2_end,
-       buttons_start,
-       canvas_start,canvas_end, // y
-       colorsel_start,
-       charsel_start,charsel_end,
-       anim_start, // Anim frames
-       anim_end,
-       winW,winH,  // Computed window size (for size() and runtime resize)
-       defaultzoom=2, // Zoom to restore with the "Zoom" button (set from prefs)
-       dragw,dragh,resizesettle=0; // Drag-to-zoom: track a settled user window resize
+// UI layout / window state lives in the View object (see state.pde)
 
 // UI buttons
 Button load_b,merge_b,save_b,saveas_b,ref_b,
@@ -105,7 +94,7 @@ void settings() // Need to have this in Processing 3.x
     prefs=new Preferences();
     prefs.readprefs(prefs.PREFSFILE);
     filename=prefs.FILENAME;
-    defaultzoom=prefs.zoom; // Remember the configured zoom for the "Zoom" reset button
+    view.defaultzoom=prefs.zoom; // Remember the configured zoom for the "Zoom" reset button
 
     javatheme(); // Choose look and feel for fileselectors and popups
     
@@ -134,7 +123,7 @@ void settings() // Need to have this in Processing 3.x
 
     prefs.bwidth=prefs.BWIDTH*prefs.zoom; // Border width scales with zoom
     compute_layout();
-    size(winW, winH);
+    size(view.winW, view.winH);
     noSmooth();
 }
 
@@ -156,46 +145,46 @@ void init_machine_instance(int m)
     cset.grow=machine.grow;
 }
 
-// Compute all UI layout coordinates and the resulting window size (winW/winH)
+// Compute all UI layout coordinates and the resulting window size (view.winW/view.winH)
 // from the current machine, X and Y. Does not resize the window (see size()
 // in settings() for startup and surface.setSize() in switch_machine()).
 void compute_layout()
 {
     // Various UI locations: x
-    col1_start=prefs.bwidth;
-    col1_end=col1_start+max(X*machine.charx,prefs.ANWIDTH); // fit 2 frames at least
+    view.col1_start=prefs.bwidth;
+    view.col1_end=view.col1_start+max(X*machine.charx,prefs.ANWIDTH); // fit 2 frames at least
 
     if(16*machine.charx>prefs.UIWIDTH) // Charsel wider than buttonbar
     {
-        col2_start=col1_end+prefs.bwidth;
-        buttons_start=col2_start+8*machine.charx-prefs.UIWIDTH/2;
+        view.col2_start=view.col1_end+prefs.bwidth;
+        view.buttons_start=view.col2_start+8*machine.charx-prefs.UIWIDTH/2;
     }
     else
     {
-        buttons_start=col1_end+prefs.bwidth;
-        col2_start=buttons_start+prefs.UIWIDTH/2-8*machine.charx;
+        view.buttons_start=view.col1_end+prefs.bwidth;
+        view.col2_start=view.buttons_start+prefs.UIWIDTH/2-8*machine.charx;
     }
-    col2_end=col1_end+prefs.bwidth+max(16*machine.charx,prefs.UIWIDTH);       // Buttons or char selector
+    view.col2_end=view.col1_end+prefs.bwidth+max(16*machine.charx,prefs.UIWIDTH);       // Buttons or char selector
 
     // y
-    canvas_start=max(prefs.bwidth+Y, prefs.UIROW+prefs.bwidth); // Anim frame + border or buttons + border
-    canvas_end=canvas_start+Y*machine.chary;
-    colorsel_start=canvas_start+5*prefs.UIROW+5; // 5 button rows above the colour selector
-    charsel_start=colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
-    charsel_end=charsel_start+cset.charactercount/16*machine.chary;
+    view.canvas_start=max(prefs.bwidth+Y, prefs.UIROW+prefs.bwidth); // Anim frame + border or buttons + border
+    view.canvas_end=view.canvas_start+Y*machine.chary;
+    view.colorsel_start=view.canvas_start+5*prefs.UIROW+5; // 5 button rows above the colour selector
+    view.charsel_start=view.colorsel_start+machine.csheight*machine.csrows+prefs.UIROW+1;
+    view.charsel_end=view.charsel_start+cset.charactercount/16*machine.chary;
 
-    winW=col2_end+prefs.bwidth;
-    winH=max(charsel_end+prefs.UIROW+prefs.bwidth, canvas_end+prefs.UIROW+prefs.bwidth);
+    view.winW=view.col2_end+prefs.bwidth;
+    view.winH=max(view.charsel_end+prefs.UIROW+prefs.bwidth, view.canvas_end+prefs.UIROW+prefs.bwidth);
 
     // Anim frames' location
-    anim_start=col1_start+70;
-    anim_end=col1_end-216;
+    view.anim_start=view.col1_start+70;
+    view.anim_end=view.col1_end-216;
 
-    if((anim_end-anim_start)/X<6) // if we can't fit enough frames in the normal location
-        if(anim_end-anim_start < col2_end-(col1_end+prefs.bwidth)) // And there is more space on the right...
+    if((view.anim_end-view.anim_start)/X<6) // if we can't fit enough frames in the normal location
+        if(view.anim_end-view.anim_start < view.col2_end-(view.col1_end+prefs.bwidth)) // And there is more space on the right...
         {
-            anim_start=col1_end+prefs.bwidth+4; // Put the frames on the right
-            anim_end=col2_end;
+            view.anim_start=view.col1_end+prefs.bwidth+4; // Put the frames on the right
+            view.anim_end=view.col2_end;
         }
 }
 
@@ -206,7 +195,7 @@ void setup()
     JFrame j=(JFrame)sur.getFrame();
     j.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     surface.setResizable(true); // Allow drag-to-zoom (handled in draw())
-    dragw=winW; dragh=winH;
+    view.dragw=view.winW; view.dragh=view.winH;
 
     frameRate(prefs.framerate);
     noStroke();
@@ -241,37 +230,37 @@ void create_buttons()
 {
     butts.clear();
 
-    load_b=new Button(buttons_start,canvas_start,"Load", "Load a PETSCII image (.c)");
-    merge_b=new Button(buttons_start+49,canvas_start,"Merge", "Merge a PETSCII image (.c) into the current one");
-    save_b=new Button(buttons_start+107,canvas_start,"Save", "Save the image over the current file (.c)  [s]");
-    saveas_b=new Button(buttons_start+156,canvas_start,"Save as", "Save the image to a new file (.c)");
-    ref_b=new Button(buttons_start+228,canvas_start,"Ref.", "Load a reference image to trace over");
+    load_b=new Button(view.buttons_start,view.canvas_start,"Load", "Load a PETSCII image (.c)");
+    merge_b=new Button(view.buttons_start+49,view.canvas_start,"Merge", "Merge a PETSCII image (.c) into the current one");
+    save_b=new Button(view.buttons_start+107,view.canvas_start,"Save", "Save the image over the current file (.c)  [s]");
+    saveas_b=new Button(view.buttons_start+156,view.canvas_start,"Save as", "Save the image to a new file (.c)");
+    ref_b=new Button(view.buttons_start+228,view.canvas_start,"Ref.", "Load a reference image to trace over");
 
-    import_prg_b=new Button(buttons_start,canvas_start+prefs.UIROW,"Load .prg", "Import a C64 .prg screen");
-    export_prg_b=new Button(buttons_start+79,canvas_start+prefs.UIROW,"Save .prg", "Export the image as a C64 .prg  [e]");
-    export_png_b=new Button(buttons_start+158,canvas_start+prefs.UIROW,".png", "Export the image as a .png screenshot  [p]");
-    preview_b=new Button(buttons_start+200,canvas_start+prefs.UIROW,"Preview", "Toggle the 1:1 pixel preview window");
+    import_prg_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW,"Load .prg", "Import a C64 .prg screen");
+    export_prg_b=new Button(view.buttons_start+79,view.canvas_start+prefs.UIROW,"Save .prg", "Export the image as a C64 .prg  [e]");
+    export_png_b=new Button(view.buttons_start+158,view.canvas_start+prefs.UIROW,".png", "Export the image as a .png screenshot  [p]");
+    preview_b=new Button(view.buttons_start+200,view.canvas_start+prefs.UIROW,"Preview", "Toggle the 1:1 pixel preview window");
 
-    undo_b=new Button(buttons_start,canvas_start+prefs.UIROW*2,"Undo", "Undo the last change  [u]");
-    redo_b=new Button(buttons_start+50,canvas_start+prefs.UIROW*2,"Redo", "Redo the last undone change  [Shift-U]");
-    clear_b=new Button(buttons_start+113,canvas_start+prefs.UIROW*2,"Clear", "Clear the canvas");
-    grid_b=new Button(buttons_start+175,canvas_start+prefs.UIROW*2,"Grid", "Toggle the character grid  [g]");
-    case_b=new Button(buttons_start+218,canvas_start+prefs.UIROW*2,"Case", "Toggle upper/lower case charset");
+    undo_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*2,"Undo", "Undo the last change  [u]");
+    redo_b=new Button(view.buttons_start+50,view.canvas_start+prefs.UIROW*2,"Redo", "Redo the last undone change  [Shift-U]");
+    clear_b=new Button(view.buttons_start+113,view.canvas_start+prefs.UIROW*2,"Clear", "Clear the canvas");
+    grid_b=new Button(view.buttons_start+175,view.canvas_start+prefs.UIROW*2,"Grid", "Toggle the character grid  [g]");
+    case_b=new Button(view.buttons_start+218,view.canvas_start+prefs.UIROW*2,"Case", "Toggle upper/lower case charset");
 
-    charset_b=new Button(buttons_start,canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png (grid of up to 256 8x8 chars)");
-    charset_refresh_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
-    image_b=new Button(buttons_start+136,canvas_start+prefs.UIROW*3, "Image", "Trace an image into a generated charset and onto the canvas");
-    charset_save_b=new Button(buttons_start+188,canvas_start+prefs.UIROW*3, "PNG", "Save the current charset as a .png");
-    charset_prg_b=new Button(buttons_start+224,canvas_start+prefs.UIROW*3, "PRG", "Save the charset as a C64 .prg (load address + 2KB data)");
+    charset_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png (grid of up to 256 8x8 chars)");
+    charset_refresh_b=new Button(view.buttons_start+68,view.canvas_start+prefs.UIROW*3, "Refresh", "Refresh (reload) the loaded charset");
+    image_b=new Button(view.buttons_start+136,view.canvas_start+prefs.UIROW*3, "Image", "Trace an image into a generated charset and onto the canvas");
+    charset_save_b=new Button(view.buttons_start+188,view.canvas_start+prefs.UIROW*3, "PNG", "Save the current charset as a .png");
+    charset_prg_b=new Button(view.buttons_start+224,view.canvas_start+prefs.UIROW*3, "PRG", "Save the charset as a C64 .prg (load address + 2KB data)");
 
-    machine_b=new Button(buttons_start,canvas_start+prefs.UIROW*4,"Machine", "Switch machine (discards unsaved work)");
-    zoom_b=new Button(buttons_start+68,canvas_start+prefs.UIROW*4,"Zoom", "Reset zoom to default (Ctrl+1..8 to set); drag the window edge to zoom");
+    machine_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*4,"Machine", "Switch machine (discards unsaved work)");
+    zoom_b=new Button(view.buttons_start+68,view.canvas_start+prefs.UIROW*4,"Zoom", "Reset zoom to default (Ctrl+1..8 to set); drag the window edge to zoom");
 
-    dupleft_b=new Button(col1_end-207,canvas_start-26,"< Dup", "Duplicate this frame to the left");
-    dupright_b=new Button(col1_end-152,canvas_start-26," >", "Duplicate this frame to the right  [d]");
-    cut_b=new Button(col1_end-126,canvas_start-26,"Cut", "Cut this frame to the clipboard");
-    pasteleft_b=new Button(col1_end-89,canvas_start-26,"< Paste", "Paste the clipboard frame to the left");
-    pasteright_b=new Button(col1_end-22,canvas_start-26," >", "Paste the clipboard frame to the right");
+    dupleft_b=new Button(view.col1_end-207,view.canvas_start-26,"< Dup", "Duplicate this frame to the left");
+    dupright_b=new Button(view.col1_end-152,view.canvas_start-26," >", "Duplicate this frame to the right  [d]");
+    cut_b=new Button(view.col1_end-126,view.canvas_start-26,"Cut", "Cut this frame to the clipboard");
+    pasteleft_b=new Button(view.col1_end-89,view.canvas_start-26,"< Paste", "Paste the clipboard frame to the left");
+    pasteright_b=new Button(view.col1_end-22,view.canvas_start-26," >", "Paste the clipboard frame to the right");
 
     // Disable and change not implemented buttons
     machine.ownbuttons();
@@ -308,7 +297,7 @@ void switch_machine(int m)
     dirty=false;
 
     compute_layout();
-    surface.setSize(winW, winH);
+    surface.setSize(view.winW, view.winH);
     create_buttons();
 
     // Freeze any open preview: its buffer is sized for the old resolution and
@@ -352,7 +341,7 @@ void showPreview()
 void apply_zoom(int z)
 {
     z=constrain(z,1,prefs.MAXZOOM);
-    if(z==prefs.zoom && width==winW && height==winH)
+    if(z==prefs.zoom && width==view.winW && height==view.winH)
         return; // nothing to do
 
     prefs.zoom=z;
@@ -371,7 +360,7 @@ void apply_zoom(int z)
     machine.init_charset(); // Re-render the (custom) charset at the new char size
 
     compute_layout();
-    surface.setSize(winW,winH);
+    surface.setSize(view.winW,view.winH);
     create_buttons();
     // Preview is 1:1 (zoom-independent), so it needs no rebuild here.
     resizing=true; // Wait for the async resize to settle before drawing (see draw())
@@ -383,8 +372,8 @@ void draw()
 {
     int millis1=millis();
     
-    int blox=(mouseX-col1_start)/machine.charx, // Mouse coordinates in character blocks
-        bloy=(mouseY-canvas_start)/machine.chary,
+    int blox=(mouseX-view.col1_start)/machine.charx, // Mouse coordinates in character blocks
+        bloy=(mouseY-view.canvas_start)/machine.chary,
 
         selectx=0,selecty=0;
 
@@ -406,25 +395,25 @@ void draw()
     // from our layout size the user is dragging its edge; we must NOT render then
     // (pixels[] would be stale vs width*height). Once the size settles for a few
     // frames, snap to the nearest integer zoom (or back to the exact layout size).
-    if(!resizing && (width!=winW || height!=winH))
+    if(!resizing && (width!=view.winW || height!=view.winH))
     {
-        if(width==dragw && height==dragh)
-            resizesettle++;
+        if(width==view.dragw && height==view.dragh)
+            view.resizesettle++;
         else
         {
-            resizesettle=0;
-            dragw=width; dragh=height;
+            view.resizesettle=0;
+            view.dragw=width; view.dragh=height;
         }
-        if(resizesettle>=4) // stable -> the drag has finished
+        if(view.resizesettle>=4) // stable -> the drag has finished
         {
-            resizesettle=0;
-            float ratio=((float)width/winW + (float)height/winH)/2.0;
+            view.resizesettle=0;
+            float ratio=((float)width/view.winW + (float)height/view.winH)/2.0;
             int nz=constrain(round(prefs.zoom*ratio),1,prefs.MAXZOOM);
             if(nz!=prefs.zoom)
                 apply_zoom(nz);             // rescale content to the new zoom
             else
             {
-                surface.setSize(winW,winH); // no zoom change: snap back to exact size
+                surface.setSize(view.winW,view.winH); // no zoom change: snap back to exact size
                 resizing=true;
             }
         }
@@ -438,9 +427,9 @@ void draw()
     if(resizing)
     {
         loadPixels(); // grab whatever the (possibly mid-resize) graphics buffer is now
-        if(width!=winW || height!=winH || pixels.length!=width*height)
+        if(width!=view.winW || height!=view.winH || pixels.length!=width*height)
         {
-            surface.setSize(winW,winH); // re-assert target (a single setSize can be dropped)
+            surface.setSize(view.winW,view.winH); // re-assert target (a single setSize can be dropped)
             return;                     // not settled yet; check again next frame
         }
         resizing=false;
@@ -572,22 +561,22 @@ void draw()
     for(int y=0,i=0;y<cset.charactercount/16;y++)
         for(int x=0;x<16;x++,i++)
         {
-            cset.drawchar(col2_start+x*machine.charx,charsel_start+y*machine.chary,cset.remap[i],pen,cf.bg);
+            cset.drawchar(view.col2_start+x*machine.charx,view.charsel_start+y*machine.chary,cset.remap[i],pen,cf.bg);
             if(i==curidx)
             {
-                selectx=col2_start+x*machine.charx;
-                selecty=charsel_start+y*machine.chary;
+                selectx=view.col2_start+x*machine.charx;
+                selecty=view.charsel_start+y*machine.chary;
             }
         }
 
     // Charsel grid
     for(int x=0;x<16;x++)
-        vline(col2_start+x*machine.charx-1, charsel_start,charsel_start+cset.charactercount/16*machine.chary-1);
-    vline(col2_start+16*machine.charx, charsel_start,charsel_start+cset.charactercount/16*machine.chary);
+        vline(view.col2_start+x*machine.charx-1, view.charsel_start,view.charsel_start+cset.charactercount/16*machine.chary-1);
+    vline(view.col2_start+16*machine.charx, view.charsel_start,view.charsel_start+cset.charactercount/16*machine.chary);
     
     for(int y=0;y<cset.charactercount/16;y++)
-        hline(col2_start,col2_start+16*machine.charx-1, charsel_start+y*machine.chary-1);
-    hline(col2_start,col2_start+16*machine.charx-1, charsel_start+cset.charactercount/16*machine.chary);
+        hline(view.col2_start,view.col2_start+16*machine.charx-1, view.charsel_start+y*machine.chary-1);
+    hline(view.col2_start,view.col2_start+16*machine.charx-1, view.charsel_start+cset.charactercount/16*machine.chary);
 
     boolean erasing=false;
     
@@ -783,7 +772,7 @@ void draw()
     // Char selector
     if(shadowPressed && incharsel() && (shadowButton==LEFT || shadowButton==prefs.PICKERBUTTON) && !control)
     {
-        curidx=(mouseX-col2_start)/machine.charx+(mouseY-charsel_start)/machine.chary*16;
+        curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
         current=cset.remap[curidx];
         
         if(selw>0 && selh>0) // Make holes to selected char
@@ -901,12 +890,12 @@ void draw()
     if(prefs.grid)
     {
         for(int x=0;x<X;x++)
-            vline(canvasx(x)-1,canvas_start, canvas_end-1);
-        vline(canvasx(X),canvas_start, canvas_end-1);
+            vline(canvasx(x)-1,view.canvas_start, view.canvas_end-1);
+        vline(canvasx(X),view.canvas_start, view.canvas_end-1);
         
         for(int y=0;y<Y;y++)
-            hline(col1_start,canvasx(X)-1, canvasy(y)-1);
-        hline(col1_start,canvasx(X), canvas_end);
+            hline(view.col1_start,canvasx(X)-1, canvasy(y)-1);
+        hline(view.col1_start,canvasx(X), view.canvas_end);
     }
     
     updatePixels();
@@ -952,10 +941,10 @@ void draw()
                 int halfx=blox-selw/2,
                     halfy=bloy-selh/2;
                     
-                int left=  max(canvasx(halfx)-1,    col1_start),
-                    top=   max(canvasy(halfy)-1,    canvas_start),
-                    right= min(canvasx(halfx+selw), col1_end),
-                    bottom=min(canvasy(halfy+selh), canvas_end);
+                int left=  max(canvasx(halfx)-1,    view.col1_start),
+                    top=   max(canvasy(halfy)-1,    view.canvas_start),
+                    right= min(canvasx(halfx+selw), view.col1_end),
+                    bottom=min(canvasy(halfy+selh), view.canvas_end);
                 
                 noFill();
                 stroke(0,255,0,160);
@@ -967,7 +956,7 @@ void draw()
     if(ref>0) // Draw the reference image
     {
         tint(255,255,255,ref*255/3);
-        image(reference,col1_start,canvas_start, X*machine.charx,Y*machine.chary);
+        image(reference,view.col1_start,view.canvas_start, X*machine.charx,Y*machine.chary);
         tint(255);
     }
     
@@ -978,14 +967,14 @@ void draw()
     noStroke();
     
     // Color selector
-    machine.drawcolorselector(col2_start,colorsel_start,pen,cf.bg,cf.border);
+    machine.drawcolorselector(view.col2_start,view.colorsel_start,pen,cf.bg,cf.border);
 
     if(prefs.info)
         showinfo();
     
     drawbuttons();
     
-    anim_frames(anim_start,anim_end); // Draw animation frames
+    anim_frames(view.anim_start,view.anim_end); // Draw animation frames
     
     user_draw(); // Call user's additions
     
@@ -995,8 +984,8 @@ void draw()
         stroke(255,100,100,128);
         if(infield())
         {
-            line(mouseX,canvas_start, mouseX,canvas_end);
-            line(col1_start,mouseY, col1_end,mouseY);
+            line(mouseX,view.canvas_start, mouseX,view.canvas_end);
+            line(view.col1_start,mouseY, view.col1_end,mouseY);
         }
     }
 

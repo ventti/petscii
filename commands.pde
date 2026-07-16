@@ -78,7 +78,7 @@ void cmd_export_png(boolean border)
 // --- Charset / view ---
 void cmd_charset_refresh() { machine.init_charset(); System.gc(); message("Refreshed charset"); }
 void cmd_case()            { machine.setcase(!machine.lowercase); machine.init_charset(); System.gc(); }
-void cmd_zoom_reset()      { apply_zoom(defaultzoom); }
+void cmd_zoom_reset()      { apply_zoom(view.defaultzoom); }
 void cmd_preview()         { showPreview(); }
 
 // --- Edit ---

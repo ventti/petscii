@@ -374,14 +374,14 @@ void anim_frames(int sx,int ex)
             stroke(#ff0000);
         
         f=frames.get(i);
-        image(f.thumb,x,canvas_start-Y-5);
-        rect(x-1,canvas_start-Y-6, X+1,Y+1);
+        image(f.thumb,x,view.canvas_start-Y-5);
+        rect(x-1,view.canvas_start-Y-6, X+1,Y+1);
         
         if(f.locked)
         {
             noStroke();
             fill(#ff0000);
-            triangle(x,canvas_start-5, x+6,canvas_start-5, x,canvas_start-11);
+            triangle(x,view.canvas_start-5, x+6,view.canvas_start-5, x,view.canvas_start-11);
             noFill();
         }
         
@@ -389,7 +389,7 @@ void anim_frames(int sx,int ex)
         {
             strokeWeight(2);
             stroke(#ff0000);
-            line(x-4,canvas_start-Y-6, x-4,canvas_start-5);
+            line(x-4,view.canvas_start-Y-6, x-4,view.canvas_start-5);
             strokeWeight(1);
         }
         
@@ -397,7 +397,7 @@ void anim_frames(int sx,int ex)
         {
             strokeWeight(2);
             stroke(#ff0000);
-            line(x+X+4,canvas_start-Y-6, x+X+4,canvas_start-5);
+            line(x+X+4,view.canvas_start-Y-6, x+X+4,view.canvas_start-5);
             strokeWeight(1);
         }
     }
@@ -430,7 +430,7 @@ void anim_clicks(int sx,int ex)
     {
         f=frames.get(i);
         
-        if(mouseX>x && mouseX<x+X && mouseY>canvas_start-Y-5 && mouseY<canvas_start-5) // We're in
+        if(mouseX>x && mouseX<x+X && mouseY>view.canvas_start-Y-5 && mouseY<view.canvas_start-5) // We're in
         {
             if(mouseButton==LEFT)
             {

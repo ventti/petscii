@@ -96,7 +96,7 @@ class Machine
     // Handle mouse on color selector
     void colorselclicks()
     {
-        int cindex=(mouseX-col2_start)/charx%16 + (mouseY-(colorsel_start))/csheight*16;
+        int cindex=(mouseX-view.col2_start)/charx%16 + (mouseY-(view.colorsel_start))/csheight*16;
         
         if(control)
         {
