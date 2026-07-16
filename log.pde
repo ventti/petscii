@@ -26,7 +26,7 @@
    20.11.2020: Machines can (and will) disable buttons that are not implemented on that platform
    20.11.2020: No need to ask about overwrite with the AWT selector, as it does it already on its own. Changed "Overwrite?" to "Overwrite file?".
    20.11.2020: Didn't work on a Mac. Let's try a fix by extracting the filename from the path first.
-   20.11.2020: Offer the current name when "saving as" in the AWT selector. Also helps with the recent files view.
+   20.11.2020: Offer the tool.current name when "saving as" in the AWT selector. Also helps with the recent files view.
    18.11.2020: Let's NOT export a SEQ every time users press command-q on Mac to exit
    18.11.2020: AWT fileselector loses focus a bit less now
    18.11.2020: Use AWT or Swing fileselector based on the platform, can still be overridden using prefs
@@ -222,7 +222,7 @@
    17.10.2015: Possibly another optimization: even less loadPixels. Might be risky on some platforms.
    16.10.2015: Notable optimization: less unnecessary load/updatePixels
    14.10.2015: Don't update the window if it's not active in order to save CPU time
-   4.10.2015: Eraser now clears with a machine-specific color (erasecolor) instead of the current pen color
+   4.10.2015: Eraser now clears with a machine-specific color (erasecolor) instead of the tool.current tool.pen color
    28.9.2015: Shorter lines for the BASIC exporters
    8.6.2015: Export each frame to a separate PNG
    4.9.2014: A bit better aspect ratio for the pixels. Now more like PAL, was somewhere inbetween.
@@ -259,7 +259,7 @@
    16.10.2013: KeyEvent not keyEvent for Processing 2, plus needed an import
    15.10.2013: Fixed a HUGE slowdown that followed from drawing blended lines for the grid
    15.10.2013: Correct colors on Plus/4 in the cur.typing mode, all the colors can be selected (shift)
-   15.10.2013: Don't change pen color on PET, there's none...
+   15.10.2013: Don't change tool.pen color on PET, there's none...
    15.10.2013: Home and End keys work in the cur.typing mode
    15.10.2013: Graphical cur.typing mode, press alt (or alt gr) + shift in the cur.typing mode
    15.10.2013: shifted, controlled, alted => shift, control, alt
@@ -280,7 +280,7 @@
    9.10.2013: Inverted cur.typing mode for situations where you want bg color text (shift-enter)
    7.10.2013: Fix VIC color selection again
    7.10.2013: Because of Mac the replace now works with all buttons
-   7.10.2013: Color remapping: replace pen color by ctrl-lmb
+   7.10.2013: Color remapping: replace tool.pen color by ctrl-lmb
    7.10.2013: A simple floodfill, show active modes at the bottom of the screen
    6.10.2013: Exported files now go to the same directory as the image, the extension is changed
    6.10.2013: PRG export for VIC-20, different dir for images and reference pics

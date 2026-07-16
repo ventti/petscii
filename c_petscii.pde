@@ -172,7 +172,7 @@ class Petscii extends Charset
             }
             
             if(tp>=0)
-                pen=tp;
+                tool.pen=tp;
         }
         
         return found;

@@ -106,17 +106,17 @@ class Plus4 extends Machine
         {
             if(e>0) // Brighter
             {
-                pen+=16;
-                if(pen>=128)
-                    pen-=16;
+                tool.pen+=16;
+                if(tool.pen>=128)
+                    tool.pen-=16;
                 else
                     repaint=true;
             }
             else // Darker
             {
-                pen-=16;
-                if(pen<0)
-                    pen+=16;
+                tool.pen-=16;
+                if(tool.pen<0)
+                    tool.pen+=16;
                 else
                     repaint=true;
             }

@@ -23,9 +23,9 @@ Charset cset;
 // Selection + clipboard state lives in the Sel object; cursor/typing state in
 // the Cur object (see state.pde)
 
+// Drawing tool state (pen/current/curidx) lives in the Tool object (see state.pde)
+
 int X=0,Y=0,                     // Picture size in chars
-    pen=1,                       // Drawing colors
-    current,curidx=0,            // Current character number and index in the selector
     backupcounter=0,
     lastgrow=0,
 
@@ -106,12 +106,12 @@ void settings() // Need to have this in Processing 3.x
         Y=machine.nativey;
     }
 
-    current=cset.remap[curidx];
+    tool.current=cset.remap[tool.curidx];
 
     cf=new Frame();
     cf.setbg(machine.defaultbg);
     cf.setborder(machine.defaultborder);
-    pen=machine.erasecolor;
+    tool.pen=machine.erasecolor;
 
     sel.clip_chars=new int[X*Y];
     sel.clip_colors=new int[X*Y];
@@ -273,12 +273,12 @@ void switch_machine(int m)
     // Fresh, native-sized document for the new platform
     X=machine.nativex;
     Y=machine.nativey;
-    current=cset.remap[curidx];
+    tool.current=cset.remap[tool.curidx];
 
     cf=new Frame();
     cf.setbg(machine.defaultbg);
     cf.setborder(machine.defaultborder);
-    pen=machine.erasecolor;
+    tool.pen=machine.erasecolor;
 
     sel.clip_chars=new int[X*Y];
     sel.clip_colors=new int[X*Y];
@@ -556,8 +556,8 @@ void draw()
     for(int y=0,i=0;y<cset.charactercount/16;y++)
         for(int x=0;x<16;x++,i++)
         {
-            cset.drawchar(view.col2_start+x*machine.charx,view.charsel_start+y*machine.chary,cset.remap[i],pen,cf.bg);
-            if(i==curidx)
+            cset.drawchar(view.col2_start+x*machine.charx,view.charsel_start+y*machine.chary,cset.remap[i],tool.pen,cf.bg);
+            if(i==tool.curidx)
             {
                 selectx=view.col2_start+x*machine.charx;
                 selecty=view.charsel_start+y*machine.chary;
@@ -595,7 +595,7 @@ void draw()
                 if(shift!=1)
                     cf.setchar(blox,bloy,cset.pixellogic(mouseX,mouseY,cf.getchar(blox,bloy),false));
                 if(shift!=2)
-                    cf.setcolor(blox,bloy,pen);
+                    cf.setcolor(blox,bloy,tool.pen);
                 erasing=false;
             }
             else
@@ -688,7 +688,7 @@ void draw()
                                 {
                                     if(shift==1) // Just color
                                     {
-                                        cf.setcolor(x,y,pen);
+                                        cf.setcolor(x,y,tool.pen);
                                     }
                                     else
                                     {
@@ -703,22 +703,22 @@ void draw()
                     else // Plain normal char drawing
                     {
                         if(shift!=1)
-                            cf.setchar(blox,bloy,current);
+                            cf.setchar(blox,bloy,tool.current);
                         if(shift!=2)
-                            cf.setcolor(blox,bloy,pen);
+                            cf.setcolor(blox,bloy,tool.pen);
                     }
                 }
                 if(shadowButton==prefs.PICKERBUTTON)
                 {
                     if(shift!=1)
                     {
-                        current=cf.getchar(blox,bloy);
+                        tool.current=cf.getchar(blox,bloy);
                         for(int i=0;i<cset.charactercount;i++)
-                            if(cset.remap[i]==current)
-                                curidx=i;
+                            if(cset.remap[i]==tool.current)
+                                tool.curidx=i;
                     }
                     if(shift!=2)
-                        pen=cf.getcolor(blox,bloy);
+                        tool.pen=cf.getcolor(blox,bloy);
                 }
                 if(shadowButton==prefs.ERASEBUTTON && !oldcontrol) // Erase
                 {
@@ -767,15 +767,15 @@ void draw()
     // Char selector
     if(shadowPressed && incharsel() && (shadowButton==LEFT || shadowButton==prefs.PICKERBUTTON) && !control)
     {
-        curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
-        current=cset.remap[curidx];
+        tool.curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
+        tool.current=cset.remap[tool.curidx];
         
         if(sel.w>0 && sel.h>0) // Make holes to selected char
         {
             boolean found=false;
             for(int i=0;i<sel.w*sel.h;i++)
             {
-                if(sel.clip_chars[i]==current)
+                if(sel.clip_chars[i]==tool.current)
                 {
                     sel.clip_chars[i]=HOLE;
                     found=true;
@@ -819,18 +819,18 @@ void draw()
         {
             if(shift==1)
             {
-                cset.drawchar(canvasx(blox),canvasy(bloy), cf.getchar(blox,bloy),pen,cf.bg);
+                cset.drawchar(canvasx(blox),canvasy(bloy), cf.getchar(blox,bloy),tool.pen,cf.bg);
             }
             else
             {
-                int tmp=current;
+                int tmp=tool.current;
                 if(erasing)
                     tmp=cset.erasechar;
                 
                 if(shift==2)
                     cset.drawchar(canvasx(blox),canvasy(bloy), tmp,cf.getcolor(blox,bloy),cf.bg);
                 else
-                    cset.drawchar(canvasx(blox),canvasy(bloy), tmp,pen,cf.bg);
+                    cset.drawchar(canvasx(blox),canvasy(bloy), tmp,tool.pen,cf.bg);
             }
         }
         
@@ -838,9 +838,9 @@ void draw()
         if(alt)
         {
             if(shift!=2)
-                cset.drawchar(canvasx(blox),canvasy(bloy), cf.getchar(blox,bloy),pen,cf.bg);
+                cset.drawchar(canvasx(blox),canvasy(bloy), cf.getchar(blox,bloy),tool.pen,cf.bg);
             if(shift!=1)
-                cset.drawchar(canvasx(blox),canvasy(bloy), cset.pixellogic(mouseX,mouseY,cf.getchar(blox,bloy),erasing),pen,cf.bg);
+                cset.drawchar(canvasx(blox),canvasy(bloy), cset.pixellogic(mouseX,mouseY,cf.getchar(blox,bloy),erasing),tool.pen,cf.bg);
         }
         
         // Show selection
@@ -860,12 +860,12 @@ void draw()
                     {   
                         if(shift==1) // Color with selection
                         {
-                            cset.drawchar(canvasx(x),canvasy(y), cf.getchar(x,y),pen,cf.bg);
+                            cset.drawchar(canvasx(x),canvasy(y), cf.getchar(x,y),tool.pen,cf.bg);
                         }
                         else
                         {
                             if(erasing)
-                                cset.drawchar(canvasx(x),canvasy(y), cset.erasechar,pen,cf.bg);
+                                cset.drawchar(canvasx(x),canvasy(y), cset.erasechar,tool.pen,cf.bg);
                             else
                             {
                                 if(shift==2)
@@ -962,7 +962,7 @@ void draw()
     noStroke();
     
     // Color selector
-    machine.drawcolorselector(view.col2_start,view.colorsel_start,pen,cf.bg,cf.border);
+    machine.drawcolorselector(view.col2_start,view.colorsel_start,tool.pen,cf.bg,cf.border);
 
     if(prefs.info)
         showinfo();

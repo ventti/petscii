@@ -60,7 +60,7 @@ class Machine
     }
 
     // Draw the color selector and its markers
-    void drawcolorselector(int px,int py,int pen,int bg,int border)
+    void drawcolorselector(int px,int py,int pcol,int bg,int border)
     {
         if(!palettemode)
             return;
@@ -80,7 +80,7 @@ class Machine
 
         // Active color markers
         stroke(#ff0000);
-        rect(px+charx*(pen%16),py+(pen/16)*csheight, charx,csheight);
+        rect(px+charx*(pcol%16),py+(pcol/16)*csheight, charx,csheight);
         noStroke();
 
         fill(#ff0000);
@@ -101,28 +101,28 @@ class Machine
         if(control)
         {
             // Hidden feature! Remap current pen to clicked
-            if(cindex<=maxpen && pen!=cindex)
+            if(cindex<=maxpen && tool.pen!=cindex)
             {
                 cf.undo_save();
                 if(sel.w>0 && sel.h>0) // Selection
                 {
                     for(int i=0;i<sel.w*sel.h;i++)
-                        if(sel.clip_colors[i]==pen)
+                        if(sel.clip_colors[i]==tool.pen)
                             sel.clip_colors[i]=cindex;
                 }
                 else // Whole piccy
                 {
                     for(int i=0;i<X*Y;i++)
-                        if(cf.getcolor(i)==pen)
+                        if(cf.getcolor(i)==tool.pen)
                             cf.setcolor(i,cindex);
                 }
-                pen=cindex;
+                tool.pen=cindex;
             }
         }
         else
         {
             if(shadowButton==LEFT && cindex<=maxpen)
-                pen=cindex;
+                tool.pen=cindex;
             if(shadowButton==prefs.PICKERBUTTON && cindex<=maxborder)
             {
                 cf.setborder(cindex);
@@ -282,7 +282,7 @@ class Machine
             setcase(lower);
             cset=new Petscii(fontfile,remapfile,setfile);
             cset.initrender(charx,chary);
-            current=cset.remap[curidx];
+            tool.current=cset.remap[tool.curidx];
         }
         cset.shift=shift; // Need to do this properly later
         cset.grow=grow;
@@ -734,7 +734,7 @@ class Machine
     {
         cset=new Petscii(fontfile,remapfile,setfile);
         cset.initrender(charx,chary);
-        current=cset.remap[curidx];
+        tool.current=cset.remap[tool.curidx];
         cset.shift=shift; // Need to do this properly later
         cset.grow=grow;
     }

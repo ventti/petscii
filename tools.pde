@@ -149,7 +149,7 @@ void dither()
             if(best==-1 && machine.palettemode) // Directly bg color
             {
                 cf.setchar(x,y,cset.erasechar);
-                cf.setcolor(x,y,pen);
+                cf.setcolor(x,y,tool.pen);
             }
             else // Form a binary b/w character based on bg and best match
             {
@@ -403,25 +403,25 @@ void showinfo()
     }
     text(s,view.col1_start,view.canvas_end+16);
     
-    s=str(current)+"/$"+hex(current,2);
+    s=str(tool.current)+"/$"+hex(tool.current,2);
     text(s,view.col2_start,view.charsel_end+16);
     
     if(machine.palettemode) // Color numbers
     {
-        s="pen:"+str(pen)+"  bg:"+str(cf.bg)+"  border:"+str(cf.border);
+        s="pen:"+str(tool.pen)+"  bg:"+str(cf.bg)+"  border:"+str(cf.border);
         if(machine.rgb.length%16==0)
             text(s,view.col2_start,view.colorsel_start+machine.rgb.length/16*machine.csheight+18);
         else
             text(s,view.col2_start,view.colorsel_start+(machine.rgb.length/16+1)*machine.csheight+18);
     }
     
-    if(cset.findset(current,false)!=-1) // Set if any
+    if(cset.findset(tool.current,false)!=-1) // Set if any
     {
         textAlign(RIGHT);
         if(prefs.zoom==1)
-            text(cset.setnames[cset.findset(current,false)],view.col2_end,view.charsel_end+16);
+            text(cset.setnames[cset.findset(tool.current,false)],view.col2_end,view.charsel_end+16);
         else
-            text(cset.setnames[cset.findset(current,false)],view.col2_start+16*machine.charx,view.charsel_end+16);
+            text(cset.setnames[cset.findset(tool.current,false)],view.col2_start+16*machine.charx,view.charsel_end+16);
         textAlign(LEFT);
     }
     

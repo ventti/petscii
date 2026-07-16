@@ -146,7 +146,7 @@ void keyPressed() // Keyboard commands
                 cf.setchar(cur.x,cur.y,petsciinum);
             else
                 cf.setchar(cur.x,cur.y,petsciinum^128);
-            cf.setcolor(cur.x,cur.y,pen);
+            cf.setcolor(cur.x,cur.y,tool.pen);
             
             cur.x++;
             if(cur.x>=X)
@@ -175,10 +175,10 @@ void keyPressed() // Keyboard commands
             }
             else
             {
-                current=cset.invertchar(current);
+                tool.current=cset.invertchar(tool.current);
                 for(int i=0;i<cset.remap.length;i++)
-                    if(current==cset.remap[i])
-                        curidx=i;
+                    if(tool.current==cset.remap[i])
+                        tool.curidx=i;
             }
         }
         if(key=='X' && infield())
@@ -194,10 +194,10 @@ void keyPressed() // Keyboard commands
                 hflip();
             else
             {
-                current=cset.hflip(current); // Current char
+                tool.current=cset.hflip(tool.current); // Current char
                 for(int i=0;i<cset.charactercount;i++)
-                    if(cset.remap[i]==current)
-                        curidx=i;
+                    if(cset.remap[i]==tool.current)
+                        tool.curidx=i;
             }
         }
         if(key=='H' && infield())
@@ -211,10 +211,10 @@ void keyPressed() // Keyboard commands
                 vflip();
             else
             {
-                current=cset.vflip(current); // Current char
+                tool.current=cset.vflip(tool.current); // Current char
                 for(int i=0;i<cset.charactercount;i++)
-                    if(cset.remap[i]==current)
-                        curidx=i;
+                    if(cset.remap[i]==tool.current)
+                        tool.curidx=i;
             }
         }
         if(key=='V' && infield())
@@ -230,10 +230,10 @@ void keyPressed() // Keyboard commands
                 rrotate();
             else
             {
-                current=cset.rotate(current); // Current char
+                tool.current=cset.rotate(tool.current); // Current char
                 for(int i=0;i<cset.charactercount;i++)
-                    if(cset.remap[i]==current)
-                        curidx=i;
+                    if(cset.remap[i]==tool.current)
+                        tool.curidx=i;
             }
         }
         if(key=='R' && infield())
@@ -285,12 +285,12 @@ void keyPressed() // Keyboard commands
             }
             else // Current char
             {
-                if(cset.findset(current,true)!=-1)
+                if(cset.findset(tool.current,true)!=-1)
                 {
-                    current=cset.findset(current,true);
+                    tool.current=cset.findset(tool.current,true);
                     for(int i=0;i<cset.charactercount;i++)
-                        if(cset.remap[i]==current)
-                            curidx=i;
+                        if(cset.remap[i]==tool.current)
+                            tool.curidx=i;
                 }
             }
         }
@@ -340,17 +340,17 @@ void keyPressed() // Keyboard commands
             for(int j=0;!found && j<cset.shift.length;j++)
                 for(int i=0;i<8;i++)
                 {
-                    if((current&0x7f)==cset.shift[j][i])
+                    if((tool.current&0x7f)==cset.shift[j][i])
                     {
-                        current=(current&0x80)+cset.shift[j][(i+plus)%8];
+                        tool.current=(tool.current&0x80)+cset.shift[j][(i+plus)%8];
                         found=true;
                         break;
                     }
                 }
             
             for(int i=0;i<cset.charactercount;i++)
-                if(cset.remap[i]==current)
-                    curidx=i;
+                if(cset.remap[i]==tool.current)
+                    tool.curidx=i;
         }
         
         if (control){
@@ -368,8 +368,8 @@ void keyPressed() // Keyboard commands
                 plus=-1;
             
             for(int j=2;j<cset.grow.length;j++) // Replace identical chars first
-                if(current==cset.grow[j][0])
-                    current=cset.grow[j][1];
+                if(tool.current==cset.grow[j][0])
+                    tool.current=cset.grow[j][1];
             
             boolean found=false;
             for(int j=0;!found && j<2;j++) // Check both slides
@@ -378,13 +378,13 @@ void keyPressed() // Keyboard commands
                 
                 for(int i=0;i<cset.grow[k].length;i++)
                 {
-                    if(current==cset.grow[k][i])
+                    if(tool.current==cset.grow[k][i])
                     {
                         int idx=i+plus;
                         if(idx<0)
                           idx=cset.grow[k].length-1;
                         idx%=cset.grow[k].length;
-                        current=cset.grow[k][idx];
+                        tool.current=cset.grow[k][idx];
                         found=true;
                         break;
                     }
@@ -394,8 +394,8 @@ void keyPressed() // Keyboard commands
             }
                 
             for(int i=0;i<cset.charactercount;i++)
-                if(cset.remap[i]==current)
-                    curidx=i;
+                if(cset.remap[i]==tool.current)
+                    tool.curidx=i;
         }
         
         // A quick hack for one-button mice
@@ -412,14 +412,14 @@ void keyPressed() // Keyboard commands
 
         if(key=='§' && infield())
         {
-            current=cf.getchar(blox,bloy);
-            pen=cf.getcolor(blox,bloy);
+            tool.current=cf.getchar(blox,bloy);
+            tool.pen=cf.getcolor(blox,bloy);
             for(int i=0;i<cset.charactercount;i++)
-                if(cset.remap[i]==current)
-                    curidx=i;
+                if(cset.remap[i]==tool.current)
+                    tool.curidx=i;
         }
         if((key=='°' || key=='½') && infield())
-            pen=cf.getcolor(blox,bloy);
+            tool.pen=cf.getcolor(blox,bloy);
 
         if(key=='C') // Fix colors after loading a C64 image. Not necessary with new files.
         {
@@ -558,8 +558,8 @@ void mouseClicked()
 
     if(floodfill>0 && cur.typing==0 && infield()) // Floodfill
     {
-        int targetc=current,
-            targetcol=pen;
+        int targetc=tool.current,
+            targetcol=tool.pen;
         
         if(mouseButton==prefs.ERASEBUTTON)
         {
@@ -603,25 +603,25 @@ void mouseClicked()
     // Remap characters on ctrl-click on the selector
     if(incharsel() && mouseButton==LEFT && control)
     {
-        int oldie=current;
+        int oldie=tool.current;
 
-        curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
-        current=cset.remap[curidx];
+        tool.curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
+        tool.current=cset.remap[tool.curidx];
 
-        if(oldie!=current)
+        if(oldie!=tool.current)
         {        
             if(sel.w>0 && sel.h>0)
             {
                 for(int i=0;i<sel.w*sel.h;i++)
                     if(sel.clip_chars[i]==oldie)
-                        sel.clip_chars[i]=current;
+                        sel.clip_chars[i]=tool.current;
             }
             else
             {
                 cf.undo_save();
                 for(int i=0;i<X*Y;i++)
                     if(cf.getchar(i)==oldie)
-                        cf.setchar(i,current);
+                        cf.setchar(i,tool.current);
             }
         }
     }
@@ -644,15 +644,15 @@ void mousePressed()
     // Catch quick presses on the char selector
     if(incharsel() && (mouseButton==LEFT || mouseButton==prefs.PICKERBUTTON) && !control)
     {
-        curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
-        current=cset.remap[curidx];
+        tool.curidx=(mouseX-view.col2_start)/machine.charx+(mouseY-view.charsel_start)/machine.chary*16;
+        tool.current=cset.remap[tool.curidx];
         
         if(sel.w>0 && sel.h>0) // Make holes to selected char
         {
             boolean found=false;
             for(int i=0;i<sel.w*sel.h;i++)
             {
-                if(sel.clip_chars[i]==current)
+                if(sel.clip_chars[i]==tool.current)
                 {
                     sel.clip_chars[i]=HOLE;
                     found=true;

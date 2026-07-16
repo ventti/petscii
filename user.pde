@@ -167,7 +167,7 @@ void user_key()
         f.println("20 poke 65305,"+str(cf.border));
         f.println("30 print chr$(147)");
         f.println("40 poke 65301,"+str(cf.bg));
-        f.println("50 fori=2048to3047:pokei,"+str(pen)+":next");
+        f.println("50 fori=2048to3047:pokei,"+str(tool.pen)+":next");
         f.println("55 fori=3072to4071:pokei,"+160+":next");
         f.println("60 reada,b:ifa=-1thengoto80");
         f.println("70 pokea,b:goto60");

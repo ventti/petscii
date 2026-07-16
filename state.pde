@@ -40,3 +40,12 @@ class Cur
         blink;
 }
 Cur cur=new Cur();
+
+// Current drawing tool state: pen colour, current character and its selector index.
+class Tool
+{
+    int pen=1,     // drawing colour
+        current,   // current character code
+        curidx=0;  // its index in the char selector
+}
+Tool tool=new Tool();
