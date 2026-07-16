@@ -214,7 +214,7 @@ void loadCharset(File selection)
 void loadImageCharset(File selection)
 {
     if(selection==null) return;
-    post(() -> machine.load_image_charset(selection.getAbsolutePath()));
+    post(() -> load_image_charset(selection.getAbsolutePath()));
 }
 
 // Modal integer prompt. Returns the entered value, `def` on invalid input,
