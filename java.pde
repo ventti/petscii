@@ -5,8 +5,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.util.Collections;
-import java.util.Comparator;
 
 void javatheme()
 {

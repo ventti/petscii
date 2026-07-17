@@ -64,40 +64,28 @@ void trace_image(PImage img)
             bgpop[nearest_pen(mm[0])]++;
         }
 
-    // Choose the character set: all distinct glyphs, or (best effort) the 256
-    // most frequent ones when there are more than 256.
+    // Choose the character set. Up to 256 distinct glyphs are kept verbatim; when
+    // there are more, agglomerative clustering merges the most similar glyphs into
+    // frequency-weighted interpolated representatives until 256 remain.
     boolean besteffort = uniq.size()>256;
-    ArrayList<Long> kept;
+    ArrayList<Long> kept=new ArrayList<Long>();               // final (<=256) representative glyphs
+    HashMap<Long,Integer> charOf=new HashMap<Long,Integer>(); // uniq glyph -> its char index in kept
+
     if(!besteffort)
-        kept=uniq;
+    {
+        for(int k=0;k<uniq.size();k++){ kept.add(uniq.get(k)); charOf.put(uniq.get(k),k); }
+    }
     else
     {
-        ArrayList<Long> all=new ArrayList<Long>(uniq);
-        final HashMap<Long,Integer> f=freq;
-        Collections.sort(all, new Comparator<Long>(){
-            public int compare(Long a, Long b){ return f.get(b)-f.get(a); } // most frequent first
-        });
-        kept=new ArrayList<Long>(all.subList(0,256));
+        int map[]=cluster_glyphs(uniq, freq, kept); // fills kept; uniq index -> kept index
+        for(int k=0;k<uniq.size();k++)
+            charOf.put(uniq.get(k), map[k]);
     }
 
-    HashMap<Long,Integer> idx=new HashMap<Long,Integer>(); // glyph -> char index
-    for(int k=0;k<kept.size();k++)
-        idx.put(kept.get(k), k);
-
-    // Map every block to a kept char (its own, or the nearest kept glyph)
+    // Map every block to its representative character
     int blockchar[]=new int[cols*rows];
-    HashMap<Long,Integer> nearest=new HashMap<Long,Integer>(); // cache for dropped glyphs
     for(int i=0;i<cols*rows;i++)
-    {
-        long sig=blocksig[i];
-        Integer ix=idx.get(sig);
-        if(ix==null)
-        {
-            ix=nearest.get(sig);
-            if(ix==null){ ix=nearest_kept_index(sig, kept); nearest.put(sig, ix); }
-        }
-        blockchar[i]=ix;
-    }
+        blockchar[i]=charOf.get(blocksig[i]);
 
     // Global background = the most popular paper colour across the image
     int globalbg=0;
@@ -131,7 +119,7 @@ void trace_image(PImage img)
     // shared best-matching background colour.
     cf.undo_save();
     cf.setbg(globalbg);
-    int blank = idx.containsKey(0L) ? idx.get(0L) : cset.erasechar; // all-background char, if any
+    int blank = charOf.containsKey(0L) ? charOf.get(0L) : cset.erasechar; // all-background char, if any
     for(int i=0;i<X*Y;i++)
     {
         cf.setchar(i, blank);
@@ -148,24 +136,109 @@ void trace_image(PImage img)
 
     if(besteffort)
     {
-        message("Best effort: "+uniq.size()+" unique chars reduced to 256");
+        message("Best effort: "+uniq.size()+" glyphs merged down to 256");
         popup("The image has "+uniq.size()+" unique characters (more than 256).\n\n"+
-              "A best-effort 256-character set and an approximate image estimate were created.");
+              "The most similar characters were merged (interpolated) to fit a 256-\n"+
+              "character set, producing an approximate image estimate.");
     }
     else
         message("Generated "+kept.size()+" chars and rendered the image");
 }
 
-// Index of the kept glyph closest to sig (fewest differing pixels).
-int nearest_kept_index(long sig, ArrayList<Long> kept)
+// Reduce >256 distinct glyphs to exactly 256 by agglomerative clustering: start
+// with one cluster per glyph, then repeatedly merge the two nearest clusters
+// (fewest differing pixels between their binary centroids) into a single glyph
+// that is the frequency-weighted, majority-vote interpolation of its members.
+// Fills 'kept' with the resulting <=256 representative glyphs and returns an array
+// mapping each uniq index to its representative's index in 'kept'.
+int[] cluster_glyphs(ArrayList<Long> uniq, HashMap<Long,Integer> freq, ArrayList<Long> kept)
 {
-    int best=0, bestd=Integer.MAX_VALUE;
-    for(int k=0;k<kept.size();k++)
+    int U=uniq.size();
+    int sum[][]=new int[U][64];       // per-cluster frequency-weighted pixel sums
+    int cnt[]=new int[U];             // total member frequency
+    long cent[]=new long[U];          // current binary centroid (majority vote)
+    boolean alive[]=new boolean[U];
+    int parent[]=new int[U];          // union-find: uniq glyph -> surviving cluster
+
+    for(int k=0;k<U;k++)
     {
-        int d=Long.bitCount(sig ^ kept.get(k));
-        if(d<bestd){ bestd=d; best=k; }
+        long s=uniq.get(k);
+        int f=freq.get(s);
+        for(int i=0;i<64;i++)
+            sum[k][i]=(int)((s>>(63-i))&1L)*f;
+        cnt[k]=f;
+        cent[k]=s;
+        alive[k]=true;
+        parent[k]=k;
     }
-    return best;
+
+    // Nearest-neighbour cache: nn[k] = nearest alive cluster to k, nnd[k] its distance
+    int nn[]=new int[U], nnd[]=new int[U];
+    for(int k=0;k<U;k++)
+        refresh_nn(k, cent, alive, U, nn, nnd);
+
+    int aliveCount=U;
+    while(aliveCount>256)
+    {
+        // Globally nearest pair = the alive cluster with the smallest nnd
+        int a=-1, best=Integer.MAX_VALUE;
+        for(int k=0;k<U;k++)
+            if(alive[k] && nnd[k]<best){ best=nnd[k]; a=k; }
+        int b=nn[a];
+
+        // Merge b into a: combine weighted pixel sums, re-threshold to a glyph
+        for(int i=0;i<64;i++)
+            sum[a][i]+=sum[b][i];
+        cnt[a]+=cnt[b];
+        long c=0;
+        for(int i=0;i<64;i++)
+            c=(c<<1)|((sum[a][i]*2>=cnt[a])?1L:0L); // majority vote (ties -> foreground)
+        cent[a]=c;
+        parent[b]=a;
+        alive[b]=false;
+        aliveCount--;
+
+        // Repair the nearest-neighbour cache around the change
+        refresh_nn(a, cent, alive, U, nn, nnd);
+        for(int k=0;k<U;k++)
+            if(alive[k] && k!=a)
+            {
+                if(nn[k]==b || nn[k]==a)          // pointed at a merged/changed cluster
+                    refresh_nn(k, cent, alive, U, nn, nnd);
+                else                              // the new 'a' might be closer
+                {
+                    int d=Long.bitCount(cent[k]^cent[a]);
+                    if(d<nnd[k]){ nnd[k]=d; nn[k]=a; }
+                }
+            }
+    }
+
+    // Assign a char index to each surviving cluster and map every uniq glyph to it
+    HashMap<Integer,Integer> rootIdx=new HashMap<Integer,Integer>();
+    for(int k=0;k<U;k++)
+        if(alive[k]){ rootIdx.put(k, kept.size()); kept.add(cent[k]); }
+
+    int map[]=new int[U];
+    for(int k=0;k<U;k++)
+    {
+        int r=k;
+        while(parent[r]!=r) r=parent[r];
+        map[k]=rootIdx.get(r);
+    }
+    return map;
+}
+
+// Set nn[a]/nnd[a] to the nearest alive cluster to 'a' (by centroid Hamming distance).
+void refresh_nn(int a, long cent[], boolean alive[], int U, int nn[], int nnd[])
+{
+    int best=Integer.MAX_VALUE, bi=-1;
+    for(int b=0;b<U;b++)
+        if(b!=a && alive[b])
+        {
+            int d=Long.bitCount(cent[a]^cent[b]);
+            if(d<best){ best=d; bi=b; }
+        }
+    nn[a]=bi; nnd[a]=best;
 }
 
 // Reduce one 8x8 block to a black/white bitmap packed into a 64-bit signature
