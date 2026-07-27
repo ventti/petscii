@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#MISE description="Export standalone apps and package them into dist/ as release artifacts"
+#MISE alias="artifacts"
+#MISE raw=true
+#
+# raw=true: Processing's exporter stalls indefinitely when mise captures the
+# child's stdio, so hand it the real stdin/stdout instead.
+#
+# Packages what build.sh exports into one archive per platform:
+#
+#   macOS    petscii-<version>-macos-<arch>.zip     (the .app bundle)
+#   Windows  petscii-<version>-windows-amd64.zip
+#   Linux    petscii-<version>-linux-<arch>.tar.gz
+#
+# The sketch's own source/ dir that Processing copies into each export is left
+# out, so an archive contains just the runnable application.
+#
+# Version comes from $RELEASE_VERSION when the release task calls this (see
+# RELEASE_BUILD_COMMAND in mise.toml); standalone runs fall back to the latest
+# tag so the task is useful on its own.
+#
+# Usage: mise run dist [variant ...]   (default: every variant build.sh supports)
+
+set -eu
+
+cd "${MISE_PROJECT_ROOT:-$(git rev-parse --show-toplevel)}"
+
+VERSION="${RELEASE_VERSION:-$(git describe --tags --abbrev=0 2>/dev/null || echo dev)}"
+OUT="dist"
+
+if [ "$#" -gt 0 ]; then
+    VARIANTS="$*"
+else
+    VARIANTS="macos-x86_64 macos-aarch64 windows-amd64 linux-amd64 linux-arm linux-aarch64"
+fi
+
+rm -rf "$OUT"
+mkdir -p "$OUT"
+
+echo ">> Exporting: $VARIANTS"
+./build.sh export $VARIANTS
+
+for variant in $VARIANTS; do
+    src="build/$variant"
+    [ -d "$src" ] || { echo "dist: expected export in $src" >&2; exit 1; }
+
+    name="petscii-$VERSION-$variant"
+
+    case "$variant" in
+        macos-*)
+            [ -d "$src/petscii.app" ] || { echo "dist: no petscii.app in $src" >&2; exit 1; }
+            # ditto keeps the bundle's symlinks and executable bits intact (the
+            # embedded JRE needs them); plain zip is the fallback off macOS.
+            if command -v ditto >/dev/null 2>&1; then
+                ( cd "$src" && ditto -c -k --keepParent petscii.app "$OLDPWD/$OUT/$name.zip" )
+            else
+                ( cd "$src" && zip -qry "$OLDPWD/$OUT/$name.zip" petscii.app )
+            fi
+            ;;
+        windows-*)
+            ( cd "$src" && zip -qry "$OLDPWD/$OUT/$name.zip" . -x 'source/*' )
+            ;;
+        linux-*)
+            # tar, not zip: it preserves the launcher's executable bit
+            tar -czf "$OUT/$name.tar.gz" -C "$src" --exclude=source .
+            ;;
+        *)
+            echo "dist: unknown variant $variant" >&2
+            exit 1
+            ;;
+    esac
+done
+
+echo ">> Artifacts in $OUT/:"
+ls -lh "$OUT"

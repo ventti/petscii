@@ -21,3 +21,8 @@ RELEASE_TAG_PREFIX = ""
 
 # This sketch has no test suite; compiling it is the available pre-release check.
 RELEASE_CHECK_COMMAND = "./build.sh build"
+
+# Package the standalone apps for every platform and attach them to the release.
+# The dist task (mise-tasks/dist) reads $RELEASE_VERSION for the archive names.
+RELEASE_BUILD_COMMAND = "mise run dist"
+RELEASE_ARTIFACTS = "dist/*.zip dist/*.tar.gz"
