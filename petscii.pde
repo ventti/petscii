@@ -81,7 +81,11 @@ int shadowButton=0;
 Button load_b,merge_b,save_b,saveas_b,ref_b,
        import_prg_b,export_prg_b,export_png_b,clear_b,preview_b,
        dupleft_b,dupright_b,cut_b,pasteleft_b,pasteright_b,
-       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,charset_save_b,charset_prg_b,image_b,machine_b,zoom_b;
+       undo_b,redo_b,grid_b,case_b,charset_b,charset_refresh_b,charset_save_b,charset_prg_b,image_b,machine_b,zoom_b,help_b;
+
+boolean showhelp=false; // Keyboard-shortcut overlay visible?
+int helppage=0,         // Current page of the overlay
+    helppages=1;        // Page count (set while drawing the overlay)
 
 void settings() // Need to have this in Processing 3.x
 {
@@ -224,22 +228,23 @@ void setup()
 void create_buttons()
 {
     butts.clear();
+    build_shortcuts(); // so button tooltips can be sourced from the shortcut registry
 
-    load_b=new Button(view.buttons_start,view.canvas_start,"Load", "Load a PETSCII image (.c)");
-    merge_b=new Button(view.buttons_start+49,view.canvas_start,"Merge", "Merge a PETSCII image (.c) into the current one");
-    save_b=new Button(view.buttons_start+107,view.canvas_start,"Save", "Save the image over the current file (.c)  [s]");
+    load_b=new Button(view.buttons_start,view.canvas_start,"Load", "Load a PETSCII image (.c) or Petmate workspace (.petmate)");
+    merge_b=new Button(view.buttons_start+49,view.canvas_start,"Merge", "Merge a PETSCII image (.c) or .petmate into the current one");
+    save_b=new Button(view.buttons_start+107,view.canvas_start,"Save", sctip("save"));
     saveas_b=new Button(view.buttons_start+156,view.canvas_start,"Save as", "Save the image to a new file (.c)");
     ref_b=new Button(view.buttons_start+228,view.canvas_start,"Ref.", "Load a reference image to trace over");
 
     import_prg_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW,"Load .prg", "Import a C64 .prg screen");
-    export_prg_b=new Button(view.buttons_start+79,view.canvas_start+prefs.UIROW,"Save .prg", "Export the image as a C64 .prg  [e]");
-    export_png_b=new Button(view.buttons_start+158,view.canvas_start+prefs.UIROW,".png", "Export the image as a .png screenshot  [p]");
+    export_prg_b=new Button(view.buttons_start+79,view.canvas_start+prefs.UIROW,"Save .prg", sctip("exportprg"));
+    export_png_b=new Button(view.buttons_start+158,view.canvas_start+prefs.UIROW,".png", sctip("exportpngb")); // the button exports WITH borders
     preview_b=new Button(view.buttons_start+200,view.canvas_start+prefs.UIROW,"Preview", "Toggle the 1:1 pixel preview window");
 
-    undo_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*2,"Undo", "Undo the last change  [u]");
-    redo_b=new Button(view.buttons_start+50,view.canvas_start+prefs.UIROW*2,"Redo", "Redo the last undone change  [Shift-U]");
+    undo_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*2,"Undo", sctip("undo"));
+    redo_b=new Button(view.buttons_start+50,view.canvas_start+prefs.UIROW*2,"Redo", sctip("redo"));
     clear_b=new Button(view.buttons_start+113,view.canvas_start+prefs.UIROW*2,"Clear", "Clear the canvas");
-    grid_b=new Button(view.buttons_start+175,view.canvas_start+prefs.UIROW*2,"Grid", "Toggle the character grid  [g]");
+    grid_b=new Button(view.buttons_start+175,view.canvas_start+prefs.UIROW*2,"Grid", sctip("grid"));
     case_b=new Button(view.buttons_start+218,view.canvas_start+prefs.UIROW*2,"Case", "Toggle upper/lower case charset");
 
     charset_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*3,"Charset", "Load a charset .png (grid of up to 256 8x8 chars)");
@@ -250,9 +255,10 @@ void create_buttons()
 
     machine_b=new Button(view.buttons_start,view.canvas_start+prefs.UIROW*4,"Machine", "Switch machine (discards unsaved work)");
     zoom_b=new Button(view.buttons_start+68,view.canvas_start+prefs.UIROW*4,"Zoom", "Reset zoom to default (Ctrl+1..8 to set); drag the window edge to zoom");
+    help_b=new Button(view.buttons_start+114,view.canvas_start+prefs.UIROW*4,"Help", sctip("help"));
 
     dupleft_b=new Button(view.col1_end-207,view.canvas_start-26,"< Dup", "Duplicate this frame to the left");
-    dupright_b=new Button(view.col1_end-152,view.canvas_start-26," >", "Duplicate this frame to the right  [d]");
+    dupright_b=new Button(view.col1_end-152,view.canvas_start-26," >", sctip("dupright"));
     cut_b=new Button(view.col1_end-126,view.canvas_start-26,"Cut", "Cut this frame to the clipboard");
     pasteleft_b=new Button(view.col1_end-89,view.canvas_start-26,"< Paste", "Paste the clipboard frame to the left");
     pasteright_b=new Button(view.col1_end-22,view.canvas_start-26," >", "Paste the clipboard frame to the right");
@@ -455,7 +461,9 @@ void draw()
     else
         focuscount=0;
         
-    if(mousePressed)
+    // The help overlay is modal: draw() derives its own press state here, so it
+    // must be suppressed too or the user paints/picks blindly underneath it.
+    if(mousePressed && !showhelp)
     {
         shadowPressed=true;
         shadowButton=mouseButton;
@@ -983,6 +991,9 @@ void draw()
             line(view.col1_start,mouseY, view.col1_end,mouseY);
         }
     }
+
+    if(showhelp) // Keyboard-shortcut overlay, on top of everything
+        showhelp_panel();
 
     cf.updatethumb();
         

@@ -80,6 +80,7 @@ void cmd_charset_refresh() { machine.init_charset(); System.gc(); message("Refre
 void cmd_case()            { machine.setcase(!machine.lowercase); machine.init_charset(); System.gc(); }
 void cmd_zoom_reset()      { apply_zoom(view.defaultzoom); }
 void cmd_preview()         { showPreview(); }
+void cmd_help()            { showhelp=!showhelp; helppage=0; repaint=true; }
 
 // --- Edit ---
 void cmd_undo() { cf.undo(); cf.updatethumb(); }

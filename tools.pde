@@ -469,6 +469,213 @@ void showinfo()
     text(raami,view.col1_start,view.canvas_start-4);
 }
 
+// The transient message toast. Deliberately NOT part of showinfo(): it carries
+// errors ("... cannot be opened.") and confirmations, which used to vanish
+// entirely whenever the user turned the info display off with 'i'.
+void show_message()
+{
+    if(messagecounter<=0)
+        return;
+
+    // Same border-brightness heuristic showinfo() uses, so the text stays legible
+    if(red(machine.rgb[cf.border])*3+green(machine.rgb[cf.border])*5+blue(machine.rgb[cf.border])*2>1280)
+        fill(0);
+    else
+        fill(210);
+    noStroke();
+
+    textAlign(CENTER);
+    text(curmessage,width/2,height-5);
+    textAlign(LEFT);
+}
+
+// --- Keyboard-shortcut help overlay -----------------------------------------
+// One in-canvas panel listing every shortcut, grouped by context, built straight
+// from the shortcut registry (shortcuts.pde) so it can never drift from the real
+// bindings. Uses the normal UI font size (same as the buttons) and paginates:
+// groups are packed into the window's columns, and whatever overflows spills
+// onto the next page (Space / click / arrows page through, Esc closes).
+
+// One shortcut inside a group: its key text and one-line description.
+class HelpRow
+{
+    String keys, desc;
+    HelpRow(String keys, String desc) { this.keys=keys; this.desc=desc; }
+}
+
+class HelpGroup
+{
+    String title;
+    ArrayList<HelpRow> rows=new ArrayList<HelpRow>();
+
+    void add(String keys, String desc) { rows.add(new HelpRow(keys, desc)); }
+}
+
+// One laid-out line of the overlay: either a group heading or a shortcut.
+class HelpCell
+{
+    int page,col,line;
+    String left,right; // heading title, or key text + description
+    boolean heading;
+}
+
+HelpCell helpcell(int page,int col,int line,String left,String right,boolean heading)
+{
+    HelpCell c=new HelpCell();
+    c.page=page; c.col=col; c.line=line;
+    c.left=left; c.right=right; c.heading=heading;
+    return c;
+}
+
+// Fold the flat registry into contiguous groups for rendering.
+ArrayList<HelpGroup> helpGroups()
+{
+    build_shortcuts();
+    ArrayList<HelpGroup> groups=new ArrayList<HelpGroup>();
+    HelpGroup g=null;
+    for(Shortcut s: shortcuts)
+    {
+        if(g==null || !g.title.equals(s.group))
+        {
+            g=new HelpGroup();
+            g.title=s.group;
+            groups.add(g);
+        }
+        g.add(s.keys, s.desc);
+    }
+    return groups;
+}
+
+// Help overlay layout (pixels, measured at the native UI font size).
+final int HELP_MARGIN        = 16; // outer padding on every side
+final int HELP_TOP           = 48; // y of the first content line
+final int HELP_COL_GAP       = 24; // horizontal gap between columns
+final int HELP_LINE_H        = 18; // vertical step per row
+final int HELP_FOOTER_H      = 24; // vertical space reserved for the footer
+final int HELP_MAX_COLS      = 3;  // most columns to ever lay out
+final int HELP_KEY_GAP       = 18; // gap between the key column and the description
+final int HELP_COL_PAD       = 10; // right padding inside a column
+final int HELP_GROUP_GAP     = 1;  // blank lines between groups within a column
+final int HELP_TEXT_BASELINE = 13; // text baseline offset within a row
+final int HELP_TITLE_RISE    = 18; // title baseline above the first content line
+final int HELP_FOOTER_RISE   = 8;  // footer baseline above the window bottom
+
+// Help overlay colours.
+final color HELP_BG      = color(16,18,26,242); // dimmed full-window backdrop
+final color HELP_TITLE   = color(255);          // "Keyboard shortcuts"
+final color HELP_HEADING = color(120,200,255);  // group headings
+final color HELP_KEYS    = color(240,214,120);  // key text
+final color HELP_DESC    = color(225);          // descriptions
+final color HELP_FOOTER  = color(150);          // footer hint
+
+void showhelp_panel()
+{
+    ArrayList<HelpGroup> groups=helpGroups();
+
+    // Measure so the drawn layout matches: descriptions are drawn at a fixed
+    // offset keyW from the column's left edge, so a column must be at least
+    // keyW + widest-description wide (and at least the widest group title).
+    float maxKeyW=0, maxDescW=0, maxTitleW=0;
+    for(HelpGroup g: groups)
+    {
+        maxTitleW=max(maxTitleW, textWidth(g.title));
+        for(HelpRow row: g.rows)
+        {
+            maxKeyW=max(maxKeyW, textWidth(row.keys));
+            maxDescW=max(maxDescW, textWidth(row.desc));
+        }
+    }
+    int keyW=(int)maxKeyW+HELP_KEY_GAP;
+    int colW=(int)max(keyW+maxDescW, maxTitleW)+HELP_COL_PAD;
+
+    int availW=width-HELP_MARGIN*2;
+    int cols=(int)constrain((availW+HELP_COL_GAP)/(colW+HELP_COL_GAP), 1, HELP_MAX_COLS);
+    int linesPerCol=max(1, (height-HELP_TOP-HELP_FOOTER_H-HELP_MARGIN)/HELP_LINE_H);
+
+    // Flow the groups into columns one line at a time. Packing whole groups only
+    // would overflow the panel whenever a single group is taller than a column
+    // (e.g. "Drawing" in a short Dir Art window), so a group that does not fit
+    // continues in the next column under a "(cont.)" heading.
+    ArrayList<HelpCell> cells=new ArrayList<HelpCell>();
+    int page=0, col=0, used=0;
+
+    for(HelpGroup g: groups)
+    {
+        if(used>0)
+            used+=HELP_GROUP_GAP;                     // blank line between groups
+        if(used+2>linesPerCol)                        // no room for heading + a row
+        {
+            used=0;
+            if(++col>=cols) { col=0; page++; }
+        }
+
+        boolean heading=true;
+        for(int r=0;r<g.rows.size();r++)
+        {
+            if(heading)
+            {
+                cells.add(helpcell(page,col,used, r==0 ? g.title : g.title+" (cont.)", null, true));
+                used++;
+                heading=false;
+            }
+
+            cells.add(helpcell(page,col,used, g.rows.get(r).keys, g.rows.get(r).desc, false));
+            used++;
+
+            if(used>=linesPerCol && r<g.rows.size()-1) // column full, group unfinished
+            {
+                used=0;
+                if(++col>=cols) { col=0; page++; }
+                heading=true;
+            }
+        }
+    }
+    helppages=page+1;
+    helppage=constrain(helppage, 0, helppages-1);
+
+    // Dimmed full-window backdrop
+    noStroke();
+    fill(HELP_BG);
+    rect(0,0,width,height);
+
+    // Header
+    textAlign(LEFT);
+    fill(HELP_TITLE);
+    text("Keyboard shortcuts", HELP_MARGIN, HELP_TOP-HELP_TITLE_RISE);
+
+    // Only the lines on the current page
+    for(HelpCell c: cells)
+    {
+        if(c.page!=helppage)
+            continue;
+
+        float x=HELP_MARGIN+c.col*(colW+HELP_COL_GAP),
+              y=HELP_TOP+c.line*HELP_LINE_H+HELP_TEXT_BASELINE;
+
+        if(c.heading)
+        {
+            fill(HELP_HEADING);
+            text(c.left, x, y);
+        }
+        else
+        {
+            fill(HELP_KEYS);
+            text(c.left, x, y);
+            fill(HELP_DESC);
+            text(c.right, x+keyW, y);
+        }
+    }
+
+    // Footer: paging hint / page indicator
+    fill(HELP_FOOTER);
+    textAlign(LEFT);
+    if(helppages>1)
+        text("Page "+(helppage+1)+"/"+helppages+"  –  Space or click: next   Esc: close", HELP_MARGIN, height-HELP_FOOTER_RISE);
+    else
+        text("?  or  Esc  to close", HELP_MARGIN, height-HELP_FOOTER_RISE);
+    textAlign(LEFT);
+}
+
 // Check whether the mouse cursor is inside the canvas
 boolean infield()
 {

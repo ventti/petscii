@@ -39,6 +39,20 @@ void keyPressed() // Keyboard commands
             shift=2;
     }
     
+    if(showhelp) // The help overlay is modal: keys only page/close it
+    {
+        if(key=='?' || key==ESC || keyCode==KeyEvent.VK_F1)
+            { showhelp=false; helppage=0; }
+        else if(key==' ' || keyCode==RIGHT || keyCode==DOWN || key==ENTER)
+            helppage=(helppage+1)%max(1,helppages);
+        else if(keyCode==LEFT || keyCode==UP)
+            helppage=(helppage+helppages-1)%max(1,helppages);
+        if(key==ESC)
+            key=0; // Don't let Processing quit on ESC
+        repaint=true;
+        return;
+    }
+
     if(cur.typing>0) // A special mode where you can type
     {
         int petsciinum=-1;
@@ -159,6 +173,19 @@ void keyPressed() // Keyboard commands
     }
     else // Normal drawing mode
     {
+        // Table-driven dispatch for simple global shortcuts. Context-sensitive
+        // keys are still handled inline below; these just run their registered
+        // action (see shortcuts.pde).
+        //
+        // All table keys are bare letters, so they must not fire while Ctrl (or
+        // Cmd on macOS) is held: the modifier combos belong to other commands
+        // (Ctrl+D quit, Ctrl+E plugin) and AWT still reports the plain keyChar
+        // for them, which would otherwise run both.
+        if(!control)
+            for(Shortcut sh: shortcuts)
+                if(sh.dkey!=0 && key==sh.dkey && sh.action!=null)
+                    sh.action.run();
+
         if(key=='f')
             floodfill=1;
         if(key=='F')
@@ -247,10 +274,8 @@ void keyPressed() // Keyboard commands
             sel.w=-sel.w;
             sel.h=-sel.h;
         }
-        if(key==ESC)
-        {
+        if(key==ESC) // the help overlay consumes ESC in its own branch above
             sel.w=sel.h=0;
-        }
         
         if(keyCode==KeyEvent.VK_A && control) // Select all
         {
@@ -265,10 +290,8 @@ void keyPressed() // Keyboard commands
             }
         }
 
-        if(key=='u' && !mousePressed)
+        if(key=='u' && !mousePressed) // guarded; kept inline (see shortcuts.pde)
             cmd_undo();
-        if(key=='U')
-            cmd_redo();
 
         if(key==TAB) // Walk through sets if any
         {
@@ -296,8 +319,6 @@ void keyPressed() // Keyboard commands
         }
 
         // UI toggles
-        if(key=='g')
-            cmd_grid();
         if(key=='c')
             prefs.crosshair=!prefs.crosshair;
         if(key==ENTER)
@@ -310,7 +331,9 @@ void keyPressed() // Keyboard commands
         }
         if(key=='i')
             prefs.info=!prefs.info;
-            
+        if(key=='?' || keyCode==KeyEvent.VK_F1) // Keyboard-shortcut overlay
+            cmd_help();
+
         // Reference image
         if(key=='t' && ref>-1)
             ref=(ref+1)%4;
@@ -453,32 +476,22 @@ void keyPressed() // Keyboard commands
             else
                 message("Frame unlocked");
         }
-        if(key=='d') // Dup
-            cmd_dup_right();
-
-        // Save & export keys
-        if(key=='s')
-            cmd_save();
+        // Save & export keys. Note: s, e, p, P, d, g are table-dispatched at the
+        // top of this branch (see shortcuts.pde); the rest stay inline here.
         if(key=='S')
             machine.save_c(ext(filename,"_export.c"),true);
         if(key=='b')
             machine.save_bas(ext(filename,".bas"));
-        if(key=='a')
+        if(key=='a' && !control) // Ctrl+A is Select All; don't also write a .s file
             machine.save_asm(ext(filename,".s"),false);
         if(key=='A')
             machine.save_asm(ext(filename,".s"),true);
         // Only relevant/implemented for the C-64
         if(key=='q' && !control)
             machine.save_seq(ext(filename,".seq"));
-        if(key=='p')
-            cmd_export_png(false);
-        if(key=='P')
-            cmd_export_png(true);
-        if(key=='e')
-            cmd_export_prg();
         if(key=='E')
             machine.save_pet(ext(filename,".pet"));
-            
+
         user_key(); // Call user's keyboard handler
     }
 
@@ -527,6 +540,16 @@ void mouseClicked()
     if(!tablethack)
         return;
 
+    if(showhelp) // Modal overlay: a click on Help closes it, elsewhere pages
+    {
+        if(help_b.mouseover())
+            { showhelp=false; helppage=0; }
+        else
+            helppage=(helppage+1)%max(1,helppages);
+        repaint=true;
+        return;
+    }
+
     // Button handling: thin dispatch to the shared commands (see commands.pde).
     if(load_b.mouseover())           cmd_load();
     if(merge_b.mouseover())          cmd_merge();
@@ -549,6 +572,7 @@ void mouseClicked()
     if(image_b.mouseover())          cmd_image();
     if(machine_b.mouseover())        cmd_machine();
     if(zoom_b.mouseover())           cmd_zoom_reset();
+    if(help_b.mouseover())           cmd_help();
     if(dupleft_b.mouseover())        cmd_dup_left();
     if(dupright_b.mouseover())       cmd_dup_right();
     if(cut_b.mouseover())            cmd_cut();
@@ -634,6 +658,9 @@ void mouseClicked()
 
 void mousePressed()
 {
+    if(showhelp) // Overlay is up: swallow the press (release handles paging)
+        return;
+
     shadowPressed=true;
     shadowButton=mouseButton;
     
@@ -679,6 +706,8 @@ void mouseReleased()
 
 void mouseWheel(processing.event.MouseEvent event)
 {
+    if(showhelp)
+        return;
     if(!prefs.disablewheel)
         machine.wheelevent(event.getCount()); // Machine-specific mouse wheel handling
 }
