@@ -454,14 +454,6 @@ void showinfo()
     if(control) text("C",base+24,y);
     if(floodfill>0) text("F",base+38,y);
     
-    if(messagecounter>0)
-    {
-        //messagecounter--;
-        textAlign(CENTER);
-        text(curmessage,width/2,height-5);
-        textAlign(LEFT);
-    }
-    
     // Animation frame etc
     String raami=str(currentframe+1)+"/"+str(framecount);
     if(cf.locked)
@@ -702,6 +694,9 @@ boolean inside(int left,int top,int right,int bottom)
 }
 
 // Simple UI buttons
+final int BUTTON_H=20,   // fixed button height
+          BUTTON_PAD=9;  // horizontal padding added to the label width
+
 ArrayList<Button> butts=new ArrayList<Button>();
 
 class Button
@@ -712,52 +707,45 @@ class Button
             disabled;  // Don't do anything
     
     String text, tooltip;
+
     Button(int px,int py,String txt)
     {
-        x=px;
-        y=py;
-        w=(int)textWidth(txt)+9;
-        h=20;
-        prevstate=false;
-        disabled=false;
-        tooltip = null;
-        text=txt;
-        butts.add(this);
-  }
+        this(px,py,txt,null);
+    }
     Button(int px,int py,String txt,String tip)
     {
         x=px;
         y=py;
-        w=(int)textWidth(txt)+9;
-        h=20;
+        w=(int)textWidth(txt)+BUTTON_PAD;
+        h=BUTTON_H;
         prevstate=false;
         disabled=false;
-        tooltip = tip;
-        
+        tooltip=tip;
         text=txt;
         butts.add(this);
     }
-    
 
-    
-    
     void draw()
     {
+        // NOTE: the tooltip is posted from the mouseover-transition loop in
+        // draw() (petscii.pde), not here: message() re-arms repaint, so showing
+        // it every frame pinned the sketch at full framerate while merely
+        // hovering, and the message never faded.
         if(mouseover())
         {
-            if (tooltip != null)
-                message(tooltip);
             fill(255);
-            stroke(200,0,0,255);
+            stroke(200,0,0,255); // red outline marks the hovered button
         }
         else
+        {
             fill(220);
             stroke(40);
-    
+        }
+
         rect(x,y,w,h,3,3,3,3);
         fill(40);
         text(text,x+5,y+16);
-        
+
         stroke(40,100); // Stroke over disabled buttons
         if(disabled)
             line(x,y+h/2,x+w,y+h/2);
@@ -768,11 +756,8 @@ class Button
     {
         if(disabled)
             return false;
-            
-        if(mouseX>x && mouseY>y && mouseX<=x+w && mouseY<=y+20)
-            return true;
-        else
-            return false;        
+
+        return mouseX>=x && mouseY>=y && mouseX<=x+w && mouseY<=y+h;
     }
 }
 
@@ -831,9 +816,7 @@ void optimize_clip()
     if(sel.w<1 || sel.h<1)
         return;
     
-    int tchar[]=new int[sel.w*sel.h],
-        tcol[]=new int[sel.w*sel.h],
-        first=-1,
+    int first=-1,
         last=-1;
 
     // Find y bounds

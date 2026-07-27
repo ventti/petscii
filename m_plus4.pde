@@ -80,7 +80,7 @@ class Plus4 extends Machine
             {
                 for(int i=0;i<sel.w*sel.h;i++)
                 {
-                    if(sel.clip_colors[i]!=HOLE)
+                    if(sel.clip_chars[i]!=HOLE) // HOLE is only ever set in clip_chars
                     {
                         sel.clip_colors[i]+=16;
                         if(sel.clip_colors[i]>=128)
@@ -92,7 +92,7 @@ class Plus4 extends Machine
             {
                 for(int i=0;i<sel.w*sel.h;i++)
                 {
-                    if(sel.clip_colors[i]!=HOLE)
+                    if(sel.clip_chars[i]!=HOLE) // HOLE is only ever set in clip_chars
                     {
                         sel.clip_colors[i]-=16;
                         if(sel.clip_colors[i]<0)

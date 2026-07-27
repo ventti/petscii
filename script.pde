@@ -37,9 +37,12 @@ public class Outputs extends ArrayList<Output>
   }
 
   public int get_file(String filename){
-    for (Output o : this){
-      if (o.filename == filename){
-        return this.indexOf(o);
+    // Compare by value: script-built names are fresh String objects, so the old
+    // == identity test never matched and add_file() handed out a second writer
+    // on the same file (each createWriter() truncates it).
+    for (int i=0; i<this.size(); i++){
+      if (this.get(i).filename.equals(filename)){
+        return i;
       }
     }
     return -1;  // no file
@@ -59,9 +62,15 @@ class Script
   ScriptEngine js;
   Outputs outputs;
 
-  public Script(String scriptfile)
+  public Script(String scriptfile) throws Exception
   {
     js = new ScriptEngineManager().getEngineByName("javascript");
+    // Nashorn was removed in JDK 15, and Processing 4 ships JDK 17 with no
+    // replacement engine on the classpath, so this is null on a stock build.
+    // Say so instead of dying on an opaque NullPointerException.
+    if (js == null)
+      throw new Exception("No JavaScript engine available (Nashorn was removed in JDK 15)");
+
     Bindings bindings = js.getBindings(ScriptContext.ENGINE_SCOPE);
     UserFile file = new UserFile(scriptfile);
     file.load();
@@ -86,8 +95,16 @@ class Script
 
   public void execute() throws Exception
   {
-    js.eval(script);
-    outputs.close();
+    // close() in a finally: a failing script used to leave every PrintWriter
+    // unflushed and open, truncating its output file and leaking the handle.
+    try
+    {
+      js.eval(script);
+    }
+    finally
+    {
+      outputs.close();
+    }
   }
 }
 
@@ -103,5 +120,6 @@ void exec_plugin(){
   {
     println("Error in " + scriptfile);
     println(e);
+    message("Plugin failed: "+e.getMessage()); // the console is invisible in an exported app
   }
 }

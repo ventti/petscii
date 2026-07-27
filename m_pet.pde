@@ -85,7 +85,7 @@ class Pet extends Machine
     "  *(char *)0xe84c=12;\n"+
     "  memcpy((void *)32768u,img,1000);\n"+
     "\n"+
-    "  //while(1);\n"+
+    "  while(1);\n"+ // hold the picture; returning lets BASIC clear the screen
     "}";
     
     void save_c_viewer(String name)
@@ -133,6 +133,7 @@ class Pet extends Machine
         
         f.println("10 rem petcat -text -w4 -l 401 -o export.prg export.bas");
         f.println("20 print chr$(147)");
+        f.println("30 poke 59468,12"); // graphics charset, as the C viewer also does
         f.println("40 for i=0 to 999:read a:poke 32768+i,a:next");
         f.println("50 goto 50");
         

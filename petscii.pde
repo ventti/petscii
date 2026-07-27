@@ -8,7 +8,8 @@
 */
 
 import processing.awt.*;
-import java.awt.Frame;
+// NOTE: no java.awt.Frame import — the sketch has its own Frame class (anim.pde),
+// which shadows it everywhere, so importing it only misleads.
 
 PreviewWindow prevWin;
 processing.awt.PSurfaceAWT pWin;
@@ -99,7 +100,9 @@ void settings() // Need to have this in Processing 3.x
     
     if(prefs.machine==-1)
         prefs.machine=selector("Select a platform","C-64,C-64 flicker,Dir Art,PET 40x25,PET 80x25,Plus/4,VIC-20");
-    delay(200); // Superstition? 
+    if(prefs.machine<C64 || prefs.machine>VIC20) // Dialog dismissed: keep the id in sync
+        prefs.machine=C64;                       // with init_machine_instance()'s fallback
+    delay(200); // Superstition?
     
     init_machine_instance(prefs.machine); // Builds machine + its charset
 
@@ -295,6 +298,7 @@ void switch_machine(int m)
     // Reset transient editing state that may reference the old geometry
     sel.w=sel.h=0;
     cur.typing=0;
+    cur.x=cur.y=0; // the old position may be outside the new (smaller) canvas
     floodfill=0;
     filename=prefs.FILENAME;
     dirty=false;
@@ -455,7 +459,11 @@ void draw()
         else
         {
             delay(200);
-            shadowPressed=true;
+            // Clear the missed-click kludge state: this early return skips the
+            // reset at the end of draw(), and a stale press would otherwise be
+            // replayed (as button 0) on the frame the window regains focus,
+            // fabricating an undo step and marking the document dirty.
+            shadowPressed=false;
             shadowButton=0;
             return;    // And yield too
         }
@@ -503,13 +511,21 @@ void draw()
         if(incolorsel() && shadowPressed)
             repaint=true;        
         
-        // Another kludge to handle the UI buttons
-        for(int i=0;i<butts.size();i++)
-            if(butts.get(i).mouseover()!=butts.get(i).prevstate)
+        // Another kludge to handle the UI buttons. The tooltip is posted here,
+        // on the enter transition only: message() re-arms repaint, so posting it
+        // from Button.draw() every frame kept the sketch repainting at full
+        // framerate for as long as the pointer rested on a button.
+        for(Button butt: butts)
+        {
+            boolean over=butt.mouseover();
+            if(over!=butt.prevstate)
             {
-                butts.get(i).prevstate=butts.get(i).mouseover();
+                butt.prevstate=over;
+                if(over && butt.tooltip!=null)
+                    message(butt.tooltip);
                 repaint=true;
             }
+        }
             
         // Always repaint when re-entering canvas
         oldblox=oldbloy=-1;
@@ -976,6 +992,8 @@ void draw()
 
     if(prefs.info)
         showinfo();
+
+    show_message(); // always visible: carries errors and confirmations
     
     drawbuttons();
     
@@ -1011,7 +1029,7 @@ void draw()
             message(str(avgms)+" ms "+str(frameRate));
     }
      
-    if(prefs.debug && (frameCount&60)==0)
+    if(prefs.debug && (frameCount%60)==0)
     {
         println("max/total/free:");
         println(Runtime.getRuntime().maxMemory());

@@ -447,7 +447,13 @@ void keyPressed() // Keyboard commands
         if(key=='C') // Fix colors after loading a C64 image. Not necessary with new files.
         {
             cf.undo_save();
+            // Machine constructors overwrite the global charset and re-render it
+            // at their own char size, so building this throwaway reference
+            // machine would leave us drawing a C64-sized charset on any other
+            // platform (out-of-bounds in drawchar on VIC-20/PET). Put ours back.
+            Charset keep=cset;
             machine.remapcolors(new C64());
+            cset=keep;
         }
         
         // Anim-related
@@ -459,12 +465,12 @@ void keyPressed() // Keyboard commands
             setframe(0);
         if(keyCode==KeyEvent.VK_END)
             setframe(framecount-1);
-        if(key>='0' && key<='9')
+        if(key>='0' && key<='9' && !control) // Ctrl+digit sets the zoom instead
         {
             int nframe=key-'1';
             if(key=='0')
                 nframe=9;
-            
+
             setframe(nframe);
         }
         if(key=='l') // Lock frame

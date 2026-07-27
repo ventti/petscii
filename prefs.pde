@@ -94,12 +94,22 @@ class Preferences
             {
                 if(row[i].length()>1)
                 {
-                    String s[]=split(row[i],"=");
-                    
+                    // Split on the FIRST '=' only: a value may itself contain '='
+                    // (e.g. CONVERTER=convert -delay=5 -loop=0, which split() used
+                    // to chop down to "convert -delay"). An empty value yields a
+                    // 1-element array, so the s.length>1 guards below still skip
+                    // the keys that ship blank in prefs.txt.
+                    int eq=row[i].indexOf('=');
+                    if(eq<0)
+                        continue;
+                    String key=row[i].substring(0,eq),
+                           val=row[i].substring(eq+1);
+                    String s[]= val.equals("") ? new String[]{key} : new String[]{key,val};
+
                     if(s[0].equals("ZOOM") && s.length>1)
                     {
                         zoom=int(s[1]);
-                        if(zoom<1 && zoom<=10)
+                        if(zoom<1 || zoom>MAXZOOM) // the UI cannot go past MAXZOOM
                             zoom=2;
                     }
                     if(s[0].equals("FRAMERATE") && s.length>1)
@@ -132,9 +142,12 @@ class Preferences
                         else
                             showoff=false;
                     }
-                    if(s[0].equals("XSIZE") && s.length>1)
+                    // Sizes must be positive: a negative or zero value reached
+                    // new int[X*Y] in settings() as a NegativeArraySizeException
+                    // before anything could report it. (0 means "machine native".)
+                    if(s[0].equals("XSIZE") && s.length>1 && int(s[1])>0)
                         X=int(s[1]);
-                    if(s[0].equals("YSIZE") && s.length>1)
+                    if(s[0].equals("YSIZE") && s.length>1 && int(s[1])>0)
                         Y=int(s[1]);
                     if(s[0].equals("CONVERTER") && s.length>1)
                     {

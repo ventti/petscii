@@ -280,10 +280,12 @@ void user_key()
 //        
 //        message("Wrote "+ANAME+".bas");
 //    }
-    // Ctrl-d: to exit immediately
+    // Ctrl-d: to exit. Goes through exit() (overridden in petscii.pde) so the
+    // "Exit without saving?" prompt still runs; super.exit() skipped it and
+    // dropped unsaved work without asking.
     if((keyCode == KeyEvent.VK_D) && control && shift==0 && !alt)
     {
-      super.exit();
+      exit();
     }
     // Ctrl-e: execute plugin script
     if((keyCode == KeyEvent.VK_E) && control && shift==0 && !alt)

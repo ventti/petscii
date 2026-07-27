@@ -85,7 +85,7 @@ class Petscii extends Charset
        KeyEvent.VK_D, 108, 68,
        KeyEvent.VK_E, 113, 69,
        KeyEvent.VK_F, 123, 70,
-       KeyEvent.VK_G, 101, 84,
+       KeyEvent.VK_G, 101, 71, // shift column is the letter's screen code; was 84 (= shift-T)
        KeyEvent.VK_H, 116, 72,
        KeyEvent.VK_I, 98, 73,
        KeyEvent.VK_J, 117, 74,
@@ -103,7 +103,7 @@ class Petscii extends Charset
        KeyEvent.VK_V, 126, 86,
        KeyEvent.VK_W, 115, 87,
        KeyEvent.VK_X, 125, 88,
-       KeyEvent.VK_Y, 120, 89,
+       KeyEvent.VK_Y, 119, 89, // CBM-Y is $77; was 120 (= CBM-U), leaving 119 unreachable
        KeyEvent.VK_Z, 109, 90,
     
        521, 102, 91,

@@ -187,8 +187,8 @@ class Frame
         if(head!=tail)
         {
             arrayCopy(chars,undochars[head]); // For redo
-            undobg[head]=cf.bg;
-            undoborder[head]=cf.border;
+            undobg[head]=bg;                  // this frame's own bg/border, not cf's
+            undoborder[head]=border;
             if(machine.palettemode)
                 arrayCopy(colors,undocolors[head]);
             
@@ -231,8 +231,8 @@ class Frame
             arrayCopy(undochars[head],chars);
             if(machine.palettemode)
                 arrayCopy(undocolors[head],colors);
-            cf.bg=undobg[head];
-            cf.border=undoborder[head];
+            bg=undobg[head];     // restore into this frame, not whatever cf is
+            border=undoborder[head];
         }
     }
 }
@@ -288,9 +288,12 @@ void copyframe(Frame s,Frame d)
     {
         for(int i=0;i<prefs.undodepth;i++)
             arrayCopy(s.undocolors[i],d.undocolors[i]);
-        arrayCopy(s.undobg,d.undobg);
-        arrayCopy(s.undoborder,d.undoborder);
     }
+    // Not palettemode-only: undo() restores bg/border unconditionally, so leaving
+    // these behind made the first undo in a duplicated/pasted frame revert the
+    // border to 0 on the machines without a palette (Dir Art, PET).
+    arrayCopy(s.undobg,d.undobg);
+    arrayCopy(s.undoborder,d.undoborder);
     
     d.bg=s.bg;
     d.border=s.border;
