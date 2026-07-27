@@ -1,0 +1,23 @@
+# Release task catalog: https://github.com/superteppo/release-scripts
+#
+# Setting task_config.includes replaces mise's default task directories, so the
+# local ones are listed explicitly to keep local/future file tasks working.
+[task_config]
+includes = [
+  "mise-tasks",
+  ".mise-tasks",
+  ".mise/tasks",
+  ".config/mise/tasks",
+  "mise/tasks",
+  "git::https://github.com/superteppo/release-scripts.git//mise-tasks?ref=v1.6.0"
+]
+
+[env]
+# No package manager owns a version here, so versions are derived from git tags:
+# RELEASE_GET_VERSION / RELEASE_SET_VERSION are deliberately left unset.
+# The existing tags (0.1.0, 0.2.0) are unprefixed, so keep the prefix empty
+# instead of letting the default "v" start a second, inconsistent tag series.
+RELEASE_TAG_PREFIX = ""
+
+# This sketch has no test suite; compiling it is the available pre-release check.
+RELEASE_CHECK_COMMAND = "./build.sh build"
