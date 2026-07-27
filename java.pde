@@ -77,15 +77,26 @@ int selector(String title, String opt)
 // they only queue the actual work via post(); it runs on the animation thread
 // (requesters()), where it can't race draw().
 
-void loadPetscii(File selection)
+void loadPetscii(File selection)  { load_or_merge(selection,false); }
+void mergePetscii(File selection) { load_or_merge(selection,true); }
+
+// Shared by the Load and Merge dialogs. Merging draws the opened image into the
+// current one, so it keeps the current filename (and its dirty state); loading
+// replaces the document and adopts the opened file as the save target.
+void load_or_merge(File selection, boolean merge)
 {
     if(selection==null) return;
     post(() -> {
         String fn = selection.getAbsolutePath();
-        if(machine.load_c(fn, false))
+        // load_any() picks the reader by format (.c or .petmate) and reports what
+        // it loaded itself, so only the failure case and the save target are ours.
+        if(load_any(fn, merge))
         {
-            message(fn + " opened");
-            filename=fn;
+            if(!merge)
+            {
+                filename=c_savename(fn); // exporters need a .c name (see ext())
+                surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
+            }
         }
         else
             message(selection.getName()+" cannot be opened.");

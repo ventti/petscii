@@ -4,8 +4,8 @@
 // work so it runs on the animation thread from requesters() (see runCommands()).
 
 // --- File / charset / image dialogs (deferred to the animation thread) ---
-void cmd_load()        { post(() -> selectInput("Select a file", "loadPetscii")); }
-void cmd_merge()       { post(() -> selectInput("Select a file", "loadPetscii")); }
+void cmd_load()        { post(() -> selectInput("Select a .c or .petmate file", "loadPetscii")); }
+void cmd_merge()       { post(() -> selectInput("Select a .c or .petmate file to merge", "mergePetscii")); }
 void cmd_saveas()      { post(() -> selectOutput("Save PETSCII .c", "savePetscii")); }
 void cmd_ref()         { post(() -> selectInput("Select a file", "loadPic")); }
 void cmd_import_prg()  { post(() -> selectInput("Select a .prg file", "importPrg")); }

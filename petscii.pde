@@ -206,11 +206,13 @@ void setup()
 
     create_buttons();
 
-    // autoload this image on startup
-    if (prefs.inputfile != "")
+    // autoload this image on startup (.c or .petmate)
+    if (!prefs.inputfile.equals("")) // was !=, which compares references
     {
-      filename = prefs.inputfile;
-      machine.load_c(filename, false);
+      if(load_any(prefs.inputfile, false))
+        filename = c_savename(prefs.inputfile);
+      else
+        message(prefs.inputfile+" cannot be opened.");
     }
 
     surface.setTitle(filename+" ("+str(X)+"x"+str(Y)+")");
