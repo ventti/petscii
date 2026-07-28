@@ -24,6 +24,8 @@
 #   linux-aarch64  Linux (Raspberry Pi 64-bit)
 #
 # Override the Processing app location with PROCESSING_APP=/path/to/Processing.app
+# Export without a bundled Java runtime with EMBED_JAVA=0 (much smaller output,
+# but the target machine must have its own Java installed).
 #
 # macOS note: Processing embeds its own bundled JDK, so an Intel Processing build
 # produces a broken macos-aarch64 app (arm64 launcher + x86_64 JRE => "Unable to
@@ -100,12 +102,20 @@ do_export() {
     local variants="$*"
     [ -n "$variants" ] || variants="$(host_variant)"
     [ "$variants" = "all" ] && variants="$ALL_VARIANTS"
+
+    # EMBED_JAVA=0 exports without a bundled runtime (Commander's --no-java):
+    # ~140 MB smaller per variant, but the machine running it needs its own Java.
+    local nojava=""
+    [ "${EMBED_JAVA:-1}" = "0" ] && nojava="--no-java"
+
     for v in $variants; do
         local out="$BUILD_DIR/$v"
         rm -rf "$out"
-        echo ">> Exporting $v -> $out"
-        commander --sketch="$SKETCH_DIR" --output="$out" --force --variant="$v" --export
-        fix_macos_jre "$v" "$out"
+        echo ">> Exporting $v -> $out${nojava:+ (no embedded JRE)}"
+        commander --sketch="$SKETCH_DIR" --output="$out" --force --variant="$v" $nojava --export
+        # Only an embedded runtime can be arch-mismatched; there is nothing to fix
+        # when Java was left out.
+        [ -n "$nojava" ] || fix_macos_jre "$v" "$out"
     done
     echo ">> Done."
 }

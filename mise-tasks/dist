@@ -15,6 +15,11 @@
 # The sketch's own source/ dir that Processing copies into each export is left
 # out, so an archive contains just the runnable application.
 #
+# Exports are built WITHOUT a bundled Java runtime (EMBED_JAVA=0): embedding one
+# costs ~140 MB per platform, which dwarfs the actual app. Users need their own
+# Java installed - the README's requirement anyway, since the sketch is run from
+# Processing.
+#
 # Version comes from $RELEASE_VERSION when the release task calls this (see
 # RELEASE_BUILD_COMMAND in mise.toml); standalone runs fall back to the latest
 # tag so the task is useful on its own.
@@ -38,7 +43,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 
 echo ">> Exporting: $VARIANTS"
-./build.sh export $VARIANTS
+EMBED_JAVA=0 ./build.sh export $VARIANTS
 
 for variant in $VARIANTS; do
     src="build/$variant"
