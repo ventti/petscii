@@ -1,0 +1,52 @@
+# Builds the Linux .deb / .rpm packages for a release and attaches them to it.
+#
+# The packages are repackaged from the linux-amd64 archive that the release
+# already carries, so this needs no Processing install on the runner - only
+# dpkg-deb (preinstalled) and alien. Runs automatically when a release is
+# published, and can be run by hand for a release that predates this workflow:
+#
+#   gh workflow run release-packages.yaml -f tag=0.3.0
+
+name: release-packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build packages for (e.g. 0.3.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  packages:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends alien
+
+      - name: Download the release's Linux build
+        run: |
+          mkdir -p /tmp/linux-export
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'petscii-*-linux-amd64.tar.gz' --dir /tmp
+          tar -xzf /tmp/petscii-*-linux-amd64.tar.gz -C /tmp/linux-export
+          ls -l /tmp/linux-export
+
+      - name: Build .deb and .rpm
+        run: extras/package.sh "$TAG" 1 /tmp/linux-export
+
+      - name: Attach packages to the release
+        run: |
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
+            dist/*.deb dist/*.rpm

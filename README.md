@@ -19,8 +19,6 @@ This document tries to briefly describe the differences between these two and wh
 
 Java 17 or newer must be installed. The release binaries do not bundle a Java runtime, so they use the one on your system. Check what you have with `java -version`.
 
-Java 17 is the floor, since that is what Processing's `core.jar` is built against. Versions 17, 18, 21, 24 and 25 have been verified to run.
-
 * macOS and Windows: install a JDK from [Adoptium](https://adoptium.net/)
 * Linux: install your distribution's JRE package, e.g. `sudo apt install default-jre`
 
@@ -43,13 +41,13 @@ Download the **.deb** or **.rpm** package from [latest release page](https://git
 Examples, assuming the latest release at the time of writing:
 
 ```sh
-sudo dpkg -i petscii_0.2.0-1_amd64.deb
+sudo dpkg -i petscii_0.3.0-1_amd64.deb
 ```
 
 or
 
 ```sh
-sudo dnf install petscii-0.2.0-1-x86_64.rpm
+sudo dnf install petscii-0.3.0-1.x86_64.rpm
 ```
 
 Note that .rpm is created using [Alien](https://en.wikipedia.org/wiki/Alien_(file_converter)) and the release is untested.
