@@ -22,7 +22,9 @@ RELEASE_TAG_PREFIX = ""
 # This sketch has no test suite; compiling it is the available pre-release check.
 RELEASE_CHECK_COMMAND = "./build.sh build"
 
-# Package the standalone apps for every platform and attach them to the release.
-# The dist task (mise-tasks/dist) reads $RELEASE_VERSION for the archive names.
+# Export every platform variant; the release workflow's per-OS jobs then wrap them
+# into self-contained installers with jpackage and attach those.
+# Only 32-bit ARM Linux is attached from here: no GitHub runner can build a native
+# installer for it, so it ships as a lean archive that needs a system Java.
 RELEASE_BUILD_COMMAND = "mise run dist"
-RELEASE_ARTIFACTS = "dist/*.zip dist/*.tar.gz"
+RELEASE_ARTIFACTS = "dist/*linux-arm.tar.gz"

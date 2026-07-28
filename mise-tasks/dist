@@ -76,13 +76,9 @@ for variant in $VARIANTS; do
     esac
 done
 
-# Linux packages, when the host can build them (dpkg-deb + alien). Skipped on
-# macOS, so a local release just ships the archives above.
-if command -v dpkg-deb >/dev/null 2>&1 && command -v alien >/dev/null 2>&1; then
-    extras/package.sh "$VERSION" 1
-else
-    echo ">> Skipping .deb/.rpm: needs dpkg-deb and alien (Linux only)"
-fi
+# NOTE: .deb/.rpm are no longer built here. The release workflow produces them
+# natively with jpackage (mise run jpackage), which also embeds a runtime, so the
+# old dpkg-deb + alien conversion in extras/package.sh is not part of the pipeline.
 
 echo ">> Artifacts in $OUT/:"
 ls -lh "$OUT"

@@ -1,13 +1,21 @@
-# Cuts a release: exports every platform variant, packages the Linux ones as
-# .deb/.rpm, tags, and publishes everything to a GitHub Release.
+# Cuts a release and publishes a self-contained installer for every platform.
 #
-# Everything runs on one Linux runner. Processing exports all platforms from any
-# host (its core/library ships the native libs for each), and .rpm needs alien,
-# which only exists on Linux - so a single Linux job covers the whole matrix with
-# no per-platform duplication.
+# Two stages, because jpackage cannot cross-compile - it drives each OS's own
+# packaging tools:
+#
+#   release   one Linux runner installs Processing, exports EVERY variant (its
+#             core/library ships each platform's native libs), tags and publishes
+#             the release, and hands the exports on as workflow artifacts
+#   packages  one job per platform, which only needs a JDK: it wraps its own
+#             export with jpackage and uploads the installer to the release
+#
+# So Processing is installed once, not once per platform.
 #
 #   gh workflow run release.yaml                          # rc, bump from commits
 #   gh workflow run release.yaml -f rc=false -f option=minor
+#
+# 32-bit ARM Linux has no GitHub-hosted runner, so it ships as a lean archive
+# (attached by the release job via RELEASE_ARTIFACTS) and needs a system Java.
 
 name: release
 
@@ -40,11 +48,14 @@ env:
   # 4.5+ moved to a jpackage layout with hashed jar names and is not compatible.
   PROCESSING_VERSION: 4.3.4
   PROCESSING_TAG: processing-1297-4.3.4
+  JAVA_VERSION: "17"
 
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     env:
       GH_TOKEN: ${{ github.token }}
       RELEASE_BUMP: ${{ inputs.option }}
@@ -58,10 +69,8 @@ jobs:
 
       - uses: jdx/mise-action@v4
 
-      - name: Install Processing and packaging tools
+      - name: Install Processing
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends alien rpm
           curl -fsSL -o /tmp/processing.tgz \
             "https://github.com/processing/processing4/releases/download/${PROCESSING_TAG}/processing-${PROCESSING_VERSION}-linux-x64.tgz"
           tar -xzf /tmp/processing.tgz -C "$HOME"
@@ -81,15 +90,73 @@ jobs:
           mise run release:doctor
           mise run release --dry-run ${{ inputs.rc && '--pre' || '' }} "$RELEASE_BUMP"
 
-      # Builds every variant and the Linux packages via RELEASE_BUILD_COMMAND
-      # (mise run dist), then tags, pushes and uploads the archives.
+      # RELEASE_BUILD_COMMAND (mise run dist) exports every variant into build/
+      # and archives them into dist/; the tag, changelog and release are created
+      # here, with only the 32-bit ARM archive attached.
       - name: Create release
         run: mise run release ${{ inputs.rc && '--pre' || '' }} "$RELEASE_BUMP"
 
-      # The archives come from RELEASE_ARTIFACTS; the packages are attached here
-      # because that glob has to match on macOS too, where they are not built.
-      - name: Attach Linux packages
-        run: |
-          TAG=$(git describe --tags --abbrev=0)
-          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
-            dist/*.deb dist/*.rpm
+      - name: Record the tag
+        id: tag
+        run: echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+
+      # Only the exports the installer jobs need; the runtime is added per platform
+      - uses: actions/upload-artifact@v7
+        with:
+          name: exports
+          retention-days: 1
+          path: |
+            build/macos-x86_64
+            build/macos-aarch64
+            build/windows-amd64
+            build/linux-amd64
+            build/linux-aarch64
+            !build/*/source
+
+  packages:
+    needs: release
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: macos-aarch64
+            os: macos-latest
+          - variant: macos-x86_64
+            os: macos-13        # last Intel runner
+          - variant: windows-amd64
+            os: windows-latest
+          - variant: linux-amd64
+            os: ubuntu-latest
+          - variant: linux-aarch64
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.release.outputs.tag }}
+
+    steps:
+      # The tag, so the packaging script matches the released source
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: exports
+          path: build
+
+      # Called directly rather than through mise: it is a plain bash script, which
+      # keeps this step identical on macOS, Linux and Windows (Git Bash).
+      - name: Build installer
+        shell: bash
+        run: bash mise-tasks/jpackage "$TAG" "${{ matrix.variant }}"
+
+      - name: Attach installer to the release
+        shell: bash
+        run: gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber dist/*

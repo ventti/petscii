@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+#MISE description="Build a self-contained native installer for the host platform with jpackage"
+#MISE raw=true
+#
+# usage: mise run jpackage <version> <variant> [export-dir]
+#
+# Wraps a Processing export (jars + native libs + data/) into a native, fully
+# self-contained application, embedding a minimal runtime that jpackage links for
+# us. No Java needed on the user's machine.
+#
+#   macOS    .dmg
+#   Windows  .msi
+#   Linux    .deb and .rpm
+#
+# jpackage cannot cross-compile - it drives the OS's own packaging tools - so this
+# only ever builds for the machine it runs on. The release workflow therefore runs
+# it once per platform, on top of exports produced by a single Linux job.
+#
+# Modules come from `jdeps --print-module-deps` over the exported jars, plus
+# jdk.unsupported for JOGL's sun.misc.Unsafe use.
+
+set -eu
+
+cd "${MISE_PROJECT_ROOT:-$(git rev-parse --show-toplevel)}"
+
+VERSION=${1:?usage: jpackage <version> <variant> [export-dir]}
+VARIANT=${2:?usage: jpackage <version> <variant> [export-dir]}
+SRC=${3:-build/$VARIANT}
+
+OUT=dist
+MODULES=java.base,java.desktop,java.management,java.scripting,java.sql,jdk.unsupported
+
+[ -d "$SRC" ] || { echo "jpackage: no export at $SRC (run ./build.sh export $VARIANT)" >&2; exit 1; }
+
+# Installers reject non-numeric versions, so an RC ships as its numeric base
+# (0.4.0-rc.1 -> 0.4.0). The full version always stays in the file name.
+APP_VERSION=${VERSION%%-*}
+
+mkdir -p "$OUT"
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+# jpackage takes a single --input directory, but the exports differ per platform:
+# macOS keeps jars, native libs and data/ together inside the .app, while Linux and
+# Windows split them into lib/ and data/. Stage one directory so data/ always ends
+# up beside the jars, which is where Processing looks for it at run time.
+STAGE=$WORK/input
+mkdir -p "$STAGE"
+if [ -d "$SRC/petscii.app/Contents/Java" ]; then
+    cp -R "$SRC/petscii.app/Contents/Java/." "$STAGE/"
+else
+    cp -R "$SRC/lib/." "$STAGE/"
+    [ -d "$SRC/data" ] && cp -R "$SRC/data" "$STAGE/"
+fi
+[ -f "$STAGE/petscii.jar" ] || { echo "jpackage: petscii.jar not found in $SRC" >&2; exit 1; }
+
+HOST=$(uname -s)
+
+# macOS bundles cannot carry a leading-zero version (a CFBundleVersion rule that
+# jpackage enforces for every bundle type), so a 0.x project gets 1.0.0 inside the
+# bundle only. Nothing surfaces it - petscii displays no version anywhere - and the
+# file name still carries the real one. Remove this once the project hits 1.0.0.
+case "$HOST:$APP_VERSION" in
+    Darwin:0.*|Darwin:0) APP_VERSION=1.0.0 ;;
+esac
+
+# Common arguments. $APPDIR is expanded by the generated launcher at run time and
+# is where --input contents land, so the JOGL natives beside the jars are found.
+set -- --name petscii \
+       --app-version "$APP_VERSION" \
+       --input "$STAGE" \
+       --main-jar petscii.jar \
+       --main-class petscii \
+       --add-modules "$MODULES" \
+       --java-options '-Djna.nosys=true' \
+       --java-options '-Djava.library.path=$APPDIR' \
+       --jlink-options '--strip-debug --no-man-pages --no-header-files' \
+       --vendor "ventti" \
+       --description "Marq's PETSCII editor (Vent's fork)" \
+       --dest "$WORK"
+
+case "$HOST" in
+    Darwin)
+        TYPES="dmg"
+        # Reuse the icon Processing already put in the exported bundle
+        icon="$SRC/petscii.app/Contents/Resources/application.icns"
+        [ -f "$icon" ] && set -- "$@" --icon "$icon"
+        ;;
+    Linux)
+        # Both Debian and RPM come straight from jpackage, so no alien conversion
+        TYPES="deb rpm"
+        set -- "$@" --linux-shortcut --linux-menu-group Graphics
+        ;;
+    MINGW* | MSYS* | CYGWIN*)
+        TYPES="msi"
+        set -- "$@" --win-menu --win-shortcut --win-menu-group Graphics
+        ;;
+    *)
+        echo "jpackage: unsupported host $(uname -s)" >&2
+        exit 1
+        ;;
+esac
+
+for type in $TYPES; do
+    echo ">> jpackage --type $type ($VARIANT)"
+    jpackage --type "$type" "$@"
+done
+
+# jpackage names files after the app and numeric version only; rename so the
+# variant and the real version (including any -rc.N) are visible in the release.
+for f in "$WORK"/*; do
+    [ -f "$f" ] || continue
+    ext=${f##*.}
+    mv "$f" "$OUT/petscii-$VERSION-$VARIANT.$ext"
+    echo ">> $OUT/petscii-$VERSION-$VARIANT.$ext"
+done
