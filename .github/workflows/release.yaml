@@ -101,10 +101,11 @@ jobs:
           - variant: macos-aarch64
             os: macos-latest
             processing: processing-4.3.4-macos-aarch64.zip
-          - variant: macos-x86_64
-            os: macos-13            # last Intel image; scarce, so never block a release on it
-            processing: processing-4.3.4-macos-x64.zip
-            optional: true
+          # NOTE: no macos-x86_64. GitHub's last Intel image (macos-13) never got a
+          # runner in testing - jobs sat queued for over an hour - and `needs:`
+          # waits on a queued job even when it is continue-on-error, which would
+          # stall every release. Intel Macs therefore get no installer for now; the
+          # untried alternative is an x86_64 JDK under Rosetta on an arm64 runner.
           - variant: windows-amd64
             os: windows-latest
             processing: processing-4.3.4-windows-x64.zip
