@@ -1,0 +1,116 @@
+# Builds the installers exactly as release.yaml does, but creates no tag, no
+# release and uploads nothing to a release - results land in workflow artifacts
+# only. Used to iterate on the packaging without spending version numbers.
+#
+#   gh workflow run build-test.yaml
+#
+# Safe by construction: this workflow never runs `mise run release` and has no
+# contents: write permission, so it cannot publish anything.
+
+name: build-test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-test
+  cancel-in-progress: true
+
+env:
+  PROCESSING_VERSION: 4.3.4
+  PROCESSING_TAG: processing-1297-4.3.4
+  JAVA_VERSION: "17"
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - uses: jdx/mise-action@v4
+
+      - name: Install Processing
+        run: |
+          curl -fsSL -o /tmp/processing.tgz \
+            "https://github.com/processing/processing4/releases/download/${PROCESSING_TAG}/processing-${PROCESSING_VERSION}-linux-x64.tgz"
+          tar -xzf /tmp/processing.tgz -C "$HOME"
+          echo "PROCESSING_APP=$HOME/processing-${PROCESSING_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Version to label the test builds with
+        id: version
+        run: echo "version=$(git describe --tags --abbrev=0)-test" >> "$GITHUB_OUTPUT"
+
+      # Same exports the release path uses: no embedded JRE, since jpackage
+      # links a minimal runtime of its own.
+      - name: Export every variant
+        run: |
+          EMBED_JAVA=0 ./build.sh export \
+            macos-x86_64 macos-aarch64 windows-amd64 linux-amd64 linux-aarch64
+          ls -R build | head -40
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: exports
+          retention-days: 1
+          path: |
+            build/macos-x86_64
+            build/macos-aarch64
+            build/windows-amd64
+            build/linux-amd64
+            build/linux-aarch64
+            !build/*/source
+
+  packages:
+    needs: export
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: macos-aarch64
+            os: macos-latest
+          - variant: macos-x86_64
+            os: macos-13
+          - variant: windows-amd64
+            os: windows-latest
+          - variant: linux-amd64
+            os: ubuntu-latest
+          - variant: linux-aarch64
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: exports
+          path: build
+
+      - name: Build installer
+        shell: bash
+        run: bash mise-tasks/jpackage "${{ needs.export.outputs.version }}" "${{ matrix.variant }}"
+
+      - name: Show what was produced
+        shell: bash
+        run: ls -l dist/
+
+      # Artifacts only - nothing is attached to any release
+      - uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ matrix.variant }}
+          retention-days: 3
+          path: dist/*
