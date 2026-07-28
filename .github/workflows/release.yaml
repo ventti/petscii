@@ -9,6 +9,11 @@
 # Packaging happens BEFORE anything is published, so a failed build cannot leave a
 # release with missing binaries.
 #
+# With dry_run the release job is skipped altogether: every variant is still built,
+# tested and packaged, and the installers are downloadable as workflow artifacts,
+# but no tag, commit or release is created. Use it to exercise the whole pipeline
+# without spending a version.
+#
 # One job per platform is not a choice: Processing cannot cross-export a macOS app
 # from Linux (its exporter reads Resources/en.lproj from inside the macOS bundle),
 # and jpackage cannot cross-compile at all - it drives each OS's own packaging
@@ -17,6 +22,7 @@
 #
 #   gh workflow run release.yaml                          # rc, bump from commits
 #   gh workflow run release.yaml -f rc=false -f option=minor
+#   gh workflow run release.yaml -f dry_run=true          # build only, no release
 
 name: release
 
@@ -36,6 +42,10 @@ on:
           - patch
           - minor
           - major
+      dry_run:
+        description: Build and package everything, but create no tag or release
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -157,8 +167,11 @@ jobs:
           retention-days: 7
           path: dist/*
 
+  # Skipped entirely on a dry run, so nothing is tagged, pushed or published; the
+  # installers from the build jobs remain downloadable as workflow artifacts.
   release:
     needs: [plan, build]
+    if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
