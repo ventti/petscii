@@ -17,10 +17,14 @@ This document tries to briefly describe the differences between these two and wh
 
 ## Requirements
 
-Java 17 or newer must be installed. The release binaries do not bundle a Java runtime, so they rely on the one on your system. Check what you have with `java -version`.
+Java 17 or newer must be installed. The release binaries do not bundle a Java runtime, so they use the one on your system. Check what you have with `java -version`.
+
+Java 17 is the floor, since that is what Processing's `core.jar` is built against. Versions 17, 18, 21, 24 and 25 have been verified to run.
 
 * macOS and Windows: install a JDK from [Adoptium](https://adoptium.net/)
 * Linux: install your distribution's JRE package, e.g. `sudo apt install default-jre`
+
+On Java 24 and newer the console shows a harmless `restricted method in java.lang.System has been called` warning, emitted by Processing's core.
 
 All versions and source code are available in a single .zip package, as with the original PETSCII. 
 
