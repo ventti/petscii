@@ -82,16 +82,14 @@ done
 [ -n "$JAVA" ] || die "No java runtime found in $JDIR or on PATH"
 
 # --- assemble the classpath from the app's jars ---------------------------
+# Collected by search rather than from a fixed list of directories, because the
+# layouts differ: macOS keeps pde.jar and friends at the top of Contents/Java,
+# while the Linux release puts the app jars in a subdirectory. Depth 3 covers the
+# root, lib/, core/library/ and modes/java/mode/ in either case.
 CP=""
-add_jars() {
-    for jar in "$1"/*.jar; do
-        [ -f "$jar" ] || continue
-        CP="${CP:+$CP:}$jar"
-    done
-}
-add_jars "$JDIR"
-add_jars "$JDIR/core/library"
-add_jars "$JDIR/modes/java/mode"
+for jar in $(find "$JDIR" -maxdepth 3 -name '*.jar' 2>/dev/null | sort); do
+    CP="${CP:+$CP:}$jar"
+done
 [ -n "$CP" ] || die "Could not assemble Processing classpath from $JDIR"
 
 # --- run the Commander ----------------------------------------------------
