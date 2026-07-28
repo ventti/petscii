@@ -84,12 +84,15 @@ done
 # --- assemble the classpath from the app's jars ---------------------------
 # Collected by search rather than from a fixed list of directories, because the
 # layouts differ: macOS keeps pde.jar and friends at the top of Contents/Java,
-# while the Linux release puts the app jars in a subdirectory. Depth 3 covers the
-# root, lib/, core/library/ and modes/java/mode/ in either case.
+# while the Linux release puts the app jars in a subdirectory. Depth 4 is what
+# modes/java/mode/*.jar needs; that also covers the root, lib/ and core/library/.
 CP=""
-for jar in $(find "$JDIR" -maxdepth 3 -name '*.jar' 2>/dev/null | sort); do
+while IFS= read -r jar; do
+    [ -n "$jar" ] || continue
     CP="${CP:+$CP:}$jar"
-done
+done <<EOF
+$(find "$JDIR" -maxdepth 4 -name '*.jar' 2>/dev/null | sort)
+EOF
 [ -n "$CP" ] || die "Could not assemble Processing classpath from $JDIR"
 
 # --- run the Commander ----------------------------------------------------
