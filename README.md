@@ -15,6 +15,13 @@ This document tries to briefly describe the differences between these two and wh
 
 # Installation
 
+## Requirements
+
+Java 17 or newer must be installed. The release binaries do not bundle a Java runtime, so they rely on the one on your system. Check what you have with `java -version`.
+
+* macOS and Windows: install a JDK from [Adoptium](https://adoptium.net/)
+* Linux: install your distribution's JRE package, e.g. `sudo apt install default-jre`
+
 All versions and source code are available in a single .zip package, as with the original PETSCII. 
 
 [Click here to download](https://github.com/ventti/petscii/releases/latest/download/petscii.zip) the latest release .zip.
