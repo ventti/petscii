@@ -1,21 +1,22 @@
-# Cuts a release and publishes a self-contained installer for every platform.
+# The whole release pipeline: build -> test -> package -> release.
 #
-# Two stages, because jpackage cannot cross-compile - it drives each OS's own
-# packaging tools:
+#   plan     work out the next version and verify the release is possible
+#   build    one job per platform: compile (test), export, and wrap into a
+#            self-contained installer with jpackage
+#   release  only once every installer exists: tag, write the changelog, publish
+#            the release and attach the installers
 #
-#   release   one Linux runner installs Processing, exports EVERY variant (its
-#             core/library ships each platform's native libs), tags and publishes
-#             the release, and hands the exports on as workflow artifacts
-#   packages  one job per platform, which only needs a JDK: it wraps its own
-#             export with jpackage and uploads the installer to the release
+# Packaging happens BEFORE anything is published, so a failed build cannot leave a
+# release with missing binaries.
 #
-# So Processing is installed once, not once per platform.
+# One job per platform is not a choice: Processing cannot cross-export a macOS app
+# from Linux (its exporter reads Resources/en.lproj from inside the macOS bundle),
+# and jpackage cannot cross-compile at all - it drives each OS's own packaging
+# tools. 32-bit ARM Linux has no runner, so it ships as a lean archive built by the
+# release job itself (see RELEASE_BUILD_COMMAND in mise.toml).
 #
 #   gh workflow run release.yaml                          # rc, bump from commits
 #   gh workflow run release.yaml -f rc=false -f option=minor
-#
-# 32-bit ARM Linux has no GitHub-hosted runner, so it ships as a lean archive
-# (attached by the release job via RELEASE_ARTIFACTS) and needs a system Java.
 
 name: release
 
@@ -49,17 +50,16 @@ env:
   PROCESSING_VERSION: 4.3.4
   PROCESSING_TAG: processing-1297-4.3.4
   JAVA_VERSION: "17"
+  PRE: ${{ inputs.rc && '--pre' || '' }}
 
 jobs:
-  release:
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     outputs:
-      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.plan.outputs.version }}
     env:
       GH_TOKEN: ${{ github.token }}
-      RELEASE_BUMP: ${{ inputs.option }}
-
     steps:
       - uses: actions/checkout@v7
         with:
@@ -69,6 +69,110 @@ jobs:
 
       - uses: jdx/mise-action@v4
 
+      # The installers must be named before the tag exists, so take the version
+      # from the release plan. The release job asserts it still matches.
+      - name: Plan the release
+        id: plan
+        run: |
+          mise run release:doctor
+          mise run release --dry-run $PRE "${{ inputs.option }}" | tee /tmp/plan.txt
+          version=$(sed -n 's/^[[:space:]]*Target:[[:space:]]*//p' /tmp/plan.txt | head -1)
+          [ -n "$version" ] || { echo "could not read the target version from the plan"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "next version: $version"
+
+  build:
+    needs: plan
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: macos-aarch64
+            os: macos-latest
+            processing: processing-4.3.4-macos-aarch64.zip
+          - variant: macos-x86_64
+            os: macos-13            # last Intel image; scarce, so never block a release on it
+            processing: processing-4.3.4-macos-x64.zip
+            optional: true
+          - variant: windows-amd64
+            os: windows-latest
+            processing: processing-4.3.4-windows-x64.zip
+          - variant: linux-amd64
+            os: ubuntu-latest
+            processing: processing-4.3.4-linux-x64.tgz
+          - variant: linux-aarch64
+            os: ubuntu-24.04-arm
+            processing: processing-4.3.4-linux-arm64.tgz
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.optional || false }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          filter: blob:none
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install Processing for this host
+        shell: bash
+        run: |
+          url="https://github.com/processing/processing4/releases/download/${PROCESSING_TAG}/${{ matrix.processing }}"
+          curl -fsSL -o /tmp/processing_dl "$url"
+          mkdir -p "$HOME/processing"
+          case "${{ matrix.processing }}" in
+            *.zip) unzip -q /tmp/processing_dl -d "$HOME/processing" ;;
+            *.tgz) tar -xzf /tmp/processing_dl -C "$HOME/processing" ;;
+          esac
+          # Either a macOS .app bundle or a directory containing core/
+          app=$(find "$HOME/processing" -maxdepth 2 -name '*.app' -type d | head -1)
+          if [ -z "$app" ]; then
+            app=$(find "$HOME/processing" -maxdepth 2 -type d -name 'core' -exec dirname {} \; | head -1)
+          fi
+          [ -n "$app" ] || { echo "could not locate Processing"; ls -R "$HOME/processing" | head -30; exit 1; }
+          echo "PROCESSING_APP=$app" >> "$GITHUB_ENV"
+
+      # test: the same compile the release runs as its pre-release check
+      - name: Compile the sketch
+        shell: bash
+        run: ./build.sh build
+
+      - name: Export the variant
+        shell: bash
+        run: EMBED_JAVA=0 ./build.sh export "${{ matrix.variant }}"
+
+      - name: Package a self-contained installer
+        shell: bash
+        run: |
+          bash mise-tasks/jpackage "${{ needs.plan.outputs.version }}" "${{ matrix.variant }}"
+          ls -l dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ matrix.variant }}
+          retention-days: 7
+          path: dist/*
+
+  release:
+    needs: [plan, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          filter: blob:none
+
+      - uses: jdx/mise-action@v4
+
+      # Needed for the 32-bit ARM archive and the pre-release compile check
       - name: Install Processing
         run: |
           curl -fsSL -o /tmp/processing.tgz \
@@ -85,78 +189,28 @@ jobs:
           git config user.email \
             "${RELEASE_ACTOR_ID}+${RELEASE_ACTOR}@users.noreply.github.com"
 
-      - name: Verify release
-        run: |
-          mise run release:doctor
-          mise run release --dry-run ${{ inputs.rc && '--pre' || '' }} "$RELEASE_BUMP"
-
-      # RELEASE_BUILD_COMMAND (mise run dist) exports every variant into build/
-      # and archives them into dist/; the tag, changelog and release are created
-      # here, with only the 32-bit ARM archive attached.
-      - name: Create release
-        run: mise run release ${{ inputs.rc && '--pre' || '' }} "$RELEASE_BUMP"
-
-      - name: Record the tag
-        id: tag
-        run: echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
-
-      # Only the exports the installer jobs need; the runtime is added per platform
-      - uses: actions/upload-artifact@v7
-        with:
-          name: exports
-          retention-days: 1
-          path: |
-            build/macos-x86_64
-            build/macos-aarch64
-            build/windows-amd64
-            build/linux-amd64
-            build/linux-aarch64
-            !build/*/source
-
-  packages:
-    needs: release
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - variant: macos-aarch64
-            os: macos-latest
-          - variant: macos-x86_64
-            os: macos-13        # last Intel runner
-          - variant: windows-amd64
-            os: windows-latest
-          - variant: linux-amd64
-            os: ubuntu-latest
-          - variant: linux-aarch64
-            os: ubuntu-24.04-arm
-    runs-on: ${{ matrix.os }}
-    env:
-      GH_TOKEN: ${{ github.token }}
-      TAG: ${{ needs.release.outputs.tag }}
-
-    steps:
-      # The tag, so the packaging script matches the released source
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.release.outputs.tag }}
-
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-
       - uses: actions/download-artifact@v8
         with:
-          name: exports
-          path: build
+          pattern: installer-*
+          merge-multiple: true
+          path: installers
 
-      # Called directly rather than through mise: it is a plain bash script, which
-      # keeps this step identical on macOS, Linux and Windows (Git Bash).
-      - name: Build installer
-        shell: bash
-        run: bash mise-tasks/jpackage "$TAG" "${{ matrix.variant }}"
+      - name: Show what will be published
+        run: ls -l installers
 
-      - name: Attach installer to the release
-        shell: bash
-        run: gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber dist/*
+      # Tags, writes the changelog, pushes and creates the release, attaching the
+      # 32-bit ARM archive built by RELEASE_BUILD_COMMAND.
+      - name: Create release
+        run: mise run release $PRE "${{ inputs.option }}"
+
+      # Guard against the plan and the actual release disagreeing, which would mean
+      # the installers carry the wrong version in their names.
+      - name: Attach installers
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          expected="${{ needs.plan.outputs.version }}"
+          if [ "$tag" != "$expected" ]; then
+            echo "released tag $tag does not match the planned version $expected" >&2
+            exit 1
+          fi
+          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber installers/*

@@ -22,9 +22,12 @@ RELEASE_TAG_PREFIX = ""
 # This sketch has no test suite; compiling it is the available pre-release check.
 RELEASE_CHECK_COMMAND = "./build.sh build"
 
-# Export every platform variant; the release workflow's per-OS jobs then wrap them
-# into self-contained installers with jpackage and attach those.
-# Only 32-bit ARM Linux is attached from here: no GitHub runner can build a native
-# installer for it, so it ships as a lean archive that needs a system Java.
-RELEASE_BUILD_COMMAND = "mise run dist"
+# The release itself only builds 32-bit ARM Linux, the one variant no GitHub runner
+# can package natively: it ships as a lean archive that needs a system Java. Every
+# other variant is exported and wrapped into an installer by the release workflow's
+# per-platform jobs, which attach their own output.
+#
+# Deliberately not "mise run dist" (all variants): Processing cannot cross-export a
+# macOS app from Linux, so a release running on Linux must not try.
+RELEASE_BUILD_COMMAND = "mise run dist linux-arm"
 RELEASE_ARTIFACTS = "dist/*linux-arm.tar.gz"
