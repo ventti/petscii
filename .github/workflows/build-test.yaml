@@ -1,11 +1,16 @@
-# Builds the installers exactly as release.yaml does, but creates no tag, no
-# release and uploads nothing to a release - results land in workflow artifacts
-# only. Used to iterate on the packaging without spending version numbers.
+# Builds and packages every variant exactly as the release pipeline will, but
+# creates no tag, no release and uploads nothing to a release - results land in
+# workflow artifacts only. Used to iterate on packaging without spending versions.
 #
 #   gh workflow run build-test.yaml
 #
-# Safe by construction: this workflow never runs `mise run release` and has no
-# contents: write permission, so it cannot publish anything.
+# Safe by construction: no `contents: write` permission and no release step, so it
+# cannot publish anything.
+#
+# Each platform exports its own variant: Processing 4.3 cannot cross-export a macOS
+# app from Linux (its exporter reads Resources/en.lproj from inside the macOS
+# bundle), so a single-host build is not possible. jpackage cannot cross-compile
+# either, which makes one job per platform the natural shape.
 
 name: build-test
 
@@ -25,90 +30,74 @@ env:
   JAVA_VERSION: "17"
 
 jobs:
-  export:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          filter: blob:none
-
-      - uses: jdx/mise-action@v4
-
-      - name: Install Processing
-        run: |
-          curl -fsSL -o /tmp/processing.tgz \
-            "https://github.com/processing/processing4/releases/download/${PROCESSING_TAG}/processing-${PROCESSING_VERSION}-linux-x64.tgz"
-          tar -xzf /tmp/processing.tgz -C "$HOME"
-          echo "PROCESSING_APP=$HOME/processing-${PROCESSING_VERSION}" >> "$GITHUB_ENV"
-
-      - name: Version to label the test builds with
-        id: version
-        run: echo "version=$(git describe --tags --abbrev=0)-test" >> "$GITHUB_OUTPUT"
-
-      # Same exports the release path uses: no embedded JRE, since jpackage
-      # links a minimal runtime of its own.
-      - name: Export every variant
-        run: |
-          EMBED_JAVA=0 ./build.sh export \
-            macos-x86_64 macos-aarch64 windows-amd64 linux-amd64 linux-aarch64
-          ls -R build | head -40
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: exports
-          retention-days: 1
-          path: |
-            build/macos-x86_64
-            build/macos-aarch64
-            build/windows-amd64
-            build/linux-amd64
-            build/linux-aarch64
-            !build/*/source
-
-  packages:
-    needs: export
-    timeout-minutes: 30
+  build:
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
           - variant: macos-aarch64
             os: macos-latest
+            processing: processing-4.3.4-macos-aarch64.zip
           - variant: macos-x86_64
-            os: macos-13
+            os: macos-13            # last Intel runner
+            processing: processing-4.3.4-macos-x64.zip
           - variant: windows-amd64
             os: windows-latest
+            processing: processing-4.3.4-windows-x64.zip
           - variant: linux-amd64
             os: ubuntu-latest
+            processing: processing-4.3.4-linux-x64.tgz
           - variant: linux-aarch64
             os: ubuntu-24.04-arm
+            processing: processing-4.3.4-linux-arm64.tgz
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
 
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
-      - uses: actions/download-artifact@v8
-        with:
-          name: exports
-          path: build
-
-      - name: Build installer
+      - name: Install Processing for this host
         shell: bash
-        run: bash mise-tasks/jpackage "${{ needs.export.outputs.version }}" "${{ matrix.variant }}"
+        run: |
+          url="https://github.com/processing/processing4/releases/download/${PROCESSING_TAG}/${{ matrix.processing }}"
+          curl -fsSL -o /tmp/processing_dl "$url"
+          mkdir -p "$HOME/processing"
+          case "${{ matrix.processing }}" in
+            *.zip) unzip -q /tmp/processing_dl -d "$HOME/processing" ;;
+            *.tgz) tar -xzf /tmp/processing_dl -C "$HOME/processing" ;;
+          esac
+          # Either a macOS .app bundle or a directory with core/library
+          app=$(find "$HOME/processing" -maxdepth 2 -name '*.app' -type d | head -1)
+          if [ -z "$app" ]; then
+            app=$(find "$HOME/processing" -maxdepth 2 -type d -name 'core' -exec dirname {} \; | head -1)
+          fi
+          [ -n "$app" ] || { echo "could not locate Processing in $HOME/processing"; ls -R "$HOME/processing" | head -30; exit 1; }
+          echo "PROCESSING_APP=$app" >> "$GITHUB_ENV"
+          echo "found Processing at $app"
 
-      - name: Show what was produced
+      # test: the same compile the release runs as its pre-release check
+      - name: Compile the sketch
         shell: bash
-        run: ls -l dist/
+        run: ./build.sh build
 
-      # Artifacts only - nothing is attached to any release
+      - name: Export the variant
+        shell: bash
+        run: EMBED_JAVA=0 ./build.sh export "${{ matrix.variant }}"
+
+      - name: Package a self-contained installer
+        shell: bash
+        run: |
+          version="$(git describe --tags --abbrev=0)-test"
+          bash mise-tasks/jpackage "$version" "${{ matrix.variant }}"
+          ls -l dist/
+
       - uses: actions/upload-artifact@v7
         with:
           name: installer-${{ matrix.variant }}
