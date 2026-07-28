@@ -42,32 +42,44 @@ ALL_VARIANTS="macos-x86_64 macos-aarch64 windows-amd64 linux-amd64 linux-arm lin
 die() { echo "build.sh: $*" >&2; exit 1; }
 
 # --- locate a Processing (4.x) installation -------------------------------
-find_app() {
+# Resolve the directory holding Processing's jars: "Contents/Java" inside a macOS
+# .app, or the root of an unpacked Linux release (processing-4.x, which uses the
+# same core/ and modes/ layout).
+find_jdir() {
     if [ -n "${PROCESSING_APP:-}" ]; then
         [ -d "$PROCESSING_APP" ] || die "PROCESSING_APP not found: $PROCESSING_APP"
-        printf '%s\n' "$PROCESSING_APP"
+        if [ -d "$PROCESSING_APP/Contents/Java" ]; then
+            printf '%s\n' "$PROCESSING_APP/Contents/Java"
+        elif [ -d "$PROCESSING_APP/core/library" ]; then
+            printf '%s\n' "$PROCESSING_APP"
+        else
+            die "No Processing jars under PROCESSING_APP: $PROCESSING_APP"
+        fi
         return
     fi
     # Prefer a versioned Processing 4.x app, then any Processing app.
     for pat in "/Applications/Processing-4"*.app "/Applications/Processing.app" \
                "$HOME/Applications/Processing-4"*.app "$HOME/Applications/Processing.app"; do
         for app in $pat; do
-            [ -d "$app/Contents/Java" ] && { printf '%s\n' "$app"; return; }
+            [ -d "$app/Contents/Java" ] && { printf '%s\n' "$app/Contents/Java"; return; }
         done
     done
-    die "No Processing app found. Set PROCESSING_APP=/path/to/Processing.app"
+    # An unpacked Linux release, e.g. from processing-4.x-linux-x64.tgz
+    for dir in "$SKETCH_DIR/processing-4"* "$HOME/processing-4"* /opt/processing-4*; do
+        [ -d "$dir/core/library" ] && { printf '%s\n' "$dir"; return; }
+    done
+    die "No Processing install found. Set PROCESSING_APP=/path/to/Processing.app or to an unpacked processing-4.x"
 }
 
-APP="$(find_app)"
-JDIR="$APP/Contents/Java"
+JDIR="$(find_jdir)"
 
-# bundled JDK's java binary
+# Processing's own bundled JDK: PlugIns on macOS, java/ in a Linux release
 JAVA=""
-for j in "$APP/Contents/PlugIns"/*/Contents/Home/bin/java; do
+for j in "$JDIR/../PlugIns"/*/Contents/Home/bin/java "$JDIR/java/bin/java"; do
     [ -x "$j" ] && { JAVA="$j"; break; }
 done
 [ -n "$JAVA" ] || JAVA="$(command -v java || true)"
-[ -n "$JAVA" ] || die "No java runtime found in $APP or on PATH"
+[ -n "$JAVA" ] || die "No java runtime found in $JDIR or on PATH"
 
 # --- assemble the classpath from the app's jars ---------------------------
 CP=""
