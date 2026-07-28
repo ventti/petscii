@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.1-rc.1 - 2026-07-28
+
+- fix: stage release installers outside the checkout to keep the tree clean (`d087c34`)
+- ci: drop macos-x86_64; Intel runners never schedule and would stall releases (`c7a0a8e`)
+- ci: add dry_run option that builds and packages without releasing (`32c87dc`)
+- ci: consolidate release into plan/build/package/release pipeline (`b53cded`)
+- ci: export per host in build-test; Processing cannot cross-export macOS (`f1c4c55`)
+- fix: search to depth 4 for Processing mode jars (`50f800c`)
+- fix: assemble Processing classpath by search so Linux layouts work (`88ace3d`)
+- ci: add dispatch-only build-test workflow for iterating on packaging (`d100e30`)
+- ci: build self-contained installers per platform with jpackage (`2d9d2fc`)
+- ci: add dispatchable release workflow building all variants and Linux packages (`d9de55a`)
+- ci: build and attach Linux .deb/.rpm packages to releases (`7e73657`)
+- docs: state the verified Java version range for release binaries (`c2ca14c`)
+- docs: note the Java runtime requirement for release binaries (`51b903f`)
+- chore: export release builds without an embedded JRE (EMBED_JAVA=0) (`21d44a3`)
+- chore: add dist task packaging platform builds as release artifacts (`2670bc4`)
+
 ## 0.3.0 - 2026-07-27
 
 - chore: add mise release task catalog (`7300fca`)
