@@ -203,14 +203,16 @@ jobs:
           git config user.email \
             "${RELEASE_ACTOR_ID}+${RELEASE_ACTOR}@users.noreply.github.com"
 
+      # Staged outside the checkout on purpose: anything downloaded into the repo
+      # would show up as untracked and the release task refuses a dirty tree.
       - uses: actions/download-artifact@v8
         with:
           pattern: installer-*
           merge-multiple: true
-          path: installers
+          path: ${{ runner.temp }}/installers
 
       - name: Show what will be published
-        run: ls -l installers
+        run: ls -l "$RUNNER_TEMP/installers"
 
       # Tags, writes the changelog, pushes and creates the release, attaching the
       # 32-bit ARM archive built by RELEASE_BUILD_COMMAND.
@@ -227,4 +229,4 @@ jobs:
             echo "released tag $tag does not match the planned version $expected" >&2
             exit 1
           fi
-          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber installers/*
+          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber "$RUNNER_TEMP"/installers/*
