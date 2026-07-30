@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1-rc.3 - 2026-07-30
+
+- fix: document Windows prerelease removal instead of encoding versions (`27a5c00`)
+
 ## 0.3.1-rc.2 - 2026-07-30
 
 - fix: set user.dir so packaged apps find data/ outside macOS bundles (`4f0d3d9`)
