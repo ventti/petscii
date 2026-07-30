@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1-rc.2 - 2026-07-30
+
+- fix: set user.dir so packaged apps find data/ outside macOS bundles (`4f0d3d9`)
+- fix: fail packaging when data/ is not staged beside the jars (`0d12ce2`)
+- ci: smoke test the exported app before packaging (`0fe4549`)
+
 ## 0.3.1-rc.1 - 2026-07-28
 
 - fix: stage release installers outside the checkout to keep the tree clean (`d087c34`)
