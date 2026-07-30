@@ -54,6 +54,12 @@ else
 fi
 [ -f "$STAGE/petscii.jar" ] || { echo "jpackage: petscii.jar not found in $SRC" >&2; exit 1; }
 
+# data/ must sit beside the jars: Processing resolves it from the jar directory,
+# and without it the charset never loads and the sketch dies in initrender().
+[ -d "$STAGE/data" ] || { echo "jpackage: data/ missing from the staged input ($SRC)" >&2; exit 1; }
+echo ">> staged input:"
+ls -1 "$STAGE" | sed 's/^/   /'
+
 HOST=$(uname -s)
 
 # macOS bundles cannot carry a leading-zero version (a CFBundleVersion rule that
