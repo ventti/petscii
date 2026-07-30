@@ -70,6 +70,17 @@ case "$HOST:$APP_VERSION" in
     Darwin:0.*|Darwin:0) APP_VERSION=1.0.0 ;;
 esac
 
+# NOTE on Windows upgrades: the installer version is deliberately the plain
+# numeric base (0.3.1-rc.3 -> 0.3.1), never an encoded one. Windows compares only
+# major.minor.build, so it is tempting to fold the RC number into the build field -
+# but that poisons the ordering forever: a later, genuine 0.3.2 would compare as
+# OLDER than an encoded 0.3.103 and refuse to install.
+#
+# The consequence is that consecutive RCs of the same patch share a ProductVersion
+# and Windows will not upgrade one onto another ("another version is already
+# installed"). Stable releases are unaffected, since their versions increase
+# naturally. Uninstall the previous RC first - see "Known issues" in the README.
+
 # Common arguments. $APPDIR is expanded by the generated launcher at run time and
 # is where --input contents land, so the JOGL natives beside the jars are found.
 #

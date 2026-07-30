@@ -52,6 +52,20 @@ sudo dnf install petscii-0.3.0-1.x86_64.rpm
 
 Note that .rpm is created using [Alien](https://en.wikipedia.org/wiki/Alien_(file_converter)) and the release is untested.
 
+## Windows
+
+Install by running the **.msi**.
+
+Stable releases upgrade over each other normally. Prereleases do not: every release candidate of the same version carries the same installer version number, so Windows reports *"another version is already installed"* and stops. Remove the old one first, either with **Settings → Apps → Installed apps → petscii → Uninstall**, or in one PowerShell command:
+
+```powershell
+msiexec /x (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*,
+                             HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* |
+            Where-Object DisplayName -eq 'petscii').PSChildName
+```
+
+Only 64-bit Intel/AMD Windows is supported. Processing ships no ARM64 Windows libraries, so the app relies on Windows' x64 emulation on ARM machines.
+
 # Added functionality
 
 ## Configuration
