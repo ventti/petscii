@@ -156,6 +156,39 @@ jobs:
         shell: bash
         run: EMBED_JAVA=0 ./build.sh export "${{ matrix.variant }}"
 
+      # Catches a package that builds but cannot actually open its window - the
+      # failure mode reported on Windows, where the platform dialog appears and the
+      # JVM then dies. Windows and macOS runners have a desktop session; Linux
+      # needs a virtual one.
+      - name: Smoke test the exported app
+        shell: bash
+        run: |
+          case "${{ matrix.variant }}" in
+            windows-*) sep=';' ; libdir=lib ;;
+            macos-*)   sep=':' ; libdir=petscii.app/Contents/Java ;;
+            linux-*)   sep=':' ; libdir=lib ;;
+          esac
+          cd "build/${{ matrix.variant }}"
+          cp="$libdir/petscii.jar$sep$libdir/core.jar$sep$libdir/gluegen-rt.jar$sep$libdir/jogl-all.jar"
+          runner=""
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq xvfb
+            runner="xvfb-run -a"
+          fi
+          $runner "$JAVA_HOME/bin/java" -Djna.nosys=true -Djava.library.path="$libdir" \
+            -cp "$cp" petscii -C64 > smoke.log 2>&1 &
+          pid=$!
+          sleep 25
+          if kill -0 "$pid" 2>/dev/null; then
+            echo "OK: still running after 25s"
+            kill "$pid" 2>/dev/null || true
+          else
+            echo "FAILED: the app exited early"
+            cat smoke.log
+            exit 1
+          fi
+          cat smoke.log || true
+
       - name: Package a self-contained installer
         shell: bash
         run: |
