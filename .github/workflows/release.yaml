@@ -156,38 +156,51 @@ jobs:
         shell: bash
         run: EMBED_JAVA=0 ./build.sh export "${{ matrix.variant }}"
 
-      # Catches a package that builds but cannot actually open its window - the
-      # failure mode reported on Windows, where the platform dialog appears and the
-      # JVM then dies. Windows and macOS runners have a desktop session; Linux
-      # needs a virtual one.
-      - name: Smoke test the exported app
+      # Runs the app in the layout jpackage ships (jars, natives and data/ in one
+      # directory) FROM AN UNRELATED WORKING DIRECTORY, which is how an installed
+      # app actually starts. Running it from the export root instead would pass
+      # even when data/ is unreachable, because the export root contains a data/
+      # of its own - that is exactly how the broken Windows installer slipped out.
+      - name: Smoke test the packaged layout
         shell: bash
         run: |
           case "${{ matrix.variant }}" in
-            windows-*) sep=';' ; libdir=lib ;;
-            macos-*)   sep=':' ; libdir=petscii.app/Contents/Java ;;
-            linux-*)   sep=':' ; libdir=lib ;;
+            windows-*) sep=';' ;;
+            *)         sep=':' ;;
           esac
-          cd "build/${{ matrix.variant }}"
-          cp="$libdir/petscii.jar$sep$libdir/core.jar$sep$libdir/gluegen-rt.jar$sep$libdir/jogl-all.jar"
+          src="build/${{ matrix.variant }}"
+          stage="$PWD/build/smoke"
+          rm -rf "$stage"; mkdir -p "$stage"
+          if [ -d "$src/petscii.app/Contents/Java" ]; then
+            cp -R "$src/petscii.app/Contents/Java/." "$stage/"
+          else
+            cp -R "$src/lib/." "$stage/"
+            cp -R "$src/data" "$stage/"
+          fi
+          # java needs a native path; Git Bash paths are not one
+          if [ "${{ runner.os }}" = "Windows" ]; then abs=$(cd "$stage" && pwd -W); else abs="$stage"; fi
           runner=""
           if [ "${{ runner.os }}" = "Linux" ]; then
             sudo apt-get update -qq && sudo apt-get install -y -qq xvfb
             runner="xvfb-run -a"
           fi
-          $runner "$JAVA_HOME/bin/java" -Djna.nosys=true -Djava.library.path="$libdir" \
-            -cp "$cp" petscii -C64 > smoke.log 2>&1 &
+          mkdir -p "$RUNNER_TEMP/neutral" && cd "$RUNNER_TEMP/neutral"
+          cp="$abs/petscii.jar$sep$abs/core.jar$sep$abs/gluegen-rt.jar$sep$abs/jogl-all.jar"
+          $runner "$JAVA_HOME/bin/java" -Djna.nosys=true -Djava.library.path="$abs" \
+            -Duser.dir="$abs" -cp "$cp" petscii -C64 > smoke.log 2>&1 &
           pid=$!
           sleep 25
-          if kill -0 "$pid" 2>/dev/null; then
-            echo "OK: still running after 25s"
-            kill "$pid" 2>/dev/null || true
-          else
-            echo "FAILED: the app exited early"
-            cat smoke.log
-            exit 1
+          if ! kill -0 "$pid" 2>/dev/null; then
+            echo "FAILED: the app exited early"; cat smoke.log; exit 1
           fi
-          cat smoke.log || true
+          kill "$pid" 2>/dev/null || true
+          # prefs.txt is always reported missing and is harmless (it is optional and
+          # searched in several places); anything else means data/ is unreachable.
+          if grep -q NullPointerException smoke.log ||
+             grep "is missing or inaccessible" smoke.log | grep -qv "prefs.txt"; then
+            echo "FAILED: the app could not load its data"; cat smoke.log; exit 1
+          fi
+          echo "OK: ran for 25s with no missing resources"
 
       - name: Package a self-contained installer
         shell: bash

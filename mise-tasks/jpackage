@@ -72,6 +72,13 @@ esac
 
 # Common arguments. $APPDIR is expanded by the generated launcher at run time and
 # is where --input contents land, so the JOGL natives beside the jars are found.
+#
+# -Duser.dir is what makes data/ resolvable. Processing only special-cases macOS
+# .app bundles when locating the sketch folder; everywhere else it falls back to
+# the working directory, and a jpackage launcher inherits whatever directory the
+# user happened to be in (the home directory, from a Start Menu shortcut). Without
+# this the charset never loads and the sketch dies with a NullPointerException in
+# Charset.initrender().
 set -- --name petscii \
        --app-version "$APP_VERSION" \
        --input "$STAGE" \
@@ -80,6 +87,7 @@ set -- --name petscii \
        --add-modules "$MODULES" \
        --java-options '-Djna.nosys=true' \
        --java-options '-Djava.library.path=$APPDIR' \
+       --java-options '-Duser.dir=$APPDIR' \
        --jlink-options '--strip-debug --no-man-pages --no-header-files' \
        --vendor "ventti" \
        --description "Marq's PETSCII editor (Vent's fork)" \
