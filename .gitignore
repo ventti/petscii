@@ -24,3 +24,6 @@ build/
 *.avi
 /petscii
 dist/
+# The blanket *.png above would swallow the application icon, which the packaged
+# builds need in the repo (Linux uses the .png directly).
+!extras/*.png

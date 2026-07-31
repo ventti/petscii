@@ -104,20 +104,32 @@ set -- --name petscii \
        --description "Marq's PETSCII editor (Vent's fork)" \
        --dest "$WORK"
 
+# Each platform wants its own icon format. All three are generated from the single
+# 128x128 source extras/petscii.png with nearest-neighbour scaling, so the pixel art
+# stays sharp at every integer size:
+#
+#   for each size: magick extras/petscii.png -filter point -resize NxN ...
+#   iconutil -c icns petscii.iconset -o extras/petscii.icns     (macOS)
+#   magick ... -delete 0 extras/petscii.ico                     (Windows)
+#
+# Missing an icon is not fatal - jpackage falls back to a generic Java icon - but it
+# is reported, because a silently unbranded build is easy to ship by accident.
+ICONS=$PWD/extras
+icon=""
 case "$HOST" in
     Darwin)
         TYPES="dmg"
-        # Reuse the icon Processing already put in the exported bundle
-        icon="$SRC/petscii.app/Contents/Resources/application.icns"
-        [ -f "$icon" ] && set -- "$@" --icon "$icon"
+        icon="$ICONS/petscii.icns"
         ;;
     Linux)
         # Both Debian and RPM come straight from jpackage, so no alien conversion
         TYPES="deb rpm"
+        icon="$ICONS/petscii.png"
         set -- "$@" --linux-shortcut --linux-menu-group Graphics
         ;;
     MINGW* | MSYS* | CYGWIN*)
         TYPES="msi"
+        icon="$ICONS/petscii.ico"
         set -- "$@" --win-menu --win-shortcut --win-menu-group Graphics
         ;;
     *)
@@ -125,6 +137,13 @@ case "$HOST" in
         exit 1
         ;;
 esac
+
+if [ -f "$icon" ]; then
+    set -- "$@" --icon "$icon"
+    echo ">> icon: $icon"
+else
+    echo ">> WARNING: no icon at $icon; the build will use the generic Java icon" >&2
+fi
 
 for type in $TYPES; do
     echo ">> jpackage --type $type ($VARIANT)"
