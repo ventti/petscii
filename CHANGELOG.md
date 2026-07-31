@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.4.0 - 2026-07-31
+
+- docs: update README (`78d0a6d`)
+- feat: build Intel macOS installer and show the exact version in bundles (`901bc8a`)
+- chore(release): 0.3.1-rc.4 (`784c08b`)
+- feat: use the petscii icon in all packaged builds (`953c581`)
+- chore(release): 0.3.1-rc.3 (`fb50e03`)
+- fix: document Windows prerelease removal instead of encoding versions (`27a5c00`)
+- chore(release): 0.3.1-rc.2 (`b19957a`)
+- fix: set user.dir so packaged apps find data/ outside macOS bundles (`4f0d3d9`)
+- fix: fail packaging when data/ is not staged beside the jars (`0d12ce2`)
+- ci: smoke test the exported app before packaging (`0fe4549`)
+- chore(release): 0.3.1-rc.1 (`1a6afe5`)
+- fix: stage release installers outside the checkout to keep the tree clean (`d087c34`)
+- ci: drop macos-x86_64; Intel runners never schedule and would stall releases (`c7a0a8e`)
+- ci: add dry_run option that builds and packages without releasing (`32c87dc`)
+- ci: consolidate release into plan/build/package/release pipeline (`b53cded`)
+- ci: export per host in build-test; Processing cannot cross-export macOS (`f1c4c55`)
+- fix: search to depth 4 for Processing mode jars (`50f800c`)
+- fix: assemble Processing classpath by search so Linux layouts work (`88ace3d`)
+- ci: add dispatch-only build-test workflow for iterating on packaging (`d100e30`)
+- ci: build self-contained installers per platform with jpackage (`2d9d2fc`)
+- ci: add dispatchable release workflow building all variants and Linux packages (`d9de55a`)
+- ci: build and attach Linux .deb/.rpm packages to releases (`7e73657`)
+- docs: state the verified Java version range for release binaries (`c2ca14c`)
+- docs: note the Java runtime requirement for release binaries (`51b903f`)
+- chore: export release builds without an embedded JRE (EMBED_JAVA=0) (`21d44a3`)
+- chore: add dist task packaging platform builds as release artifacts (`2670bc4`)
+
 ## 0.3.1-rc.4 - 2026-07-31
 
 - feat: use the petscii icon in all packaged builds (`953c581`)
