@@ -101,20 +101,28 @@ jobs:
           - variant: macos-aarch64
             os: macos-latest
             processing: processing-4.3.4-macos-aarch64.zip
-          # NOTE: no macos-x86_64. GitHub's last Intel image (macos-13) never got a
-          # runner in testing - jobs sat queued for over an hour - and `needs:`
-          # waits on a queued job even when it is continue-on-error, which would
-          # stall every release. Intel Macs therefore get no installer for now; the
-          # untried alternative is an x86_64 JDK under Rosetta on an arm64 runner.
+            jdk_arch: aarch64
+          # Intel macOS is built on the Apple Silicon runner with an x86_64 JDK
+          # (jpackage emits for its own JDK's architecture, and Rosetta runs it).
+          # GitHub's last Intel image, macos-13, never got a runner in testing -
+          # jobs sat queued for over an hour - and `needs:` waits even on a
+          # continue-on-error job, which would stall every release.
+          - variant: macos-x86_64
+            os: macos-latest
+            processing: processing-4.3.4-macos-aarch64.zip
+            jdk_arch: x64
           - variant: windows-amd64
             os: windows-latest
             processing: processing-4.3.4-windows-x64.zip
+            jdk_arch: x64
           - variant: linux-amd64
             os: ubuntu-latest
             processing: processing-4.3.4-linux-x64.tgz
+            jdk_arch: x64
           - variant: linux-aarch64
             os: ubuntu-24.04-arm
             processing: processing-4.3.4-linux-arm64.tgz
+            jdk_arch: aarch64
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.optional || false }}
     steps:
@@ -124,10 +132,13 @@ jobs:
           fetch-depth: 0
           filter: blob:none
 
+      # The JDK architecture decides what jpackage emits, which is how the Intel
+      # macOS installer is produced on an Apple Silicon runner.
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          architecture: ${{ matrix.jdk_arch }}
 
       - name: Install Processing for this host
         shell: bash

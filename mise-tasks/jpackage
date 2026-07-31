@@ -101,7 +101,7 @@ set -- --name petscii \
        --java-options '-Duser.dir=$APPDIR' \
        --jlink-options '--strip-debug --no-man-pages --no-header-files' \
        --vendor "ventti" \
-       --description "Marq's PETSCII editor (Vent's fork)" \
+       --description "Marq's PETSCII editor (Vent's fork) $VERSION" \
        --dest "$WORK"
 
 # Each platform wants its own icon format. All three are generated from the single
@@ -145,10 +145,37 @@ else
     echo ">> WARNING: no icon at $icon; the build will use the generic Java icon" >&2
 fi
 
-for type in $TYPES; do
-    echo ">> jpackage --type $type ($VARIANT)"
-    jpackage --type "$type" "$@"
-done
+if [ "$HOST" = "Darwin" ]; then
+    # Two steps on macOS so the bundle can advertise the real version. --app-version
+    # only accepts one to three integers, so the app image is built with the numeric
+    # substitute and CFBundleShortVersionString is then set to the true version -
+    # that is the string Finder's Get Info and the About panel display. The dmg is
+    # wrapped around the patched image afterwards.
+    echo ">> jpackage --type app-image ($VARIANT)"
+    jpackage --type app-image "$@"
+    app="$WORK/petscii.app"
+    [ -d "$app" ] || { echo "jpackage: no app image at $app" >&2; exit 1; }
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$app/Contents/Info.plist"
+    echo ">> bundle version: $(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app/Contents/Info.plist")"
+
+    # The dmg is assembled with hdiutil rather than "jpackage --type dmg
+    # --app-image", because that step rewrites Info.plist and would put the numeric
+    # substitute back, undoing the patch above. This also lets the mounted volume
+    # carry the exact version, and keeps the familiar drag-to-Applications layout.
+    root=$WORK/dmgroot
+    mkdir -p "$root"
+    cp -R "$app" "$root/"
+    ln -s /Applications "$root/Applications"
+    echo ">> hdiutil: building dmg ($VARIANT)"
+    hdiutil create -volname "petscii $VERSION" -srcfolder "$root" \
+        -ov -quiet -format UDZO "$WORK/petscii.dmg"
+    rm -rf "$app" "$root"
+else
+    for type in $TYPES; do
+        echo ">> jpackage --type $type ($VARIANT)"
+        jpackage --type "$type" "$@"
+    done
+fi
 
 # jpackage names files after the app and numeric version only; rename so the
 # variant and the real version (including any -rc.N) are visible in the release.
