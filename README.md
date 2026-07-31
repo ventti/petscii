@@ -1,138 +1,77 @@
 Marq's PETSCII editor (Vent's fork)
 ===================================
 
-This is Vent's fork of Marq's PETSCII editor.
-
-See here for the original editor: [http://www.kameli.net/marq/?page_id=2717](http://www.kameli.net/marq/?page_id=2717)
-
-This document tries to briefly describe the differences between these two and why they do exist.
-
-# Why?
-
-* to fix the preview / export image size to meet the CSDb specs
-* to learn some Processing/Java basics
-* to try out few random ideas that simplify my own PETSCII editor use cases
+Fork of [Marq's PETSCII editor](http://www.kameli.net/marq/?page_id=2717), the C64 cross-platform PETSCII art editor.
 
 # Installation
 
-## Requirements
+Installers are on the [latest release page](https://github.com/ventti/petscii/releases/latest):
 
-Java 17 or newer must be installed. The release binaries do not bundle a Java runtime, so they use the one on your system. Check what you have with `java -version`.
+| Platform | Asset |
+|----------|-------|
+| macOS | `.dmg`, Apple silicon or Intel |
+| Windows | `.msi`, 64-bit Intel/AMD |
+| Linux | `.deb` / `.rpm`, 64-bit Intel/AMD or ARM |
+| Linux, 32-bit ARM | `.tar.gz` |
 
-* macOS and Windows: install a JDK from [Adoptium](https://adoptium.net/)
-* Linux: install your distribution's JRE package, e.g. `sudo apt install default-jre`
-
-On Java 24 and newer the console shows a harmless `restricted method in java.lang.System has been called` warning, emitted by Processing's core.
-
-All versions and source code are available in a single .zip package, as with the original PETSCII. 
-
-[Click here to download](https://github.com/ventti/petscii/releases/latest/download/petscii.zip) the latest release .zip.
-
-Installation as mentioned in [the original PETSCII editor docs](http://www.kameli.net/marq/?page_id=2717)
-
-> It should be straightforward to download and unzip the package, after which you can run the version that corresponds to your operating system of choice: Linux, Mac or Windows. 32-bit binaries are still included, but you may encounter problems with old Windows or Mac OS versions – I can’t support and test each and every one of them.
+32-bit ARM Linux `.tar.gz` ships without a runtime and needs Java 17 or later.
 
 ## Linux
 
-I wanted a simple way to install and upgrade PETSCII on both mine and Junior's PCs. Hence, a package with a desktop icon!
-
-Download the **.deb** or **.rpm** package from [latest release page](https://github.com/ventti/petscii/releases/latest/) and use your package manager to install the PETSCII editor.
-
-Examples, assuming the latest release at the time of writing:
+Depending on your distribution,
 
 ```sh
-sudo dpkg -i petscii_0.3.0-1_amd64.deb
+sudo dpkg -i petscii-0.3.1-linux-amd64.deb
 ```
-
 or
 
 ```sh
-sudo dnf install petscii-0.3.0-1.x86_64.rpm
+sudo dnf install petscii-0.3.1-linux-amd64.rpm
 ```
 
-Note that .rpm is created using [Alien](https://en.wikipedia.org/wiki/Alien_(file_converter)) and the release is untested.
+Installs to `/opt/petscii` with a desktop entry. The .rpm is untested.
 
 ## Windows
 
-Install by running the **.msi**.
+Run the **.msi**. 
 
-Stable releases upgrade over each other normally. Prereleases do not: every release candidate of the same version carries the same installer version number, so Windows reports *"another version is already installed"* and stops. Remove the old one first, either with **Settings → Apps → Installed apps → petscii → Uninstall**, or in one PowerShell command:
-
-```powershell
-msiexec /x (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*,
-                             HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* |
-            Where-Object DisplayName -eq 'petscii').PSChildName
-```
-
-Only 64-bit Intel/AMD Windows is supported. Processing ships no ARM64 Windows libraries, so the app relies on Windows' x64 emulation on ARM machines.
+Note: Release candidates all share one installer version, so Windows refuses to replace one with another — uninstall the old one first.
 
 # Added functionality
 
+See the [CHANGELOG.md](CHANGELOG.md) for the detailed list of changes per release.
+
 ## Configuration
 
-Handling user preferences has minor differences to the original PETSCII.
+On Linux, `prefs.txt` and `plugin.js` are searched in this order:
 
-### Linux
+* current image directory
+* `$HOME/.petscii`
+* `/etc/petscii/`
+* `$HOME` (legacy)
+* `/usr/share/petscii/` (legacy)
 
-Linux version in this fork includes slight enhancements.
+## petscii_cli
 
-User preference file `prefs.txt` and export plugin `plugin.js` are loaded as per the following priority order:
-
-* image-specific: from current image directory
-* user-specific: `$HOME/.petscii`
-* system-specific: `/etc/petscii/`
-* home directory (legacy option): `$HOME` 
-* petscii installation directory (legacy option): `/usr/share/petscii/` 
-
-## PETSCII_CLI
-
-`petscii_cli` is an experimental add-on to run PETSCII editor headless in Linux systems. 
-
-The purpose of this is to enable PETSCII as an integral part of a modern cross-dev CI automation toolchain, so that 
-format conversion work and other export routine jobs can be automated.
-
-### Pre-requirements
-
-As PETSCII is based on Processing sketch, it [cannot be run headless natively](https://github.com/processing/processing/wiki/Running-without-a-Display#why-do-i-need-to-do-this). Virtual X framebuffer is needed.
-
-* [Xvfb](https://en.wikipedia.org/wiki/Xvfb) for acting as a X11 display server
-* [xdotool](http://manpages.ubuntu.com/manpages/trusty/man1/xdotool.1.html) for running the keyboard commands
-
-### Usage
+Experimental headless runner, for automating conversions and exports in a Linux CI. Processing [cannot run headless natively](https://github.com/processing/processing/wiki/Running-without-a-Display#why-do-i-need-to-do-this), so it needs [Xvfb](https://en.wikipedia.org/wiki/Xvfb) and [xdotool](http://manpages.ubuntu.com/manpages/trusty/man1/xdotool.1.html).
 
 ```
-usage: petscii_cli /path/to/petscii /path/to/image.c MACHINE "cmd;cmd;cmd"
+petscii_cli /path/to/petscii /path/to/image.c MACHINE "cmd;cmd;cmd"
 ```
 
-* `MACHINE` is one of the machines the PETSCII supports
-* commands are given as a list of keyboard commands separated with a semicolon, with `xdotool` syntax
-
-### Example
-
-This example loads `/tmp/example.c`, exports it as `.prg` and creates screenshots as `.png` with borders.
+`MACHINE` is any machine PETSCII supports. Commands are `xdotool` keystrokes, separated by semicolons. This loads `/tmp/example.c`, exports a `.prg` and a bordered `.png`:
 
 ```sh
-./petscii_cli ../application.linux64/petscii /tmp/example.c C64 "e;P"
+./petscii_cli /opt/petscii/bin/petscii /tmp/example.c C64 "e;P"
 ```
 
 ## Export plugin scripting with Javascript
 
-Experimental Javascript scripting functionality is added to the editor.
+Experimental. `Ctrl-e` runs `plugin.js`, found via the search order above, so each image folder can carry its own exporter. One plugin at a time — custom export code is usually specific to a single demo or game, and this keeps a zoo of exporters out of the editor.
 
-On top of the export formats PETSCII supports natively, the purpose of the plugin API is to enable exporting the PETSCII data to (almost) any user-specified output format.
+**TODO**: invoke a file selector when `plugin.js` is missing.
 
-The plugin concept was created having faster integration of the images to custom code. Having a single plugin as chosen method relies on the fact that often such custom code 
-is needed for a highly specific and unique use-cases, such as demo effect or game development. Consequently, only a single plugin is relevant per time. 
-Also, this reduces the need to implement a plethora of file exporter variants to the editor itself.
-
-The plugin concept shares the preference file seek hierarchy of the PETSCII editor, described above.
-Thus, if images are stored in their own folders, each folder may have its own exporter plugin. Such plugin is then easily triggerable with a keyboard shortcut.
-
-`Ctrl-e` can be used to call `plugin.js` located at the folder of the PETSCII executable.
-
-**TODO**: if `plugin.js` does not exist, a file selector dialog is to be invoked.
-
-It is a design choice to expose only a subset of parameters to the scripting. The API binds the following variables to the user scripts:
+Scripts get a deliberately small API:
 
 | variable        | type        | purpose                                                                                   |
 |-----------------|-------------|-------------------------------------------------------------------------------------------|
@@ -149,54 +88,17 @@ It is a design choice to expose only a subset of parameters to the scripting. Th
 
 ### Output objects
 
-Output object binds together a file name and a [PrintWriter](https://docs.oracle.com/javase/8/docs/api/java/io/PrintWriter.html) for it.
-
-| variable        | type        |
-|-----------------|-------------|
-| `pwriter`       | PrintWriter |
-| `filename`      | String      |
-
-These output objects are handled through `outputs` ArrayList. Initialising an output file via `outputs` requires minimal boilerplate:
+An `Output` pairs a file name with a [PrintWriter](https://docs.oracle.com/javase/8/docs/api/java/io/PrintWriter.html), and they are handled through the `outputs` list:
 
 ```js
-// get the file index
-var fp = outputs.add_file("myfile.ext");
-
-// get the corresponding output object's PrintWriter
-var outfile = outputs.get(fp).pwriter;
+var fp = outputs.add_file(fileprefix + ".asm");   // file index
+var asmfile = outputs.get(fp).pwriter;
+asmfile.println("Hello world");
 ```
 
-Then the PrintWriter is consequently available for use:
-
-```js
-// using the printwriter instance
-outfile.println("Hello world");
-```
-
-Adding multiple output files works just by repeating that pattern. Using `fileprefix` makes file naming quite convenient.
-
-```js
-var fpa = outputs.add_file(fileprefix + ".asm");
-var asmfile = outputs.get(fpa).pwriter;
-
-var fpt = outputs.add_file(fileprefix + ".txt");
-var txtfile = outputs.get(fpt).pwriter;
-```
-
-Same file cannot be added as output twice. `add_file` will return the file index of the existing
-
-File index can also be acquired with `get_file`. `-1` is returned if no corresponding file found:
-
-```js
-var fp = outputs.get_file("myfile.ext");
-if (fp < 0){
-    stdout.println("myfile.ext is not an output");
-}
-```
+Repeat for more files. Adding the same file twice returns the existing index; `outputs.get_file(name)` looks one up, returning `-1` if absent. Writers are flushed and closed after the script runs.
 
 ### Platform-specific scoping
-
-Plugin can be scoped with PETSCII `machine`, e.g. as follows:
 
 ```js
 if (machine == "C64"){
@@ -205,38 +107,23 @@ if (machine == "C64"){
 else if (machine == "VIC20"){
     // do stuff applicable for VIC20
 }
-// etc.
 ```
-
-Trying to add same output twice will return the index of the file.
-
-Note that the PrintWriter is flushed and closed after script execution, thus no need to do it explicitly in the script.
 
 ### Example
 
-Examples can be found at [/extras/plugins](extras/plugins). 
-
-Copy a script to PETSCII executable's folder as `plugin.js`, try `Ctrl-e` and see what happens.
+Examples are in [/extras/plugins](extras/plugins). Copy one next to the executable as `plugin.js`, press `Ctrl-e` and see what happens.
 
 ## Charset conversion script
 
-A script for converting 128x128 images to PETSCII charset and back can be found at [/extras/charset_conv.sh](extras/charset_conv.sh)
-
-### Usage
+[/extras/charset_conv.sh](extras/charset_conv.sh) converts a 128x128 image to a PETSCII charset and back.
 
 ```
 Usage: ./extras/charset_conv.sh [options] <input_file>
-
-Convert 128x128 pixels image to PETSCII editor charset or vice versa
 
 Options:
   -h, --help      Show this help message and exit
   -o, --output    Output file
 
-Examples: 
-    echo  Convert 128x128 pixels .png to charset or vice versa:
-  ./extras/charset_conv.sh input.png -o=output.png
-
-  Print dimensions of the image in (x,y) format:
-  ./extras/charset_conv.sh input.png
+  ./extras/charset_conv.sh input.png -o=output.png   # convert
+  ./extras/charset_conv.sh input.png                 # print dimensions as (x,y)
 ```
