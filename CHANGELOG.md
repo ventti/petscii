@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1-rc.4 - 2026-07-31
+
+- feat: use the petscii icon in all packaged builds (`953c581`)
+
 ## 0.3.1-rc.3 - 2026-07-30
 
 - fix: document Windows prerelease removal instead of encoding versions (`27a5c00`)
