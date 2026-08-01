@@ -8,10 +8,15 @@ class Frame
         bg,
         border,
         duration; // Not used so far
-    
+
     boolean locked;
-    
+
     PImage thumb;
+
+    // The charset this frame is drawn with, as character data (8 bytes per
+    // character), or null for the machine's own font. Frames normally share one
+    // array; a .c file can give each frame its own (see apply_font, save_c).
+    byte font[];
     
     // Undo related data
     int undochars[][], // Ring buffers for undo
@@ -27,6 +32,7 @@ class Frame
         border=0;
         duration=1;
         locked=false;
+        font=curfont; // Whatever the picture is being drawn with
 
         chars=new int[X*Y];
         colors=new int[X*Y];
@@ -244,6 +250,42 @@ int framecount=0,
 
 Frame scratch,cf;
 
+// --- Charsets across frames --------------------------------------------------
+// The editor renders one charset at a time (the global cset), so switching to a
+// frame that wants different characters rebuilds it. curfont is the data cset
+// was last built from - null meaning the machine's own font - so a frame switch
+// only pays for the rebuild when the charset really differs.
+
+byte curfont[];
+
+// Draw with this charset from now on (null = the machine's own font).
+void apply_font(byte font[])
+{
+    if(font==curfont) // Frames share the array, so this catches the usual case
+        return;
+
+    curfont=font;
+    if(font==null)
+        machine.build_charset();
+    else
+        machine.build_charset(font);
+
+    repaint=true;
+}
+
+// A charset was chosen for the whole picture (see Machine.init_charset): hand it
+// to every frame, so frames no longer disagree about the characters they use.
+void picture_font()
+{
+    curfont=machine.loadedfont() ? cset.tobytes(256) : null;
+
+    if(frames!=null)
+        for(Frame f: frames)
+            f.font=curfont;
+    if(scratch!=null)
+        scratch.font=curfont;
+}
+
 void anim_init()
 {
     currentframe=0;
@@ -268,6 +310,7 @@ void setframe(int frame)
     
     currentframe=frame;
     cf=frames.get(frame);
+    apply_font(cf.font); // The frame may be drawn with a charset of its own
 
     // More frame stuff
     if(cur.typing>0)
@@ -297,12 +340,16 @@ void copyframe(Frame s,Frame d)
     
     d.bg=s.bg;
     d.border=s.border;
-    
+    d.font=s.font;
+
     d.head=s.head;
     d.tail=s.tail;
     d.maxhead=s.maxhead;
-    
+
+    byte was[]=curfont; // The thumbnail blends with the frame's own characters
+    apply_font(d.font);
     d.updatethumb();
+    apply_font(was);
 }
 
 // Add a frame at a given position
@@ -312,10 +359,11 @@ void addframe(int pos)
         return;
         
     Frame f=new Frame();
-    
+
     f.bg=cf.bg;
     f.border=cf.border;
-    
+    f.font=cf.font;
+
     frames.add(pos,f);
     f.updatethumb();
     framecount++;

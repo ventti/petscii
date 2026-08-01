@@ -145,6 +145,7 @@ void init_machine_instance(int m)
     }
     cset.shift=machine.shift; // Need to do this properly later
     cset.grow=machine.grow;
+    curfont=null;             // The new machine starts on its own font
 }
 
 // Compute all UI layout coordinates and the resulting window size (view.winW/view.winH)

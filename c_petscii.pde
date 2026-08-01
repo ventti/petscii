@@ -7,6 +7,11 @@ class Petscii extends Charset
     {
         super(fontfile,remapfile,setfile);
     }
+
+    Petscii(byte font[],String remapfile,String setfile)
+    {
+        super(font,remapfile,setfile);
+    }
     
     // Loads a char selector remap file
     boolean loadremap(String name)

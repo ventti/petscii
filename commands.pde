@@ -58,7 +58,11 @@ void cmd_export_png(boolean border)
     else
     {
         for(int i=0;i<framecount;i++)
+        {
+            apply_font(frames.get(i).font); // Frames may differ; save_png draws with cset
             machine.save_png(ext(filename,"_"+nf(i,3)+".png"),frames.get(i),border);
+        }
+        apply_font(cf.font);
 
         if(!prefs.convertcommand.equals("")) // Run a command for the image sequence (e.g. make a gif)
         {

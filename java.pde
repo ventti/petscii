@@ -5,6 +5,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.Arrays; // for the charset comparisons in save_charsets
 
 void javatheme()
 {
@@ -208,7 +209,7 @@ int askAddr(String prompt, int def)
 
 // Save the current charset (256 chars, 8 bytes each) as a C64 .prg: a 2-byte
 // little-endian load address followed by 2048 bytes of character bitmap data
-// (bit 7 = leftmost pixel; a foreground/non-black pixel sets the bit).
+// (see Charset.tobytes). Data only: use "Save .prg" for a runnable picture.
 void saveCharsetPrg(File selection)
 {
     if(selection==null)
@@ -219,20 +220,12 @@ void saveCharsetPrg(File selection)
             fn+=".prg";
 
         int addr=charsetPrgAddr;
-        byte[] out=new byte[2+256*8];
+        byte[] font=cset.tobytes(256);
+        byte[] out=new byte[2+font.length];
         out[0]=(byte)(addr&0xff);        // load address, low byte
         out[1]=(byte)((addr>>8)&0xff);   // load address, high byte
+        arrayCopy(font,0,out,2,font.length);
 
-        cset.bitmap.loadPixels();
-        for(int c=0;c<256;c++)
-            for(int y=0;y<8;y++)
-            {
-                int b=0;
-                for(int x=0;x<8;x++)
-                    if((cset.bitmap.pixels[(c*8+x)+y*cset.bitmap.width]&0xff)>20)
-                        b|=(1<<(7-x));
-                out[2+c*8+y]=(byte)b;
-            }
         saveBytes(fn,out);
         message("Saved charset .prg to "+fn+" ($"+hex(addr,4)+")");
     });

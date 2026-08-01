@@ -131,40 +131,35 @@ else if (machine == "VIC20"){
 
 Examples are in [/extras/plugins](extras/plugins). Copy one next to the executable as `plugin.js`, press `Ctrl-e` and see what happens.
 
-## Runnable .prg with a custom charset
-
-**Save .prg** (`e`) writes a C-64 program that shows the picture. When the charset is not one of the built-in ones — you loaded a charset `.png`, traced an image, or opened a `.c` or `.petmate` carrying its own font — the character data goes into the `.prg` too, because it is not in ROM.
-
-The file is one contiguous block with no padding: BASIC stub, 119 bytes of code, screen codes, colour RAM, and only those 256-byte charset pages the picture actually uses. A picture using all 256 characters is 4184 bytes; one that stays below character 128 is a kilobyte smaller. On start it copies the data to `$0400`, `$d800` and `$3800`, points the VIC at the charset and stops.
-
-The viewer source is [/extras/asm/template-c64font.s](extras/asm/template-c64font.s). If you change it, rebuild `data/template-c64font.prg` with [64tass](https://sourceforge.net/projects/tass64/):
-
-```sh
-cd extras/asm && 64tass -o ../../data/template-c64font.prg template-c64font.s
-```
-
-Known issues: C-64 only. The C-64 flicker, VIC-20 and Plus/4 exporters still write ROM-charset `.prg` files, and say so in the status line. **Load .prg** does not read these files back.
-
 ## Custom charsets in .c files
 
 Saving keeps the charset each frame is drawn with, so a picture with a charset of its own survives a save and load. Frames may differ: a `.c` can hold one charset per frame. Identical charsets are stored once and shared, and frames using the machine's own font store nothing at all, so a picture that never left the ROM charset saves exactly as it always did.
 
-The charsets go after the last frame and before the `// META:` line:
+Everything past the frames is written as C, not as comments. This is format 2:
 
 ```c
 unsigned char frame0000[]={ ... };
 unsigned char frame0001[]={ ... };
+static const int version=2;
 static const unsigned char charset0000[]={// 256 characters, 8 bytes each
 0,0,0,0,0,0,0,0,
 ...
 };
-// FONTS: 0 -1 0
+static const int fonts[]={0,-1}; // charset per frame, -1 = the machine's own
+static const int meta[]={40,25,1}; // width height case, 1 = upper
 // META: 40 25 C64 upper
 ```
 
-`// FONTS:` lists the charset each frame uses, in frame order, `-1` meaning the machine's own font. Character data is the C-64 layout: 8 bytes per character, bit 7 leftmost.
+| Declaration | Holds |
+|-------------|-------|
+| `version` | The format version, a running integer. Files without it are format 1: frames and the `// META:` comment, nothing else. |
+| `charsetNNNN` | One charset, 256 characters of 8 bytes, bit 7 leftmost. Only written when a frame needs it. |
+| `fonts` | The charset each frame is drawn with, in frame order. `-1` is the machine's own font. Only written when there are charsets. |
+| `meta` | Width, height and case, `1` being upper. The machine is read from the `// META:` comment, which is written for older versions anyway. |
 
-The `static const` is deliberate. PETSCII stops reading frames at the first line that does not begin with `unsigned char`, so an older version loads the picture, draws it with the ROM charset and ignores the rest of the file. It cannot write the charsets back, though: re-saving in an old version drops them.
+The file still compiles with cc65, which only warns about the declarations being unused.
+
+The `static const` is deliberate. PETSCII stops reading frames at the first line that does not begin with `unsigned char`, so a version older than format 2 loads the picture, draws it with the ROM charset and ignores the rest of the file. Such a version reads the metadata from the `// META:` comment only, which is why that line is still written, and still written last. It cannot write any of the new data back, though: re-saving in an old version drops the charsets.
 
 Loading a charset `.png`, tracing an image or toggling **Case** applies to the whole picture — every frame — as before. Only a file that carries per-frame charsets gets them, and switching frames then switches the characters with it.
 

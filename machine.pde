@@ -49,6 +49,30 @@ class Machine
     void setcase(boolean keis)
     {
     }
+
+    // True when fontfile names a charset the user brought in rather than one of
+    // the fonts in data/: loading a charset .png, tracing an image and opening a
+    // .petmate with its own font all set an absolute path (see load_charset,
+    // trace_image and load_petmate_font), while the built-in fonts are plain
+    // data/ filenames.
+    boolean loadedfont()
+    {
+        return fontfile!=null && new File(fontfile).isAbsolute();
+    }
+
+    // True when the characters on screen are not the machine's own, whether they
+    // came from a file or from a .c that carried its own charset. Exporters care:
+    // such a charset is not in ROM, so it has to travel with the picture.
+    boolean customfont()
+    {
+        return curfont!=null;
+    }
+
+    // Tail for the "Written ..." message of exporters that cannot carry a charset.
+    String fontnote()
+    {
+        return customfont() ? " (custom charset NOT included)" : "";
+    }
     
     void ownbuttons() // Disable not implemented buttons or change some if needed
     {
@@ -161,16 +185,21 @@ class Machine
             return false;
         }
         
-        // New images have metadata in the end
-        if(lines[lines.length-1].length()>8 && lines[lines.length-1].substring(0,8).equals("// META:"))
+        int fileformat=read_format(lines);
+        if(fileformat>CFORMAT)
+            message("Saved by a newer PETSCII (format "+str(fileformat)+"): loading what is understood");
+
+        // Size, machine and case: a declaration since format 2, the trailing
+        // comment before that (and still, for older PETSCII versions).
+        String metadata[]=read_meta(lines);
+
+        if(metadata!=null)
         {
-            String metadata[]=splitTokens(lines[lines.length-1]," ");
-    
-            loadx=int(metadata[2]);
-            loady=int(metadata[3]);
-            
+            loadx=int(metadata[0]);
+            loady=int(metadata[1]);
+
             for(int i=0;i<machinenames.length;i++)
-                if(metadata[4].equals(machinenames[i]))
+                if(metadata[2].equals(machinenames[i]))
                 {
                     switch(i)
                     {
@@ -184,9 +213,9 @@ class Machine
                         default: ;
                     }
                 }
-                    
-            if(metadata.length>5)
-                if(metadata[5].equals("lower"))
+
+            if(metadata.length>3)
+                if(metadata[3].equals("lower"))
                     lower=true;
         }
         else // Default sizes
@@ -194,7 +223,7 @@ class Machine
             loadx=nativex;
             loady=nativey;
         }
-        
+
         if(!merge)
         {
             surface.setTitle(name+" ("+str(X)+"x"+str(Y)+")");
@@ -205,9 +234,10 @@ class Machine
         }   
         
         String s[];
-        int i=0,defaultcolor=erasecolor;
+        int i=0,defaultcolor=erasecolor,
+            firstframe=currentframe+1; // Where this file's frames start (merge!)
         boolean cont=true;
-        
+
         while(cont)
         {            
             if(i<lines.length && lines[i].startsWith("unsigned char")) // Another frame
@@ -276,17 +306,21 @@ class Machine
                 cont=false;
         }
         
-        setframe(0);
+        // The case switch is picture-wide and resets every frame to the machine's
+        // own font, so it has to happen before the file's own charsets are read.
         if(lowercase!=lower || id!=sourcemachine.id)
         {
             setcase(lower);
-            cset=new Petscii(fontfile,remapfile,setfile);
-            cset.initrender(charx,chary);
-            tool.current=cset.remap[tool.curidx];
+            init_charset();
         }
         cset.shift=shift; // Need to do this properly later
         cset.grow=grow;
-        
+
+        if(fileformat>=2) // Charsets arrived with format 2
+            load_charsets(lines,firstframe,currentframe);
+
+        setframe(0);
+
         message("Loaded "+name+", size "+str(loadx)+"x"+str(loady)+" chars");
         if(merge)
             dirty=true;
@@ -384,13 +418,22 @@ class Machine
             }
             f.println("};");
         }
-        
-        // Metadata in a comment
+
+        f.println(VERSION_DECL+str(CFORMAT)+";"); // What follows the frames
+
+        save_charsets(f);
+
         String keis="upper";
         if(lowercase)
             keis="lower";
-        f.println("// META: "+str(X)+" "+str(Y)+" "+machinename+" "+keis);
-        
+        String meta=str(X)+" "+str(Y)+" "+machinename+" "+keis;
+
+        // Size and case as numbers; the machine stays a name, and the trailing
+        // comment - written for PETSCII versions before 2 anyway - is where it
+        // is read from.
+        f.println(META_DECL+str(X)+","+str(Y)+","+str(lowercase?0:1)+"}; // width height case, 1 = upper");
+        f.println("// META: "+meta); // Where PETSCII versions before 2 read it
+
         f.flush();
         f.close();
         
@@ -399,6 +442,172 @@ class Machine
         message("Written "+name);
     }
         
+    // Everything a .c file holds beyond the frames is written as C: the format
+    // version, one array per charset in use, which charset each frame is drawn
+    // with, and the size/machine/case metadata. They are all declared "static
+    // const" on purpose: PETSCII stops reading frames at the first line that
+    // does not begin with "unsigned char", so a version older than format 2
+    // loads the picture, draws it with the ROM charset and ignores the rest.
+    // Such a version reads the metadata from the trailing "// META:" comment
+    // only, which is why that line is still written, and still written last.
+    final int CFORMAT=2; // 1 = frames and the META comment, 2 = added the above
+
+    final String VERSION_DECL="static const int version=",
+                 CHARSET_DECL="static const unsigned char charset",
+                 FONTS_DECL="static const int fonts[]={",
+                 META_DECL="static const int meta[]={";
+
+    void save_charsets(PrintWriter f)
+    {
+        // One array per distinct charset: frames drawn with the same characters
+        // share an array, frames on the machine's own font refer to none (-1).
+        ArrayList<byte[]> fonts=new ArrayList<byte[]>();
+        int used[]=new int[framecount];
+
+        for(int i=0;i<framecount;i++)
+        {
+            byte font[]=frames.get(i).font;
+
+            used[i]=-1;
+            for(int j=0;font!=null && j<fonts.size();j++)
+                if(Arrays.equals(fonts.get(j),font))
+                    used[i]=j;
+
+            if(font!=null && used[i]<0)
+            {
+                fonts.add(font);
+                used[i]=fonts.size()-1;
+            }
+        }
+
+        if(fonts.isEmpty()) // Nothing but the machine's own font: save as before
+            return;
+
+        for(int i=0;i<fonts.size();i++)
+        {
+            byte font[]=fonts.get(i); // Always 256*8, see Charset.tobytes
+
+            f.println(CHARSET_DECL+hex(i,4)+"[]={// 256 characters, 8 bytes each");
+            for(int c=0;c<256;c++)
+            {
+                for(int b=0;b<8;b++)
+                {
+                    f.print(str(font[c*8+b]&0xff));
+                    if(c!=255 || b!=7)
+                        f.print(",");
+                }
+                f.println();
+            }
+            f.println("};");
+        }
+
+        String map=FONTS_DECL; // Charset per frame, in frame order
+        for(int i=0;i<framecount;i++)
+            map+=(i>0 ? "," : "")+str(used[i]);
+        f.println(map+"}; // charset per frame, -1 = the machine's own");
+    }
+
+    // The format version the file was written in. Files without the declaration
+    // are the original format, which had frames and the META comment only.
+    int read_format(String lines[])
+    {
+        for(int i=0;i<lines.length;i++)
+            if(lines[i].startsWith(VERSION_DECL))
+                return int(trim(lines[i].substring(VERSION_DECL.length()).replace(";","")));
+
+        return 1;
+    }
+
+    // The "<x> <y> <machine> <case>" tokens, from the declaration if the file
+    // has one and from the trailing comment otherwise. Null if it has neither.
+    String[] read_meta(String lines[])
+    {
+        String decl[]=null,comment[]=null;
+
+        for(int i=lines.length-1;i>=0 && (decl==null || comment==null);i--) // Both live at the end
+        {
+            if(decl==null && lines[i].startsWith(META_DECL))
+                decl=splitTokens(between(lines[i],'{','}'),",");
+
+            if(comment==null && lines[i].startsWith("// META:"))
+                comment=subset(splitTokens(lines[i]," "),2); // drop "//" and "META:"
+        }
+
+        if(decl==null || decl.length<3) // Format 1, or a declaration too short to trust
+            return comment;
+
+        // Size and case from the numbers, machine from the comment beside them
+        return new String[]{ trim(decl[0]),
+                             trim(decl[1]),
+                             comment!=null && comment.length>2 ? comment[2] : "",
+                             int(trim(decl[2]))==0 ? "lower" : "upper" };
+    }
+
+    // What a line holds between the first open and the last close character.
+    String between(String line,char open,char close)
+    {
+        int a=line.indexOf(open),
+            b=line.lastIndexOf(close);
+
+        return (a<0 || b<=a) ? "" : line.substring(a+1,b);
+    }
+
+    // Read back what save_charsets wrote and hand the charsets to the frames the
+    // loader just filled in, frames first..last (a merge leaves the rest alone).
+    void load_charsets(String lines[],int first,int last)
+    {
+        ArrayList<byte[]> fonts=new ArrayList<byte[]>();
+        int map[]=null;
+
+        for(int i=0;i<lines.length;i++)
+        {
+            if(lines[i].startsWith(FONTS_DECL))
+            {
+                String all=""; // Tolerate an array wrapped over several lines
+                for(int j=i;j<lines.length;j++)
+                {
+                    all+=lines[j];
+                    if(lines[j].contains("}"))
+                        break;
+                }
+
+                String s[]=splitTokens(between(all,'{','}'),",");
+                map=new int[s.length];
+                for(int j=0;j<s.length;j++)
+                    map[j]=int(s[j]);
+            }
+
+            if(!lines[i].startsWith(CHARSET_DECL))
+                continue;
+
+            byte font[]=new byte[256*8]; // A short block leaves the rest blank
+            int n=0;
+            for(i++;i<lines.length && !lines[i].startsWith("};");i++)
+            {
+                String s[]=splitTokens(lines[i],",");
+                for(int j=0;j<s.length && n<font.length;j++)
+                    font[n++]=(byte)int(s[j]);
+            }
+            fonts.add(font);
+        }
+
+        if(fonts.isEmpty())
+            return;
+
+        for(int i=first;i<=last && i<framecount;i++)
+        {
+            int idx=0; // Without a mapping one charset covers every frame
+            if(map!=null && i-first<map.length)
+                idx=map[i-first];
+
+            Frame fr=frames.get(i);
+            fr.font=(idx>=0 && idx<fonts.size()) ? fonts.get(idx) : null;
+
+            apply_font(fr.font); // So the thumbnail blends the right characters
+            fr.updatethumb();
+        }
+    }
+
     // Dump the image as PNG
     final int DBORDER=16; // Border width for screenshots
     
@@ -513,9 +722,31 @@ class Machine
         message("Charset has "+tiles+" tiles (max 256). Use \"Image\" to trace a picture.");
     }
 
+    // Build the charset from fontfile. This is the picture-wide charset change:
+    // loading a charset .png, tracing an image, a .petmate font, a case toggle
+    // or a refresh all end up here, and all of them apply to every frame.
     void init_charset()
     {
-        cset=new Petscii(fontfile,remapfile,setfile);
+        build_charset();
+        picture_font();
+    }
+
+    // The same rebuild, but without handing the charset to the frames.
+    void build_charset()
+    {
+        use_charset(new Petscii(fontfile,remapfile,setfile));
+    }
+
+    // Build the charset from character data instead of from fontfile, for frames
+    // that carry their own (see apply_font). Frames are left alone.
+    void build_charset(byte font[])
+    {
+        use_charset(new Petscii(font,remapfile,setfile));
+    }
+
+    void use_charset(Charset c)
+    {
+        cset=c;
         cset.initrender(charx,chary);
         tool.current=cset.remap[tool.curidx];
         cset.shift=shift; // Need to do this properly later

@@ -23,15 +23,27 @@ class Charset
     
     Charset(String fontfile,String remapfile,String setfile)
     {
+        init(remapfile,setfile);
+        loadfont(fontfile);
+    }
+
+    // Same, but from character data instead of an image file (see loadfont)
+    Charset(byte font[],String remapfile,String setfile)
+    {
+        init(remapfile,setfile);
+        loadfont(font);
+    }
+
+    void init(String remapfile,String setfile)
+    {
         erasechar=0x20;
         charactercount=256;
-        
+
         xsize=ysize=8;
-        
+
         blendfactor=new int[charactercount];
         remap=new int[charactercount];
 
-        loadfont(fontfile);
         loadremap(remapfile);
         loadsets(setfile);
     }
@@ -123,6 +135,34 @@ class Charset
         return true;
     }
 
+    // Build the internal strip from C-64 style character data: 8 bytes per
+    // character, one bit per pixel, bit 7 leftmost. The inverse of tobytes().
+    // Short data is accepted, leaving the remaining characters blank.
+    boolean loadfont(byte font[])
+    {
+        if(font==null)
+            return false;
+
+        PImage strip=createImage(charactercount*8,8,ARGB);
+        strip.loadPixels();
+
+        for(int i=0;i<strip.pixels.length;i++) // Blank (black) to begin with
+            strip.pixels[i]=0xff000000;
+
+        for(int c=0;c<charactercount && (c+1)*8<=font.length;c++)
+            for(int y=0;y<8;y++)
+                for(int x=0;x<8;x++)
+                    if(((font[c*8+y]>>(7-x))&1)!=0)
+                        strip.pixels[(c*8+x)+y*strip.width]=0xffffffff;
+
+        strip.updatePixels();
+
+        bitmap=strip;
+        ysize=bitmap.height;
+
+        return true;
+    }
+
     // Rearrange an 8x8-tiled image into the internal single-row 256-char strip.
     // Accepts up to 256 tiles (fewer than 256 leaves the remaining chars blank).
     // Returns null if the image is not 8px-aligned or holds more than 256 tiles.
@@ -162,6 +202,29 @@ class Charset
         return strip;
     }
     
+    // The charset as C-64 style character data: 8 bytes per character, one bit
+    // per pixel, bit 7 leftmost, any non-black pixel being foreground. Returns
+    // the first count characters (clamped to the size of the charset).
+    byte[] tobytes(int count)
+    {
+        count=constrain(count,0,charactercount);
+
+        byte out[]=new byte[count*8];
+
+        bitmap.loadPixels();
+        for(int c=0;c<count;c++)
+            for(int y=0;y<8;y++)
+            {
+                int b=0;
+                for(int x=0;x<8;x++)
+                    if((bitmap.pixels[(c*8+x)+y*bitmap.width]&0xff)>20)
+                        b|=(1<<(7-x));
+                out[c*8+y]=(byte)b;
+            }
+
+        return out;
+    }
+
     void initrender(int targetx,int targety)
     {
         renderx=targetx;
