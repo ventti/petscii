@@ -218,6 +218,6 @@ class C64flicker extends Machine
         
         saveBytes(name,b);
         
-        message("Written "+name);
+        message("Written "+name+fontnote());
     }
 }

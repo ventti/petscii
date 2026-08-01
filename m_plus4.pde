@@ -399,7 +399,7 @@ class Plus4 extends Machine
         
         saveBytes(name,b);
         
-        message("Written "+name);
+        message("Written "+name+fontnote());
     }
     
     void import_prg(String name)

@@ -338,6 +338,6 @@ class Vic20 extends Machine
         
         saveBytes(name,b);
         
-        message("Written "+name);
+        message("Written "+name+fontnote());
     }
 }

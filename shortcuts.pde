@@ -125,7 +125,7 @@ void build_shortcuts()
     reg("File & export","a","Export asm data (.s)");
     reg("File & export","Shift+A","Self-contained asm viewer (ACME)");
     reg("File & export","b","Self-contained BASIC viewer");
-    reg("File & export","e","Export a runnable .prg","exportprg",() -> cmd_export_prg(),'e');
+    reg("File & export","e","Runnable .prg (charset included)","exportprg",() -> cmd_export_prg(),'e');
     reg("File & export","Shift+E","Export a .pet file");
     reg("File & export","q","Export as SEQ (C-64 only)");
     reg("File & export","p","Export all frames as .png","exportpng",() -> cmd_export_png(false),'p');

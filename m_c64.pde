@@ -303,6 +303,14 @@ class C64 extends Machine
         message("Written "+name);
     }
     
+    // Layout of data/template-c64font.prg, see extras/asm/template-c64font.s:
+    // the three parameter bytes sit right after the BASIC stub, and the picture
+    // and the character data are appended after the code.
+    final int FONTTPL_SIZE=136,   // also the offset of the appended data
+              FONTTPL_BORDER=14,
+              FONTTPL_BG=15,
+              FONTTPL_PAGES=16;
+
     void save_prg(String name)
     {
         if(X*Y!=1000)
@@ -310,7 +318,13 @@ class C64 extends Machine
             message("Unsupported image size for this exporter");
             return;
         }
-        
+
+        if(customfont()) // The ROM has no such characters: ship them along
+        {
+            save_prg_font(name);
+            return;
+        }
+
         // Read template
         byte b[]=loadBytes("template-c64.prg");
           
@@ -329,10 +343,51 @@ class C64 extends Machine
             b[offset++]=(byte)cf.getcolor(i);
         
         saveBytes(name,b);
-        
+
         message("Written "+name);
     }
-    
+
+    // A runnable .prg that brings its own charset. The template is code only;
+    // the screen, the colours and the character data are appended to it and
+    // copied into place ($0400, $d800, $3800) on start, so nothing in the file
+    // is padding. Only the character pages the picture uses are stored.
+    void save_prg_font(String name)
+    {
+        byte tpl[]=loadBytes("template-c64font.prg");
+        if(tpl==null || tpl.length!=FONTTPL_SIZE)
+        {
+            message("Missing or unexpected data/template-c64font.prg");
+            return;
+        }
+
+        int maxchar=0; // masked like the screen bytes below, so the count cannot
+        for(int i=0;i<X*Y;i++) // disagree with what actually ends up on screen
+            maxchar=max(maxchar,cf.getchar(i)&0xff);
+
+        int pages=((maxchar+1)*8+255)/256, // 256-byte pages of character data
+            chars=pages*32;
+
+        byte font[]=cset.tobytes(chars),
+             b[]=new byte[tpl.length+2*X*Y+font.length];
+
+        arrayCopy(tpl,b);
+        b[FONTTPL_BORDER]=(byte)cf.border;
+        b[FONTTPL_BG]=(byte)cf.bg;
+        b[FONTTPL_PAGES]=(byte)pages;
+
+        int offset=tpl.length;
+        for(int i=0;i<X*Y;i++)
+        {
+            b[offset+i]=(byte)cf.getchar(i);
+            b[offset+X*Y+i]=(byte)cf.getcolor(i);
+        }
+        arrayCopy(font,0,b,offset+2*X*Y,font.length);
+
+        saveBytes(name,b);
+
+        message("Written "+name+" ("+b.length+" bytes, "+chars+" chars embedded)");
+    }
+
     void import_prg(String name)
     {
         if(X!=40 || Y!=25)

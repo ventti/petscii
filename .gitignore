@@ -27,3 +27,7 @@ dist/
 # The blanket *.png above would swallow the application icon, which the packaged
 # builds need in the repo (Linux uses the .png directly).
 !extras/*.png
+# Likewise *.prg and *.s: those patterns are for the editor's own exports, but
+# the viewer templates and their assembly sources ship with the app.
+!data/*.prg
+!extras/asm/*.s
