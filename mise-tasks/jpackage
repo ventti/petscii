@@ -60,6 +60,15 @@ fi
 echo ">> staged input:"
 ls -1 "$STAGE" | sed 's/^/   /'
 
+# Licence and build provenance. --copyright is what the macOS About panel prints
+# under the version (NSHumanReadableCopyright), and the same string is kept in the
+# Windows and Linux package metadata, so any build states its licence and can be
+# traced back to a commit - the "-dirty" suffix included, when one was cut from a
+# modified tree.
+COMMIT=$(git describe --always --tags --dirty 2>/dev/null || echo unknown)
+BUILT=$(date -u +"%Y-%m-%d %H:%M UTC")
+echo ">> build: $COMMIT, built $BUILT"
+
 HOST=$(uname -s)
 
 # macOS bundles cannot carry a leading-zero version (a CFBundleVersion rule that
@@ -100,8 +109,9 @@ set -- --name petscii \
        --java-options '-Djava.library.path=$APPDIR' \
        --java-options '-Duser.dir=$APPDIR' \
        --jlink-options '--strip-debug --no-man-pages --no-header-files' \
-       --vendor "ventti" \
-       --description "Marq's PETSCII editor (Vent's fork) $VERSION" \
+       --vendor "Vent/EXT" \
+       --copyright "WTFPL v2. $COMMIT, built $BUILT" \
+       --description "Marq's PETSCII editor (Vent's fork) $VERSION ($COMMIT, built $BUILT)" \
        --dest "$WORK"
 
 # Each platform wants its own icon format. All three are generated from the single
