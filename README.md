@@ -191,3 +191,7 @@ Options:
   ./extras/charset_conv.sh input.png -o=output.png   # convert
   ./extras/charset_conv.sh input.png                 # print dimensions as (x,y)
 ```
+
+# License
+
+[WTFPL version 2](LICENSE.txt).
