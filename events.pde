@@ -707,6 +707,10 @@ void mouseReleased()
     mouseClicked();
     tablethack=false;
 
+    // Let go of a dragged colour-selector marker (see Machine.colorselclicks)
+    machine.selheld=false;
+    machine.grabbed=0;
+
     repaint=true;
 }
 

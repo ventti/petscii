@@ -84,6 +84,36 @@ class Machine
     }
 
     // Draw the color selector and its markers
+    // Which marker the pointer grabbed in the colour selector: 1 = background,
+    // 2 = border, 0 = neither. Dragging a marker is the way to set those two
+    // without a middle or right button; see colorselclicks().
+    int grabbed=0;
+    boolean selheld=false;
+
+    // Marker size, scaled to the swatch so it stays proportional at every zoom
+    // and on the machines with short colour rows (Plus/4 packs eight of them).
+    int markersize()
+    {
+        int m=min(charx,csheight)*2/3;
+
+        return m<8 ? 8 : m;
+    }
+
+    // Is the pointer on the marker drawn in a swatch's corner: top left for the
+    // background, bottom right for the border? Hit-tested as a square, which is
+    // both kinder to aim at than the triangle and enough to tell the two apart.
+    boolean onmarker(int px,int py,int index,boolean topleft)
+    {
+        int m=markersize(),
+            x=px+charx*(index%16),
+            y=py+index/16*csheight;
+
+        if(topleft)
+            return mouseX>=x && mouseX<x+m && mouseY>=y && mouseY<y+m;
+
+        return mouseX>x+charx-m && mouseX<=x+charx && mouseY>y+csheight-m && mouseY<=y+csheight;
+    }
+
     void drawcolorselector(int px,int py,int pcol,int bg,int border)
     {
         if(!palettemode)
@@ -107,21 +137,52 @@ class Machine
         rect(px+charx*(pcol%16),py+(pcol/16)*csheight, charx,csheight);
         noStroke();
 
+        // Both markers are grab handles, so they are drawn big enough to aim at
         fill(#ff0000);
-        int x=px+charx*(bg%16),
+        int m=markersize(),
+            x=px+charx*(bg%16),
             y=py+bg/16*csheight;
-        triangle(x,y, x,y+6, x+6,y);
-        
+        triangle(x,y, x,y+m, x+m,y);
+
         x=px+charx*(border%16)+charx;
-        y=py+cf.border/16*csheight+csheight;
-        triangle(x,y, x,y-6, x-6,y);
+        y=py+border/16*csheight+csheight; // the parameter, not cf.border
+        triangle(x,y, x,y-m, x-m,y);
     }
     
     // Handle mouse on color selector
     void colorselclicks()
     {
         int cindex=(mouseX-view.col2_start)/charx%16 + (mouseY-(view.colorsel_start))/csheight*16;
-        
+
+        // Work out once per press whether it started on a marker. Held down, the
+        // marker then follows the pointer, which is how a one-button mouse sets
+        // the background and border - the middle and right button still work.
+        if(!selheld)
+        {
+            selheld=true;
+            grabbed=0;
+
+            if(onmarker(view.col2_start,view.colorsel_start,cf.bg,true))
+                grabbed=1;
+            else if(onmarker(view.col2_start,view.colorsel_start,cf.border,false))
+                grabbed=2;
+        }
+
+        if(grabbed>0)
+        {
+            if(grabbed==1 && cindex<=maxbg)
+            {
+                cf.setbg(cindex);
+                dirty=true;
+            }
+            if(grabbed==2 && cindex<=maxborder)
+            {
+                cf.setborder(cindex);
+                dirty=true;
+            }
+            return; // A grabbed marker never also sets the pen
+        }
+
         if(control)
         {
             // Hidden feature! Remap current pen to clicked

@@ -64,6 +64,7 @@ void build_shortcuts()
     reg("Mouse","Middle","Pick char+colour, or border colour");
     reg("Mouse","Right","Erase / pick bg / lock / toggle case");
     reg("Mouse","Wheel","Darken or lighten shade (Plus/4)");
+    reg("Mouse","Drag marker","Palette: drag a red marker to set bg or border");
 
     reg("Modifiers (hold)","Ctrl","Selection: drag LMB=box, RMB=free");
     reg("Modifiers (hold)","Ctrl+A","Select the whole image");
