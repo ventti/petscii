@@ -42,8 +42,9 @@ trap 'rm -rf "$WORK"' EXIT
 
 # jpackage takes a single --input directory, but the exports differ per platform:
 # macOS keeps jars, native libs and data/ together inside the .app, while Linux and
-# Windows split them into lib/ and data/. Stage one directory so data/ always ends
-# up beside the jars, which is where Processing looks for it at run time.
+# Windows split them into lib/ and data/. Stage one directory so data/ always
+# travels with the jars; where it has to end up in the finished image is a separate
+# question, answered per platform further down.
 STAGE=$WORK/input
 mkdir -p "$STAGE"
 if [ -d "$SRC/petscii.app/Contents/Java" ]; then
@@ -54,8 +55,7 @@ else
 fi
 [ -f "$STAGE/petscii.jar" ] || { echo "jpackage: petscii.jar not found in $SRC" >&2; exit 1; }
 
-# data/ must sit beside the jars: Processing resolves it from the jar directory,
-# and without it the charset never loads and the sketch dies in initrender().
+# No data/, no charset: the sketch dies in initrender() the moment it starts.
 [ -d "$STAGE/data" ] || { echo "jpackage: data/ missing from the staged input ($SRC)" >&2; exit 1; }
 echo ">> staged input:"
 ls -1 "$STAGE" | sed 's/^/   /'
@@ -93,12 +93,12 @@ esac
 # Common arguments. $APPDIR is expanded by the generated launcher at run time and
 # is where --input contents land, so the JOGL natives beside the jars are found.
 #
-# -Duser.dir is what makes data/ resolvable. Processing only special-cases macOS
-# .app bundles when locating the sketch folder; everywhere else it falls back to
-# the working directory, and a jpackage launcher inherits whatever directory the
-# user happened to be in (the home directory, from a Start Menu shortcut). Without
-# this the charset never loads and the sketch dies with a NullPointerException in
-# Charset.initrender().
+# -Duser.dir is what makes data/ resolvable, and it is set per platform below,
+# because where the sketch folder ends up is not the same everywhere. Processing
+# derives it in PApplet.calcSketchPath(): the working directory, unless the jar it
+# was loaded from sits in a directory that gives the answer away. Without a correct
+# sketch folder the charset never loads and the sketch dies with a
+# NullPointerException in Charset.initrender().
 set -- --name petscii \
        --app-version "$APP_VERSION" \
        --input "$STAGE" \
@@ -107,7 +107,6 @@ set -- --name petscii \
        --add-modules "$MODULES" \
        --java-options '-Djna.nosys=true' \
        --java-options '-Djava.library.path=$APPDIR' \
-       --java-options '-Duser.dir=$APPDIR' \
        --jlink-options '--strip-debug --no-man-pages --no-header-files' \
        --vendor "Vent/EXT" \
        --copyright "WTFPL v2. $COMMIT, built $BUILT" \
@@ -128,19 +127,35 @@ ICONS=$PWD/extras
 icon=""
 case "$HOST" in
     Darwin)
+        # calcSketchPath() only rewrites the working directory for a bundle whose
+        # jars live in Contents/Java/ (a Processing export); jpackage puts them in
+        # Contents/app, so -Duser.dir stands and data/ is found beside the jars.
         TYPES="dmg"
         icon="$ICONS/petscii.icns"
+        set -- "$@" --java-options '-Duser.dir=$APPDIR'
         ;;
     Linux)
-        # Both Debian and RPM come straight from jpackage, so no alien conversion
+        # Linux is the one layout Processing overrules. calcSketchPath() treats any
+        # jar path containing "/lib/" as a Processing export - jars in <root>/lib,
+        # data/ one level up - and hardcodes the sketch folder to <jar>/../..,
+        # ignoring user.dir. jpackage's app dir is <root>/lib/app, so the sketch
+        # folder becomes <root>/lib and the data/ shipped in <root>/lib/app is
+        # invisible. Rather than fight it, data/ is moved to where Processing looks
+        # (see below) and user.dir is pointed at the same place.
+        #
+        # Both Debian and RPM come straight from jpackage, so no alien conversion.
+        # --linux-shortcut and friends belong to the packaging step below, not to
+        # the app image, so they are not added here.
         TYPES="deb rpm"
         icon="$ICONS/petscii.png"
-        set -- "$@" --linux-shortcut --linux-menu-group Graphics
+        set -- "$@" --java-options '-Duser.dir=$ROOTDIR/lib'
         ;;
     MINGW* | MSYS* | CYGWIN*)
+        # The app dir is <root>\app, which has no "/lib/" in it, so -Duser.dir stands
         TYPES="msi"
         icon="$ICONS/petscii.ico"
-        set -- "$@" --win-menu --win-shortcut --win-menu-group Graphics
+        set -- "$@" --java-options '-Duser.dir=$APPDIR' \
+                    --win-menu --win-shortcut --win-menu-group Graphics
         ;;
     *)
         echo "jpackage: unsupported host $(uname -s)" >&2
@@ -180,6 +195,38 @@ if [ "$HOST" = "Darwin" ]; then
     hdiutil create -volname "petscii $VERSION" -srcfolder "$root" \
         -ov -quiet -format UDZO "$WORK/petscii.dmg"
     rm -rf "$app" "$root"
+elif [ "$HOST" = "Linux" ]; then
+    # Two steps on Linux as well, to put data/ where Processing insists on looking
+    # (see the calcSketchPath() note above). --input can only ever fill <root>/lib/app,
+    # so the app image is built first, data/ is lifted one level to <root>/lib, and
+    # the packages are then wrapped around the patched image.
+    echo ">> jpackage --type app-image ($VARIANT)"
+    jpackage --type app-image "$@"
+    image="$WORK/petscii"
+    [ -d "$image/lib/app/data" ] || { echo "jpackage: no data/ in the app image $image" >&2; exit 1; }
+    mv "$image/lib/app/data" "$image/lib/data"
+    echo ">> moved data/ to lib/data ($(ls -1 "$image/lib/data" | wc -l | tr -d ' ') files)"
+
+    # Only packaging options from here on: everything about the application itself
+    # is already baked into the image, and jpackage rejects --input, --main-jar,
+    # --java-options and friends when it is handed one.
+    set -- --name petscii \
+           --app-version "$APP_VERSION" \
+           --app-image "$image" \
+           --vendor "Vent/EXT" \
+           --copyright "WTFPL v2. $COMMIT, built $BUILT" \
+           --description "Marq's PETSCII editor (Vent's fork) $VERSION ($COMMIT, built $BUILT)" \
+           --linux-shortcut --linux-menu-group Graphics \
+           --dest "$WORK"
+    if [ -f "$icon" ]; then
+        set -- "$@" --icon "$icon"
+    fi
+
+    for type in $TYPES; do
+        echo ">> jpackage --type $type ($VARIANT)"
+        jpackage --type "$type" "$@"
+    done
+    rm -rf "$image"
 else
     for type in $TYPES; do
         echo ">> jpackage --type $type ($VARIANT)"

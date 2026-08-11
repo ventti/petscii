@@ -167,11 +167,15 @@ jobs:
         shell: bash
         run: EMBED_JAVA=0 ./build.sh export "${{ matrix.variant }}"
 
-      # Runs the app in the layout jpackage ships (jars, natives and data/ in one
-      # directory) FROM AN UNRELATED WORKING DIRECTORY, which is how an installed
-      # app actually starts. Running it from the export root instead would pass
-      # even when data/ is unreachable, because the export root contains a data/
-      # of its own - that is exactly how the broken Windows installer slipped out.
+      # Runs the app with jars, natives and data/ in one directory FROM AN
+      # UNRELATED WORKING DIRECTORY, which is how an installed app actually starts.
+      # Running it from the export root instead would pass even when data/ is
+      # unreachable, because the export root contains a data/ of its own - that is
+      # exactly how the broken Windows installer slipped out.
+      #
+      # This is a check of the export, not of the installer: the real jpackage
+      # layout nests the jars one level deeper, which is its own failure mode. On
+      # Linux the finished package is tested separately, after packaging.
       - name: Smoke test the packaged layout
         shell: bash
         run: |
@@ -218,6 +222,38 @@ jobs:
         run: |
           bash mise-tasks/jpackage "${{ needs.plan.outputs.version }}" "${{ matrix.variant }}"
           ls -l dist/
+
+      # The one test that speaks for what a user installs: unpack the .deb and run
+      # the launcher it ships. Nothing before this point can prove data/ is
+      # reachable, because Processing resolves the sketch folder from where the jars
+      # sit inside the finished image - jpackage puts them in lib/app, and
+      # PApplet.calcSketchPath() then rewrites the sketch folder to lib/, ignoring
+      # -Duser.dir. That is how 0.5.0 shipped .deb and .rpm packages that died in
+      # Charset.initrender() on startup. xvfb comes from the smoke test above.
+      - name: Smoke test the installed package
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          root="$RUNNER_TEMP/installed"
+          rm -rf "$root"; mkdir -p "$root"
+          dpkg-deb -x dist/petscii-*.deb "$root"
+          [ -d "$root/opt/petscii/lib/data" ] || {
+            echo "FAILED: no data/ where Processing looks for it (opt/petscii/lib)"
+            find "$root/opt/petscii" -maxdepth 4 -name data; exit 1; }
+          mkdir -p "$RUNNER_TEMP/installed-run" && cd "$RUNNER_TEMP/installed-run"
+          xvfb-run -a "$root/opt/petscii/bin/petscii" -C64 > installed.log 2>&1 &
+          pid=$!
+          sleep 25
+          if ! kill -0 "$pid" 2>/dev/null; then
+            echo "FAILED: the installed app exited early"; cat installed.log; exit 1
+          fi
+          kill "$pid" 2>/dev/null || true
+          # As above: a missing prefs.txt is optional and harmless, anything else is not
+          if grep -q NullPointerException installed.log ||
+             grep "is missing or inaccessible" installed.log | grep -qv "prefs.txt"; then
+            echo "FAILED: the installed app could not load its data"; cat installed.log; exit 1
+          fi
+          echo "OK: the installed app ran for 25s with no missing resources"
 
       - uses: actions/upload-artifact@v7
         with:
