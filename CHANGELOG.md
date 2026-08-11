@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 - 2026-08-11
+
+- feat: enlarge palette markers and make bg/border draggable (`1a45626`)
+- feat: state licence, commit and build time in packaged builds (`2189488`)
+- docs: update README (`840677f`)
+- feat: export a runnable .prg with the custom charset embedded (`52ab92a`)
+- feat: keep per-frame custom charsets in the .c format (version 2) (`3c10c93`)
+- docs: condense README, document macOS install and custom charsets (`8c357e5`)
+
 ## 0.4.0 - 2026-07-31
 
 - docs: update README (`78d0a6d`)
