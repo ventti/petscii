@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1 - 2026-08-11
+
+- fix(packaging): put data/ where Processing looks for it in Linux installers (`ac24249`)
+- docs: update README (`dbde04c`)
+
 ## 0.5.0 - 2026-08-11
 
 - feat: enlarge palette markers and make bg/border draggable (`1a45626`)
