@@ -18,21 +18,21 @@ Installers are on the [latest release page](https://github.com/ventti/petscii/re
 
 ## macOS
 
-The **.dmg** is not signed with a Developer ID and not notarized, so Gatekeeper refuses it on first launch. Open it anyway:
+Note that macOS release is not signed. 
 
-1. Open the **.dmg** and drag **petscii** to **Applications**.
-2. Launch it once. macOS refuses, with either *"petscii is damaged and can't be opened"* or *"cannot be opened because the developer cannot be verified"*.
-3. Open **System Settings → Privacy & Security**, scroll to the bottom and click **Open Anyway** next to the message about petscii. Confirm at the password prompt.
+
+1. Open the **.dmg** and drag **Petscii** to **Applications**.
+2. Launch it once. macOS refuses, with either *"Petscii is damaged and can't be opened"* or *"cannot be opened because the developer cannot be verified"*.
+3. Open **System Settings → Privacy & Security** 
+4. Scroll to the bottom and click **Open Anyway** next to the message about Petscii. Confirm at the password prompt.
 
 The right-click → **Open** trick works on older macOS, but no longer on Sequoia and later.
 
-If **Open Anyway** never appears, strip the quarantine flag by hand and launch again:
+If **Open Anyway** never appears, open Terminal and strip the quarantine flag by hand and then launch again:
 
 ```sh
-xattr -dr com.apple.quarantine /Applications/petscii.app
+xattr -d com.apple.quarantine /Applications/petscii.app
 ```
-
-Pick the .dmg matching your CPU: Apple silicon or Intel. The Intel build runs on Apple silicon under Rosetta, but the native one is better.
 
 ## Linux
 
@@ -47,7 +47,7 @@ or
 sudo dnf install petscii-0.3.1-linux-amd64.rpm
 ```
 
-Installs to `/opt/petscii` with a desktop entry. The .rpm is untested.
+Installs to `/opt/petscii` with a desktop entry. Linux distributions are untested.
 
 ## Windows
 
